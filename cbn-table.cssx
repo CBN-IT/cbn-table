@@ -1,0 +1,125 @@
+
+:host {
+	display: block;
+	position: relative;
+	background: white;
+	
+	/* Default values for CSS variables: */
+	--cbn-table-background: transparent;
+	--cbn-table-border: 1px solid #E3E3E3;
+	--cbn-table-cell-padding: 0.7em 0.5em;
+	--cbn-table-padding: 0.3em;
+	--cbn-table-head-background: white;
+	--cbn-table-head-border: 1px solid #CCCCCC;
+	--cbn-table-foot-background: white;
+	
+	--cbn-table-container: {
+		border: none;
+	};
+	--cbn-table-cell: {
+		color: #353535;
+		border-left: none; border-right: none;
+	};
+	--cbn-table-header-cell: {
+		font-weight: bold;
+		border-left: none; border-right: none;
+		border-top: none;
+	};
+	--cbn-table-footer-cell: {
+		font-weight: bold;
+		color: #353535;
+		border-left: none; border-right: none;
+	};
+}
+
+#ironList {
+	display: block;
+	position: absolute;
+	top: var(--cbn-table-padding);
+	left: var(--cbn-table-padding);
+	bottom: var(--cbn-table-padding);
+	right: var(--cbn-table-padding);
+}
+
+#ironList::shadow #items {
+	display: table;
+	width: 100%;
+	box-sizing: border-box;
+	border-spacing: 0px;
+	background: var(--cbn-table-background);
+	border-left: var(--cbn-table-border);
+	border-bottom: var(--cbn-table-border);
+	@apply(--cbn-table-container);
+}
+
+#tableHead {
+	display: table-header-group;
+	position: static !important;
+	background: var(--cbn-table-head-background);
+	@apply(--cbn-table-header);
+}
+#tableHead:after {
+	content: "";
+	height: 10px;
+	margin-top: -10px;
+	display: block;
+	position: absolute;
+	left: 0;
+	right: 0;
+	z-index: -1;
+	box-shadow: 0 5px 4px -3px rgba(0, 0, 0, 0.25);
+}
+.scroll-top #tableHead:after {
+	box-shadow: none;
+}
+#tableHead /deep/ .tcell {
+	@apply(--cbn-table-header-cell);
+}
+.scroll-top #tableHead /deep/ .tcell {
+	box-shadow: none;
+	border-bottom: var(--cbn-table-head-border);
+}
+
+#tableFoot {
+	display: table-footer-group;
+	background: var(--cbn-table-foot-background);
+	border-top: var(--cbn-table-border);
+	border-bottom: var(--cbn-table-border);
+	@apply(--cbn-table-footer);
+}
+#tableFoot /deep/ .tcell {
+	border-top: var(--cbn-table-border);
+	border-bottom: var(--cbn-table-border);
+	@apply(--cbn-table-footer-cell);
+}
+:host /deep/ .trow {
+	display: table-row;
+	position: static !important;
+	@apply(--cbn-table-row);
+}
+
+:host /deep/ .tcell {
+	display: table-cell;
+	padding: var(--cbn-table-cell-padding);
+	border-top: var(--cbn-table-border);
+	border-right: var(--cbn-table-border);
+	@apply(--cbn-table-cell);
+}
+:host /deep/ .trow:hover .tcell {
+	@apply(--cbn-table-cell-hover);
+}
+:host /deep/ .trow.first-row .tcell {
+	border-top: none;
+}
+:host /deep/ .trow.last-row .tcell {
+	border-top: none;
+}
+
+#autoExpander {
+	display: table-row;
+	position: static !important;
+}
+#autoExpander .tcell {
+	height: 100% !important;
+	border: none !important;
+}

@@ -1,0 +1,24 @@
+{
+    "name": "cbn-table",
+    "version": "1.0.0",
+    "description": "An iron-list based element for rendering tabular data.",
+    "main": "cbn-table.html",
+    "ignore": [
+        "**/.*",
+        "test",
+        "demo",
+        "node_modules",
+        "bower_components",
+        "Gruntfile.js",
+        "package.json",
+        "src"
+    ],
+    "dependencies": {
+        "polymer": "Polymer/polymer#^1.0",
+        "iron-list": "PolymerElements/iron-list#^1.0"
+    },
+    "devDependencies": {
+        "iron-component-page": "PolymerElements/iron-component-page#^1.0",
+        "web-component-tester": "*"
+    }
+}

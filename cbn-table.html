@@ -1,0 +1,359 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-list/iron-list.html">
+
+<!--
+A table rendering component with lazy loading (based on `iron-list`).
+
+Example:
+```
+    <cbn-table>
+    	<template class="table-header">
+			<div style="display: table-header-group;">
+				<div class="table-row">
+					<div class="table-cell">Idx</div>
+					<div class="table-cell">Name</div>
+				</div>
+			</div>
+    	</template>
+    	<template>
+    		<div class="trow">
+				<div class="tcell">{{ index }}</div>
+				<div class="tcell">{{ item.label }}</div>
+    		</div>
+    	</template>
+    </cbn-table>
+```
+
+<br />
+### Styling
+
+Although the table initially has material design, it can be customized to look like anything using the following 
+variables / mixins:
+
+Custom property               | Description                   | Default
+------------------------------|-------------------------------|--------------------
+`--cbn-table-background`      | Table cells background        | `transparent`
+`--cbn-table-border`          | Table cells border            | `1px solid #E3E3E3`
+`--cbn-table-padding`         | Table container's padding     | `0.3em`
+`--cbn-table-cell-padding`    | Table cells padding           | `0.7em 0.5em`
+`--cbn-table-head-background` | Table header background       | `white`
+`--cbn-table-head-border`     | Border for table's header     | `1px solid #666666`
+`--cbn-table-foot-background` | Table footer background       | `white`
+`--cbn-table-container`       | Mixin for the table container | `{ border-left: none; border-right: none; }`
+`--cbn-table-row`             | Mixin for the table's rows    | `{ border-left: none; border-right: none; }`
+`--cbn-table-cell`            | Mixin for the table's cells   | `{ border-left: none; border-right: none; }`
+`--cbn-table-header`          | Mixin for the table's header  | `{ }`
+`--cbn-table-header-cell`     | Mixin for a header cell       | `{ border-left: none; border-right: none; }`
+`--cbn-table-footer`          | Mixin for the table's footer  | `{ }`
+`--cbn-table-footer-cell`     | Mixin for a footer cell       | `{ border-left: none; border-right: none; }`
+
+<br />
+The element automatically toggles the following CSS classes when certain things happen:
+
+Class name               | Description                   | Default
+-------------------------|-------------------------------|-----------------------------
+`scroll-top`             | The table's scrollTop == 0    | it disables the header shadow
+`scroll-bottom`          | The table's scroll is at the bottom | disables the footer shadow
+
+
+@group CBN Elements
+@element cbn-table
+@demo demo/index.html
+-->
+
+<dom-module id="cbn-table">
+	<link rel="import" type="css" href="cbn-table.cssx" />
+	
+	<template>
+		
+		<div id="innerContainer">
+			<!-- the iron-list::shadow > #items element, which hosts the content, has 'display: table' -->
+			<iron-list id="ironList" items="{{ rows }}">
+				<!-- Header and footer containers -->
+				<div id="tableHead" style="position: relative;"></div>
+				<div id="tableFoot"></div>
+				
+				<!-- An empty row with height: 100% that will take the rest of the unused vertical space inside the table -->
+				<div id="autoExpander"><div class="tcell"></div></div>
+				
+				<!-- The list items will be inserted afterwards -->
+			</iron-list>
+			
+			<content></content>
+			
+		</div>
+		
+	</template>
+
+</dom-module>
+
+<style>
+	/* Utility global styles */
+	
+	/* see http://www.thecssninja.com/javascript/pointer-events-60fps */
+	/*noinspection CssUnusedSymbol*/
+	body.disable-hover,
+	body.disable-hover /deep/ * {
+		pointer-events: none !important;
+	}
+	
+</style>
+
+<script>
+	(function () {
+		
+		Polymer({
+			is: 'cbn-table',
+			
+			properties: {
+				
+				/**
+				 * An array with the table rows to render.
+				 */
+				rows: {
+					type: Array
+				}
+				
+			},
+			
+			behaviors: [
+				Polymer.Templatizer,
+				Polymer.IronResizableBehavior
+			],
+			
+			/** @namespace this.$.ironList */
+			/** @namespace this.$.tableHead */
+			/** @namespace this.$.tableFoot */
+			
+			// Element Lifecycle
+			
+			ready: function () {
+				this._initializeTemplates();
+				this._enhanceIronList();
+			},
+			
+			attached: function () {
+				this.async(function () {
+					this.updateViewport();
+				}, 1);
+			},
+			
+			detached: function () {
+				
+			},
+			
+			updateViewport: function () {
+				//var marginTop = this.$.tableHead.clientHeight;
+				//var marginBottom = this.$.tableFoot.clientHeight;
+				//this.$.ironList.style.top = marginTop + "px";
+				//this.$.ironList.style.bottom = marginBottom + "px";
+				this.$.ironList.updateViewportBoundaries();
+				this._scrollHandler(this.$.ironList.scrollTop);
+			},
+			
+			/**
+			 * Initializes the templates given to render the table.
+			 * @private
+			 */
+			_initializeTemplates: function () {
+				var template, instance;
+				
+				// fetch the header template 
+				template = Polymer.dom(this).querySelector('template.table-header');
+				if (template) {
+					this.templatize(template);
+					instance = this.stamp({});
+					Polymer.dom(this.$.tableHead).appendChild(instance.root);
+				} else {
+					this.$.tableHead.style.display = 'none';
+				}
+				
+				// fetch the footer template 
+				template = Polymer.dom(this).querySelector('template.table-footer');
+				if (template) {
+					this.templatize(template);
+					instance = this.stamp({});
+					Polymer.dom(this.$.tableFoot).appendChild(instance.root);
+				} else {
+					this.$.tableFoot.style.display = 'none';
+				}
+				
+				// fetch the main template to use for rendering the table rows
+				template = Polymer.dom(this).querySelector('template:not(.table-header):not(.table-footer)');
+				Polymer.dom(this).removeChild(template);
+				// and set it for use to iron-list
+				Polymer.dom(this.$.ironList).appendChild(template);
+			},
+			
+			/**
+			 * Enhances the `<form-list>` object.
+			 */
+			_enhanceIronList: function() {
+				var table = this;
+				var tableHead = this.$.tableHead;
+				
+				/**
+				 * Override iron-list's method because the algorithm for calculating the table rows' positions is a bit 
+				 * different (see implementation for details).
+				 * 
+				 * @param {Array} itemSet The list of items to update.
+				 */
+				this.$.ironList._positionItems = function (itemSet) {
+					this._adjustScrollPosition();
+					
+					/**
+					 * Sums the elements of an array, from start to end.
+					 * @param arr The array to iterate.
+					 * @param start The index of the first element to sum.
+					 * @param end The index of the element to stop at (excluded from the sum).
+					 * @returns {number} The calculated sum of the elements.
+					 */
+					function sumArr(arr, start, end) {
+						var sum = 0;
+						if (end < start) { var aux = start; start = end; end = aux; }
+						for (var i=start; i<end; i++) { sum += arr[i]; }
+						return sum;
+					}
+					
+					var physTop = this._physicalTop;
+					var i = 0;
+					this._iterateItems(function (pidx) {
+						var physEl = this._physicalItems[pidx];
+						/**
+						 * Because the list's elements don't have "position: absolute", the translation transformation 
+						 * is applied relative to the element's initial position, which depends on the source order of the 
+						 * physical items. But, because of an iron-list optimization which can change the fill order of 
+						 * the physical elements, we may need to swap their positions to retain the expected order.
+						 * So the elements `i` and `pidx` must be rendered as swapped: one (the one with lesser pidx) 
+						 * will have the Y coordinate of -[diff]px and the other, the opposite value (a positive translation 
+						 * with the same magnitude).
+						 */
+						var diff = sumArr(this._physicalSizes, i, pidx);
+						if (i < pidx) diff = -diff;
+						
+						this.transform('translate3d(0, ' + (physTop + diff) + 'px, 0)', physEl);
+						
+						// if the current physicalItem stores the first row, add the .first-row class to it
+						if (physEl._templateInstance[this.indexAs] == 0) {
+							if (!physEl.classList.contains('first-row'))
+								physEl.classList.add('first-row');
+						} else {
+							physEl.classList.remove('first-row');
+						}
+						// do the same to the last row
+						if (physEl._templateInstance[this.indexAs] == (this._virtualCount-1)) {
+							if (!physEl.classList.contains('last-row'))
+								physEl.classList.add('last-row');
+						} else {
+							physEl.classList.remove('last-row');
+						}
+						
+						i++;
+					}, itemSet);
+				};
+				
+				/**
+				 * Called when the list is scrolled.
+				 * Used to update the positions of the header and footer (because "position: fixed" is a no-go for HTML 
+				 * table elements).
+				 */
+				this.$.ironList._refresh = function () {
+					/* see http://www.thecssninja.com/javascript/pointer-events-60fps */
+					var body = document.querySelector('body');
+					if (!body.classList.contains('disable-hover')) {
+						body.classList.add('disable-hover');
+					}
+					
+					table._scrollHandler(this._scroller.scrollTop);
+					
+					this.debounce('pointer-events', function() {
+						body.classList.remove('disable-hover');
+					}, 0);
+					
+					var $super = Object.getPrototypeOf(this);
+					$super._refresh.apply(this, arguments); // call the original
+				};
+				
+				/**
+				 * Also capture the 'mousewheel' event (which is executed just before scroll is applied), to prevent 
+				 * header/footer from flickering when scrollling using the mouse (on some browsers, e.g. Google Chrome).
+				 */
+				this.$.ironList.addEventListener('mousewheel', function (e) {
+					table.$.ironList.scrollTop = Math.min(this._scroller.scrollHeight - this._viewportSize, 
+						Math.max(0, e.deltaY + table._scrollTop));
+					
+					var body = document.querySelector('body');
+					if (!body.classList.contains('disable-hover')) {
+						body.classList.add('disable-hover');
+					}
+					e.preventDefault();
+					
+					table.$.ironList._refresh();
+				});
+				
+				/**
+				 * Called after the list of physical items has been rebuilt.
+				 * Ensures that the #autoExpander object is at the end of the containing object.
+				 */
+				this.$.ironList._createPool = function () {
+					var $super = Object.getPrototypeOf(this);
+					var result = $super._createPool.apply(this, arguments);
+					
+					/**
+					 * Detaches and reattaches an element in order to move it at the end of the DOM parent.
+					 * @param {HTMLElement} element The element to move at the end.
+					 */
+					function moveToEnd(element) {
+						var parent = Polymer.dom(Polymer.dom(element).parentNode);
+						parent.removeChild(element) && parent.appendChild(element);
+					}
+					
+					// re-attach the other table elements at the end
+					moveToEnd(Polymer.dom(this).querySelector('#autoExpander'));
+					moveToEnd(Polymer.dom(this).querySelector('#tableFoot'));
+					moveToEnd(Polymer.dom(this).querySelector('#tableHead'));
+					
+					return result;
+				};
+				
+			},
+			
+			/**
+			 * Automatically called when the iron-list is scrolled in order to update the positions of the table's header 
+			 * and footer components.
+			 * 
+			 * @param {number} scrollTop The Y scroll amount.
+			 */
+			_scrollHandler: function(scrollTop) {
+				if (this._scrollTop === scrollTop)
+					return;
+				this._scrollTop = scrollTop;
+				
+				var footerPos = scrollTop + this.$.ironList._viewportSize - 
+										this.$.tableFoot.clientHeight - 2;
+				
+				this.transform('translate3d(0, ' + scrollTop + 'px, 0)', this.$.tableHead);
+				this.transform('translate3d(0, ' + footerPos + 'px, 0)', this.$.tableFoot);
+				
+				// update scroll classes
+				/** @namespace this.$.innerContainer */
+				if (this.$.ironList.scrollTop == 0) {
+					if (!this.$.innerContainer.classList.contains('scroll-top'))
+						this.$.innerContainer.classList.add('scroll-top');
+				} else {
+					this.$.innerContainer.classList.remove('scroll-top');
+				}
+				
+				if (this.$.ironList.scrollTop == this.$.ironList._maxScrollTop) {
+					if (!this.$.innerContainer.classList.contains('scroll-bottom'))
+						this.$.innerContainer.classList.add('scroll-bottom');
+				} else {
+					this.$.innerContainer.classList.remove('scroll-bottom');
+				}
+				this.updateStyles();
+			}
+			
+		});
+		
+	})();
+</script>

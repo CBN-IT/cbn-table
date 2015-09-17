@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	<title>Cbn-Table Demo</title>
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	<script>
+		// window.Polymer = window.Polymer || {};
+		// window.Polymer.dom = 'shadow';
+	</script>
+	<link rel="import" href="../cbn-table.html">
+</head>
+<body>
+
+<div style="margin: 0 auto; width:700px;">
+	
+	<p><b>Demo:</b></p>
+	
+	<cbn-table style="height: 500px; box-shadow: 0 2px 7px 0 rgba(0, 0, 0, 0.14), 0 2px 5px 0 rgba(0, 0, 0, 0.22);">
+		<template class="table-header">
+			<div class="trow">
+				<div style="width:60px;" class="tcell">Index</div>
+				<div style="width:auto;" class="tcell">Name</div>
+				<div style="width:auto;" class="tcell">Name, again</div>
+				<div style="width:100px;" class="tcell">Y/N?</div>
+			</div>
+		</template>
+		<template>
+			<div class="trow">
+				<div class="tcell">{{ index }}</div>
+				<div class="tcell">{{ item.label }}</div>
+				<div class="tcell">{{ item.label }}</div>
+				<div class="tcell">{{ item.yn }}</div>
+			</div>
+		</template>
+	</cbn-table>
+</div>
+
+<script>
+	
+	window.addEventListener('WebComponentsReady', function(e) {
+		var table = document.querySelector('cbn-table');
+		var rows = [];
+		for (var i=0; i<1000; i++) {
+			rows.push( 
+				{ label: 'asd' + i, yn: 'yes' },
+				{ label: 'iop' + i, yn: 'no' }
+			);
+		}
+		table.rows = rows;
+	});
+	
+</script>
+
+</body>
+</html>
