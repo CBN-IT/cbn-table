@@ -1,28 +1,27 @@
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-list/iron-list.html">
-
 <!--
-A table rendering component with lazy loading (based on `iron-list`).
+An infinite table component based on `iron-list`.
 
 Example:
 ```
-    <cbn-table>
-    	<template class="table-header">
+    <cbn-table style="height: 500px;">
+    	<template class="cbn-table-header">
 			<div style="display: table-header-group;">
-				<div class="table-row">
-					<div class="table-cell">Idx</div>
-					<div class="table-cell">Name</div>
+				<div class="cbn-table-row">
+					<div class="cbn-table-cell">Idx</div>
+					<div class="cbn-table-cell">Name</div>
 				</div>
 			</div>
     	</template>
     	<template>
-    		<div class="trow">
-				<div class="tcell">{{ index }}</div>
-				<div class="tcell">{{ item.label }}</div>
+    		<div class="cbn-table-row">
+				<div class="cbn-table-cell">{{ index }}</div>
+				<div class="cbn-table-cell">{{ item.label }}</div>
     		</div>
     	</template>
     </cbn-table>
 ```
+
+**Note**: like `iron-list`, the element needs to be explicitly sized!
 
 <br />
 ### Styling
@@ -38,14 +37,15 @@ Custom property               | Description                   | Default
 `--cbn-table-cell-padding`    | Table cells padding           | `0.7em 0.5em`
 `--cbn-table-head-background` | Table header background       | `white`
 `--cbn-table-head-border`     | Border for table's header     | `1px solid #666666`
+`--cbn-table-head-shadow`     | Shadow for the header         | `0 5px 4px -3px rgba(0, 0, 0, 0.25)`
 `--cbn-table-foot-background` | Table footer background       | `white`
-`--cbn-table-container`       | Mixin for the table container | `{ border-left: none; border-right: none; }`
-`--cbn-table-row`             | Mixin for the table's rows    | `{ border-left: none; border-right: none; }`
-`--cbn-table-cell`            | Mixin for the table's cells   | `{ border-left: none; border-right: none; }`
-`--cbn-table-header`          | Mixin for the table's header  | `{ }`
-`--cbn-table-header-cell`     | Mixin for a header cell       | `{ border-left: none; border-right: none; }`
-`--cbn-table-footer`          | Mixin for the table's footer  | `{ }`
-`--cbn-table-footer-cell`     | Mixin for a footer cell       | `{ border-left: none; border-right: none; }`
+`--cbn-table-container`       | Mixin for the table container | *border and shadow around*
+`--cbn-table-row`             | Mixin for the table's rows    | 
+`--cbn-table-cell`            | Mixin for the table's cells   | *color and border definitions*
+`--cbn-table-header`          | Mixin for the table's header  | 
+`--cbn-table-header-cell`     | Mixin for a header cell       | *border fixes*
+`--cbn-table-footer`          | Mixin for the table's footer  | 
+`--cbn-table-footer-cell`     | Mixin for a footer cell       | *border fixes*
 
 <br />
 The element automatically toggles the following CSS classes when certain things happen:
@@ -61,10 +61,14 @@ Class name               | Description                   | Default
 @demo demo/index.html
 -->
 
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-list/iron-list.html">
+
+<link rel="import" href="styles.html" />
+
 <dom-module id="cbn-table">
-	<link rel="import" type="css" href="cbn-table.cssx" />
-	
 	<template>
+		<style include="cbn-table-styles-private"></style>
 		
 		<div id="innerContainer">
 			<!-- the iron-list::shadow > #items element, which hosts the content, has 'display: table' -->
@@ -74,7 +78,7 @@ Class name               | Description                   | Default
 				<div id="tableFoot"></div>
 				
 				<!-- An empty row with height: 100% that will take the rest of the unused vertical space inside the table -->
-				<div id="autoExpander"><div class="tcell"></div></div>
+				<div id="autoExpander"><div class="cbn-table-cell"></div></div>
 				
 				<!-- The list items will be inserted afterwards -->
 			</iron-list>
@@ -86,18 +90,6 @@ Class name               | Description                   | Default
 	</template>
 
 </dom-module>
-
-<style>
-	/* Utility global styles */
-	
-	/* see http://www.thecssninja.com/javascript/pointer-events-60fps */
-	/*noinspection CssUnusedSymbol*/
-	body.disable-hover,
-	body.disable-hover /deep/ * {
-		pointer-events: none !important;
-	}
-	
-</style>
 
 <script>
 	(function () {
@@ -159,38 +151,47 @@ Class name               | Description                   | Default
 				var template, instance;
 				
 				// fetch the header template 
-				template = Polymer.dom(this).querySelector('template.table-header');
+				template = Polymer.dom(this).querySelector('template.cbn-table-header');
 				if (template) {
 					this.templatize(template);
 					instance = this.stamp({});
 					Polymer.dom(this.$.tableHead).appendChild(instance.root);
+					this._shimStyleScope(this.$.tableHead);
 				} else {
 					this.$.tableHead.style.display = 'none';
 				}
 				
 				// fetch the footer template 
-				template = Polymer.dom(this).querySelector('template.table-footer');
+				template = Polymer.dom(this).querySelector('template.cbn-table-footer');
 				if (template) {
 					this.templatize(template);
 					instance = this.stamp({});
 					Polymer.dom(this.$.tableFoot).appendChild(instance.root);
+					this._shimStyleScope(this.$.tableFoot);
 				} else {
 					this.$.tableFoot.style.display = 'none';
 				}
 				
 				// fetch the main template to use for rendering the table rows
-				template = Polymer.dom(this).querySelector('template:not(.table-header):not(.table-footer)');
+				template = Polymer.dom(this).querySelector('template:not(.cbn-table-header):not(.cbn-table-footer)');
 				Polymer.dom(this).removeChild(template);
 				// and set it for use to iron-list
 				Polymer.dom(this.$.ironList).appendChild(template);
 			},
 			
 			/**
-			 * Enhances the `<form-list>` object.
+			 * Enhances the `<iron-list>` object.
 			 */
 			_enhanceIronList: function() {
 				var table = this;
 				var tableHead = this.$.tableHead;
+				
+				// modify the `iron-list` internal styles
+				var ironListItems = Polymer.dom(this.$.ironList.root).querySelector('#items');
+				ironListItems.style.display = 'table';
+				ironListItems.style.width = '100%';
+				ironListItems.style.borderSpacing = '0px';
+				ironListItems.style.boxSizing = 'border-box';
 				
 				/**
 				 * Override iron-list's method because the algorithm for calculating the table rows' positions is a bit 
@@ -294,10 +295,17 @@ Class name               | Description                   | Default
 				/**
 				 * Called after the list of physical items has been rebuilt.
 				 * Ensures that the #autoExpander object is at the end of the containing object.
+				 * 
+				 * @param {Number} size How many elements to add.
 				 */
-				this.$.ironList._createPool = function () {
+				this.$.ironList._createPool = function (size) {
 					var $super = Object.getPrototypeOf(this);
 					var result = $super._createPool.apply(this, arguments);
+					
+					for (var i=0; i < result.length; i++) {
+						// hack to fix Polymer's shadow style shim
+						table._shimStyleScope(result[i]);
+					}
 					
 					/**
 					 * Detaches and reattaches an element in order to move it at the end of the DOM parent.
@@ -351,6 +359,29 @@ Class name               | Description                   | Default
 					this.$.innerContainer.classList.remove('scroll-bottom');
 				}
 				this.updateStyles();
+			},
+			
+			/**
+			 * Manually applies the style scoping classes used by Polymer's shadow CSS shim to the table rows and cells.
+			 * 
+			 * @param {Element} element The DOM element with the table rows to fix.
+			 */
+			_shimStyleScope: function(element) {
+				if (Polymer.dom == 'shadow') 
+					return; // fix not needed
+				
+				if (element.classList.contains('cbn-table-row')) {
+					element.classList.add('style-scope', 'cbn-table');
+				} else {
+					var row = element.querySelector('.cbn-table-row');
+					if (row) {
+						row.classList.add('style-scope', 'cbn-table');
+					}
+				}
+				var cells = element.querySelectorAll('.cbn-table-cell');
+				for (var i=0; i<cells.length; i++) {
+					cells[i].classList.add('style-scope', 'cbn-table');
+				}
 			}
 			
 		});

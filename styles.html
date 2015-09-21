@@ -1,0 +1,145 @@
+<dom-module id="cbn-table-styles-private"><template><style>
+	
+	:host {
+		display: block;
+		position: relative;
+		background: white;
+		
+		/* Default values for CSS variables: */
+		--cbn-table-background: transparent;
+		--cbn-table-border: 1px solid #E3E3E3;
+		--cbn-table-cell-padding: 0.7em 0.5em;
+		--cbn-table-padding: 0.3em;
+		--cbn-table-head-background: white;
+		--cbn-table-head-border: 1px solid #CCCCCC;
+		--cbn-table-head-shadow: 0 5px 4px -3px rgba(0, 0, 0, 0.25);
+		--cbn-table-foot-background: white;
+		
+		--cbn-table-container: {
+			box-shadow: 0 2px 7px 0 rgba(0, 0, 0, 0.14), 0 2px 5px 0 rgba(0, 0, 0, 0.22);
+		};
+		--cbn-table-cell: {
+			color: #353535;
+			border-left: none; border-right: none;
+		};
+		--cbn-table-header-cell: {
+			font-weight: bold;
+			border-bottom-width: 2px;
+			border-left: none; border-right: none;
+			border-top: none;
+		};
+		--cbn-table-footer-cell: {
+			font-weight: bold;
+			color: #353535;
+			border-left: none; border-right: none;
+		};
+		
+		/* Apply some of the styles to host */
+		background: var(--cbn-table-background);
+		@apply(--cbn-table-container);
+	}
+	
+	#ironList {
+		display: block;
+		position: absolute;
+		top: var(--cbn-table-padding);
+		left: var(--cbn-table-padding);
+		bottom: var(--cbn-table-padding);
+		right: var(--cbn-table-padding);
+		border: none;
+	}
+	
+	/* Rows / cells */
+	
+	.cbn-table-row {
+		display: table-row;
+		position: static !important;
+		@apply(--cbn-table-row);
+	}
+	
+	.cbn-table-cell {
+		display: table-cell;
+		padding: var(--cbn-table-cell-padding);
+		border-top: var(--cbn-table-border);
+		border-right: var(--cbn-table-border);
+		@apply(--cbn-table-cell);
+	}
+	.cbn-table-row:hover .cbn-table-cell {
+		@apply(--cbn-table-cell-hover);
+	}
+	.cbn-table-row.first-row .cbn-table-cell {
+		border-top: none;
+	}
+	.cbn-table-row.last-row .cbn-table-cell {
+		border-top: none;
+	}
+	
+	
+	/* Headers and footers */
+	
+	#tableHead {
+		display: table-header-group;
+		position: static !important;
+		background: var(--cbn-table-head-background);
+		@apply(--cbn-table-header);
+	}
+	#tableHead:after {
+		content: "";
+		height: 10px;
+		margin-top: -10px;
+		display: block;
+		position: absolute;
+		left: 0;
+		right: 0;
+		z-index: -1;
+		box-shadow: var(--cbn-table-head-shadow);
+	}
+	.scroll-top #tableHead:after {
+		box-shadow: none;
+	}
+	#tableHead .cbn-table-cell {
+		@apply(--cbn-table-header-cell);
+	}
+	.scroll-top #tableHead .cbn-table-cell {
+		box-shadow: none;
+		border-bottom: var(--cbn-table-head-border);
+	}
+	
+	#tableFoot {
+		display: table-footer-group;
+		background: var(--cbn-table-foot-background);
+		border-top: var(--cbn-table-border);
+		border-bottom: var(--cbn-table-border);
+		@apply(--cbn-table-footer);
+	}
+	#tableFoot .cbn-table-cell {
+		border-top: var(--cbn-table-border);
+		border-bottom: var(--cbn-table-border);
+		@apply(--cbn-table-footer-cell);
+	}
+	
+	/* Misc */
+	
+	#autoExpander {
+		display: table-row;
+		position: static !important;
+	}
+	#autoExpander .cbn-table-cell {
+		height: 100% !important;
+		border: none !important;
+	}
+	
+</style></template></dom-module>
+
+<style>
+	/* Global styles */
+	
+	/* see http://www.thecssninja.com/javascript/pointer-events-60fps */
+	/*noinspection CssUnusedSymbol*/
+	body.disable-hover,
+	body.disable-hover /deep/ * {
+		pointer-events: none !important;
+	}
+	
+</style>
+
