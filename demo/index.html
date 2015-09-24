@@ -10,11 +10,12 @@
 </head>
 <body>
 
+<template id="t" is="dom-bind">
 <div style="margin: 0 auto; width:700px;">
 	
 	<p><b>Demo:</b></p>
 	
-	<cbn-table style="height: 500px;">
+	<cbn-table style="height: 500px;" items="[[items]]">
 		<template class="cbn-table-header">
 			<div class="cbn-table-row">
 				<div style="width:60px;" class="cbn-table-cell">Index</div>
@@ -26,26 +27,28 @@
 		<template>
 			<div class="cbn-table-row">
 				<div class="cbn-table-cell">{{ index }}</div>
-				<div class="cbn-table-cell">{{ item.label }}</div>
-				<div class="cbn-table-cell">{{ item.label }}</div>
-				<div class="cbn-table-cell">{{ item.yn }}</div>
+				<div class="cbn-table-cell">{{ item.one }}</div>
+				<div class="cbn-table-cell">{{ item.two }}</div>
+				<div class="cbn-table-cell">{{ item.three }}</div>
 			</div>
 		</template>
 	</cbn-table>
 </div>
+</template>
 
 <script>
-	
-	window.addEventListener('WebComponentsReady', function(e) {
-		var table = document.querySelector('cbn-table');
+	window.addEventListener('WebComponentsReady', function() {
+		var t = document.getElementById('t');
+		
 		var rows = [];
 		for (var i=0; i<1000; i++) {
-			rows.push( 
-				{ label: 'asd' + i, yn: 'yes' },
-				{ label: 'iop' + i, yn: 'no' }
+			rows.push(
+				{ one: 'asd' + i, two: 'yes', three: '5' },
+				{ one: 'iop' + i, two: 'no', three: '6' }
 			);
 		}
-		table.rows = rows;
+		
+		t.set('items', rows);
 	});
 	
 </script>

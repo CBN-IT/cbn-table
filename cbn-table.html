@@ -3,7 +3,7 @@ An infinite table component based on `iron-list`.
 
 Example:
 ```
-    <cbn-table style="height: 500px;">
+    <cbn-table style="height: 500px;" items="[[items]]">
     	<template class="cbn-table-header">
 			<div style="display: table-header-group;">
 				<div class="cbn-table-row">
@@ -72,7 +72,7 @@ Class name               | Description                   | Default
 		
 		<div id="innerContainer">
 			<!-- the iron-list::shadow > #items element, which hosts the content, has 'display: table' -->
-			<iron-list id="ironList" items="{{ rows }}">
+			<iron-list id="ironList" items="{{_items}}">
 				<!-- Header and footer containers -->
 				<div id="tableHead" style="position: relative;"></div>
 				<div id="tableFoot"></div>
@@ -100,9 +100,23 @@ Class name               | Description                   | Default
 			properties: {
 				
 				/**
-				 * An array with the table rows to render.
+				 * An array with the table items to render.
 				 */
-				rows: {
+				items: {
+					type: Array,
+					value: function() { return []; },
+					observer: '_itemsChanged'
+				},
+				
+				_initialized: {
+					type: Boolean,
+					value: false
+				},
+				
+				/**
+				 * The effective items.
+				 */
+				_items: {
 					type: Array
 				}
 				
@@ -113,6 +127,25 @@ Class name               | Description                   | Default
 				Polymer.IronResizableBehavior
 			],
 			
+			/**
+			 * Reference to the template to use for iron-list.
+			 * @type {HTMLTemplateElement}
+			 */
+			_itemTemplate: null,
+			
+			/**
+			 * The table header instance (if provided).
+			 * @type {Element}
+			 */
+			_footInstance: null,
+			
+			/**
+			 * The table footer instance (if provided).
+			 * @type {Element}
+			 */
+			_headInstance: null,
+			
+			
 			/** @namespace this.$.ironList */
 			/** @namespace this.$.tableHead */
 			/** @namespace this.$.tableFoot */
@@ -122,6 +155,8 @@ Class name               | Description                   | Default
 			ready: function () {
 				this._initializeTemplates();
 				this._enhanceIronList();
+				this._initialized = true;
+				this.set('_items', this.items);
 			},
 			
 			attached: function () {
@@ -143,6 +178,13 @@ Class name               | Description                   | Default
 				this._scrollHandler(this.$.ironList.scrollTop);
 			},
 			
+			_itemsChanged: function(items) {
+				if (!items) return;
+				if (this._initialized) {
+					this.set('_items', items);
+				}
+			},
+			
 			/**
 			 * Initializes the templates given to render the table.
 			 * @private
@@ -156,7 +198,8 @@ Class name               | Description                   | Default
 					this.templatize(template);
 					instance = this.stamp({});
 					Polymer.dom(this.$.tableHead).appendChild(instance.root);
-					this._shimStyleScope(this.$.tableHead);
+					this._headInstance = this.$.tableHead.querySelector('*');
+					this._shimStyleScope(this._headInstance);
 				} else {
 					this.$.tableHead.style.display = 'none';
 				}
@@ -167,16 +210,24 @@ Class name               | Description                   | Default
 					this.templatize(template);
 					instance = this.stamp({});
 					Polymer.dom(this.$.tableFoot).appendChild(instance.root);
-					this._shimStyleScope(this.$.tableFoot);
+					this.footInstance = this.$.tableFoot.querySelector('*');
+					this._shimStyleScope(this.footInstance);
 				} else {
 					this.$.tableFoot.style.display = 'none';
 				}
 				
 				// fetch the main template to use for rendering the table rows
-				template = Polymer.dom(this).querySelector('template:not(.cbn-table-header):not(.cbn-table-footer)');
-				Polymer.dom(this).removeChild(template);
-				// and set it for use to iron-list
-				Polymer.dom(this.$.ironList).appendChild(template);
+				this._itemTemplate = Polymer.dom(this).querySelector('template:not(.cbn-table-header):not(.cbn-table-footer)');
+				
+				// fix Templatizer parent properties issue
+				this.async(function() {
+					if (this._headInstance) {
+						this._fixTemplatizerInstance(this._headInstance._templateInstance);
+					}
+					if (this._footInstance) {
+						this._fixTemplatizerInstance(this._footInstance._templateInstance);
+					}
+				});
 			},
 			
 			/**
@@ -192,6 +243,29 @@ Class name               | Description                   | Default
 				ironListItems.style.width = '100%';
 				ironListItems.style.borderSpacing = '0px';
 				ironListItems.style.boxSizing = 'border-box';
+				
+				/**
+				 * Iron-list uses this method to search for the template inside its light dom.
+				 * Override to point to our local template.
+				 */
+				this.$.ironList._ensureTemplatized = function () {
+					if (!this.ctor) {
+						var props = {};
+						props.__key__ = true;
+						props[this.as] = true;
+						props[this.indexAs] = true;
+						props[this.selectedAs] = true;
+						this._instanceProps = props;
+						this._userTemplate = table._itemTemplate;
+						if (this._userTemplate) {
+							// use the data host of our host ;) 
+							this.dataHost = table.dataHost;
+							this.templatize(this._userTemplate);
+						} else {
+							console.warn('iron-list requires a template to be provided in light-dom');
+						}
+					}
+				},
 				
 				/**
 				 * Override iron-list's method because the algorithm for calculating the table rows' positions is a bit 
@@ -302,10 +376,21 @@ Class name               | Description                   | Default
 					var $super = Object.getPrototypeOf(this);
 					var result = $super._createPool.apply(this, arguments);
 					
-					for (var i=0; i < result.length; i++) {
+					result.forEach(function(item){
 						// hack to fix Polymer's shadow style shim
-						table._shimStyleScope(result[i]);
-					}
+						item.addEventListener('dom-change', function(event) {
+							table._shimStyleScope(event.currentTarget);
+						});
+						
+						// hack to fix Templatizer not initializing parent properties
+						table._fixTemplatizerInstance(item._templateInstance);
+					}, this);
+					// also apply the CSS scoping hack after the elements are created
+					this.async(function(){
+						result.forEach(function(item) {
+							table._shimStyleScope(item);
+						}, this);
+					});
 					
 					/**
 					 * Detaches and reattaches an element in order to move it at the end of the DOM parent.
@@ -362,6 +447,34 @@ Class name               | Description                   | Default
 			},
 			
 			/**
+			 * Extension point from Templatizer.
+			 * Called as side-effect of a host property change, responsible for notifying parent path changes on local 
+			 * templates.
+			 */
+			_forwardParentProp: function (prop, value) {
+				if (this._headInstance) {
+					this._headInstance._templateInstance[prop] = value;
+				}
+				if (this._footInstance) {
+					this._footInstance._templateInstance[prop] = value;
+				}
+			},
+			
+			/**
+			 * Extension point from Templatizer.
+			 * Called as side-effect of a host path change, responsible for notifying `parent.<path>` changes on local 
+			 * templates.
+			 */
+			_forwardParentPath: function (path, value) {
+				if (this._headInstance) {
+					this._headInstance._templateInstance.notifyPath(path, value, true);
+				}
+				if (this._footInstance) {
+					this._footInstance._templateInstance.notifyPath(path, value, true);
+				}
+			},
+			
+			/**
 			 * Manually applies the style scoping classes used by Polymer's shadow CSS shim to the table rows and cells.
 			 * 
 			 * @param {Element} element The DOM element with the table rows to fix.
@@ -378,9 +491,23 @@ Class name               | Description                   | Default
 						row.classList.add('style-scope', 'cbn-table');
 					}
 				}
-				var cells = element.querySelectorAll('.cbn-table-cell');
+				var cells = Polymer.dom(element).querySelectorAll('.cbn-table-cell');
 				for (var i=0; i<cells.length; i++) {
 					cells[i].classList.add('style-scope', 'cbn-table');
+				}
+			},
+			
+			/**
+			 * Fixes an element instantiated via Templatizer. 
+			 * Notifies it of the parent properties' initial values.
+			 * 
+			 * @param templateInstance The template instance of the elements stamped using Templatizer.
+			 * @private
+			 */
+			_fixTemplatizerInstance: function(templateInstance) {
+				for (var j in templateInstance._parentProps) {
+					if (!templateInstance._parentProps.hasOwnProperty(j)) continue;
+					templateInstance._notifyPath(j, templateInstance._rootDataHost[j]);
 				}
 			}
 			
