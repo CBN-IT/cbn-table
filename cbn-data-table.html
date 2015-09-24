@@ -1,0 +1,147 @@
+<!--
+An infinite table component based on `iron-list`.
+
+Example:
+```
+    <cbn-data-table style="height: 500px;" items="[[items]]" columns="[[columns]]">
+    </cbn-table>
+```
+
+**Note**: like `iron-list`, the element needs to be explicitly sized!
+
+<br />
+### Styling
+
+See `cbn-table` for information about styling the element.
+
+@group CBN Elements
+@element cbn-data-table
+@demo demo/index.html
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<link rel="import" href="cbn-table.html" />
+
+<dom-module id="cbn-data-table">
+	<template>
+		<style>
+			:host {
+				display: block;
+				position: relative;
+			}
+			#table {
+				position: absolute;
+				top: 0; left: 0;
+				bottom: 0; right: 0;
+			}
+		</style>
+		
+		<content select=".before"></content>
+		
+		<cbn-table id="table" items="[[items]]">
+			<template class="cbn-table-header">
+				<div class="cbn-table-row">
+					<template is="dom-repeat" items="[[_columns]]"
+							  as="column" index-as="column_index">
+						<div class="cbn-table-cell">
+							<span class="cell-contents">[[column.caption]]</span>
+						</div>
+					</template>
+				</div>
+			</template>
+			
+			<template>
+				<div class="cbn-table-row">
+					<template is="dom-repeat" items="[[_columns]]" 
+							  as="column" index-as="column_index">
+						<div class="cbn-table-cell">
+							<span class="cell-contents">{{ _itemContents(item, column) }}</span>
+						</div>
+					</template>
+				</div>
+			</template>
+		</cbn-table>
+		
+		<content></content>
+	</template>
+
+</dom-module>
+
+<script>
+	(function () {
+		
+		Polymer({
+			is: 'cbn-data-table',
+			
+			properties: {
+				
+				/**
+				 * An array with the table rows to display.
+				 */
+				items: {
+					type: Array,
+					value: function() { return []; }
+				},
+				
+				/**
+				 * An array with the table's columns.
+				 */
+				columns: {
+					type: Array,
+					value: function() { return []; },
+					observer: '_columnsChanged'
+				},
+				
+				// Private properties
+				
+				/**
+				 * The internal representation of the columns.
+				 */
+				_columns: {
+					type: Array,
+					value: function() { return []; }
+				}
+				
+			},
+			
+			behaviors: [
+				Polymer.Templatizer
+			],
+			
+			// Element Lifecycle
+			
+			ready: function () {
+				
+			},
+			
+			/**
+			 * Called when the `columns` property is changed.
+			 */
+			_columnsChanged: function() {
+				if (!this.columns) return;
+				this.set('_columns', []);
+				for (var i=0; i<this.columns.length; i++) {
+					this.push('_columns', this.columns[i]);
+				}
+			},
+			
+			/**
+			 * Returns the cell's contents.
+			 * 
+			 * @param {Object} item The item to print.
+			 * @param {Object} column Column's descriptor.
+			 * @return {String} The text content of the cell.
+			 */
+			_itemContents: function(item, column) {
+				return item[column.name];
+			}
+			
+		});
+		
+		Polymer({
+			is: 'cbn-data-table-cell'
+		});
+		
+	})();
+</script>
