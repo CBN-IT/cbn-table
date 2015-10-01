@@ -34,6 +34,7 @@ See `cbn-table` for information about styling the element.
 				position: absolute;
 				top: 0; left: 0;
 				bottom: 0; right: 0;
+				z-index: 1;
 			}
 		</style>
 		
@@ -151,6 +152,7 @@ See `cbn-table` for information about styling the element.
 			 */
 			_columnsChanged: function() {
 				if (!this.columns) return;
+				
 				this.set('_columns', []);
 				this._pendingTemplates = [];
 				
@@ -196,6 +198,7 @@ See `cbn-table` for information about styling the element.
 				if (existing) {
 					existing.parentNode.removeChild(existing);
 				}
+				
 				if (this.optimizeTemplate) {
 					// [re]generate the item template
 					this.$.table._itemTemplate = this._generateOptimizedItemTemplate();
@@ -251,10 +254,12 @@ See `cbn-table` for information about styling the element.
 				return tpl;
 			}
 			
+			// UI / computation methods
+			
 		});
 		
 		/**
-		 * An element used for rendering table cell contents.
+		 * A separate element used for rendering table cell contents (with configurable types and styles).
 		 */
 		Polymer({
 			is: 'cbn-data-table-cell', 
@@ -286,8 +291,7 @@ See `cbn-table` for information about styling the element.
 				 * The current item object.
 				 */
 				item: {
-					type: Object,
-					observer: '_updateContents'
+					type: Object
 				},
 				
 				/**
@@ -322,6 +326,10 @@ See `cbn-table` for information about styling the element.
 				}
 				
 			},
+			
+			observers: [
+				"_updateContents(item.*)"
+			],
 			
 			behaviors: [
 				Polymer.Templatizer
@@ -360,7 +368,7 @@ See `cbn-table` for information about styling the element.
 			/**
 			 * Updates this cell's contents.
 			 */
-			_updateContents: function() {
+			_updateContents: function(changes) {
 				if (!this._isReady) return;
 				if (!this.column || !this.item) return;
 				

@@ -131,6 +131,12 @@ Class name               | Description                   | Default
 					observer: '_itemTemplateChanged'
 				}
 				
+				/**
+				 * Called when the table has finished re-rendering.
+				 * 
+				 * @event cbn-table-rendered
+				 */
+				
 			},
 			
 			behaviors: [
@@ -193,6 +199,9 @@ Class name               | Description                   | Default
 			_itemsChanged: function(items) {
 				if (!items) return;
 				if (this._initialized) {
+					if (!this._boundPaths || !this._boundPaths['items']) {
+						this.linkPaths('items', '_items');
+					}
 					this.set('_items', items);
 				}
 			},
@@ -416,6 +425,18 @@ Class name               | Description                   | Default
 					
 					table.$.ironList._refresh();
 				});
+				
+				/**
+				 * Captures the render call to emit the `cbn-table-rendered` event.
+				 */
+				this.$.ironList._render = function() {
+					var $super = Object.getPrototypeOf(this);
+					var result = $super._render.apply(this, arguments);
+					
+					this.fire('cbn-table-rendered');
+					
+					return result;
+				};
 				
 				/**
 				 * Called after the list of physical items has been rebuilt.
