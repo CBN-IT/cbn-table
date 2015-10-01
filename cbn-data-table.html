@@ -45,23 +45,24 @@ See `cbn-table` for information about styling the element.
 					<template is="dom-repeat" items="[[_columns]]"
 							  as="column" index-as="column_index">
 						<div class="cbn-table-cell">
-							<span class="cell-contents">[[column.caption]]</span>
-						</div>
-					</template>
-				</div>
-			</template>
-			
-			<template>
-				<div class="cbn-table-row">
-					<template is="dom-repeat" items="[[_columns]]" 
-							  as="column" index-as="column_index">
-						<div class="cbn-table-cell">
-							<span class="cell-contents">{{ _itemContents(item, column) }}</span>
+							<span class="cell-contents">[[column.obj.caption]]</span>
 						</div>
 					</template>
 				</div>
 			</template>
 		</cbn-table>
+		
+		<template id="itemTemplate">
+			<div class="cbn-table-row">
+				<template is="dom-repeat" items="[[_columns]]" 
+						  as="column" index-as="column_index">
+					<div class="cbn-table-cell">
+						<cbn-data-table-cell column="[[column.obj]]" template="[[column.template]]" item="[[item]]" 
+											 index="[[column_index]]"></cbn-data-table-cell>
+					</div>
+				</template>
+			</div>
+		</template>
 		
 		<content></content>
 	</template>
@@ -93,6 +94,14 @@ See `cbn-table` for information about styling the element.
 					observer: '_columnsChanged'
 				},
 				
+				/**
+				 * If set, the table row template will be optimized.
+				 */
+				optimizeTemplate: {
+					type: Boolean,
+					value: true
+				},
+				
 				// Private properties
 				
 				/**
@@ -101,6 +110,14 @@ See `cbn-table` for information about styling the element.
 				_columns: {
 					type: Array,
 					value: function() { return []; }
+				},
+				
+				/**
+				 * Whether the table's light DOM is ready.
+				 */
+				_isDomReady: {
+					type: Boolean,
+					value: false
 				}
 				
 			},
@@ -109,10 +126,24 @@ See `cbn-table` for information about styling the element.
 				Polymer.Templatizer
 			],
 			
+			/**
+			 * Stores the cell templates that needs to be resolved when the element is attached to the document.
+			 */
+			_pendingTemplates: [],
+			
 			// Element Lifecycle
 			
 			ready: function () {
-				
+			},
+			
+			attached: function() {
+				this.async(function () {
+					this._isDomReady = true;
+					this._pendingTemplates.forEach(function(colDesc) {
+						this._findColumnTemplate(colDesc);
+					}, this);
+					this._pendingTemplates = [];
+				});
 			},
 			
 			/**
@@ -121,26 +152,240 @@ See `cbn-table` for information about styling the element.
 			_columnsChanged: function() {
 				if (!this.columns) return;
 				this.set('_columns', []);
+				this._pendingTemplates = [];
+				
 				for (var i=0; i<this.columns.length; i++) {
-					this.push('_columns', this.columns[i]);
+					var colDesc = {
+						index: i,
+						obj: this.columns[i]
+					};
+					this.push('_columns', colDesc);
+					
+					if (this.columns[i].type == 'template') {
+						if (this._isDomReady) {
+							this._findColumnTemplate(colDesc);
+						} else {
+							this._pendingTemplates.push(colDesc);
+						}
+					}
+				}
+				
+				this._initItemTemplate();
+			},
+			
+			
+			/**
+			 * Fills the content template of a table column. 
+			 * To be called only after the element is attached (so its light dom is accessible).
+			 * 
+			 * @param {Object} colDesc The column descriptor object.
+			 */
+			_findColumnTemplate: function(colDesc) {
+				var template = Polymer.dom(this).querySelector(colDesc.obj.template);
+				if (template) {
+					this.set('_columns.' + colDesc.index + '.template', template);
 				}
 			},
 			
 			/**
-			 * Returns the cell's contents.
-			 * 
-			 * @param {Object} item The item to print.
-			 * @param {Object} column Column's descriptor.
-			 * @return {String} The text content of the cell.
+			 * Initializes the element's item template.
 			 */
-			_itemContents: function(item, column) {
-				return item[column.name];
+			_initItemTemplate: function() {
+				// cleanup
+				var existing = Polymer.dom(this.$.table).querySelector('template.template-container');
+				if (existing) {
+					existing.parentNode.removeChild(existing);
+				}
+				if (this.optimizeTemplate) {
+					// [re]generate the item template
+					this.$.table._itemTemplate = this._generateOptimizedItemTemplate();
+					
+				} else {
+					//noinspection JSUnresolvedVariable
+					this.$.table._itemTemplate = this.$.itemTemplate;
+				}
+			},
+			
+			/**
+			 * Generates an optimized table row template (to minimize rendering overhead).
+			 * 
+			 * @return {Element} The generated template.
+			 */
+			_generateOptimizedItemTemplate: function() {
+				var tpl = document.createElement('template');
+				tpl.classList.add('item-template');
+				var content = '<div class="cbn-table-row">';
+				this._columns.forEach(function(column, idx) {
+					content += '<div class="cbn-table-cell">' +
+							'	<cbn-data-table-cell column="[[_columns.' +idx+ '.obj]]" template="[[_columns.' +idx+ '.template]]" ' +
+							'		item="[[item]]" index="' + idx + '"></cbn-data-table-cell>' +
+							'</div>';
+				});
+				content += '</div>';
+				tpl.innerHTML = content;
+				
+				// Initialize the template's annotations (see Polymer/standard/annotations.html)
+				Polymer.dom(this.root).appendChild(tpl);
+				Polymer.dom.flush();
+				
+				var notes = [];
+				Polymer.Annotations.prepElement = this._prepElement.bind(this);
+				Polymer.Annotations._parseTemplate(tpl, Array.prototype.indexOf.call(this.root._lightChildren, tpl), 
+					notes, { bindings: [], events: [] } // root parent
+				);
+				Polymer.Annotations.prepElement = null;
+				
+				var noteOffset = this._notes.length;
+				Array.prototype.push.apply(this._notes, notes);
+				this._processAnnotations(notes);
+				
+				notes.forEach(function(note, idx) {
+					idx = idx + noteOffset;
+					// marshall nodes
+					if (note.templateContent) {
+						this._nodes[idx] = tpl;
+						this._nodes[idx]._content = note.templateContent;
+					}
+				}, this);
+				
+				return tpl;
 			}
 			
 		});
 		
+		/**
+		 * An element used for rendering table cell contents.
+		 */
 		Polymer({
-			is: 'cbn-data-table-cell'
+			is: 'cbn-data-table-cell', 
+			
+			properties: {
+				
+				/**
+				 * The type of the cell's contents.
+				 * 
+				 * Pre-defined types: 
+				 * - 'text': renders the content as plain text;
+				 * - 'html': uses `innerHTML` to set the cell's contents as HTML; unsecure, use with care!
+				 * - 'template': the content is a model object for a Polymer template (secure alternative for html).
+				 */
+				type: {
+					type: String,
+					value: ''
+				},
+				
+				/**
+				 * The column's object.
+				 */
+				column: {
+					type: Object,
+					observer: '_initContents'
+				},
+				
+				/**
+				 * The current item object.
+				 */
+				item: {
+					type: Object,
+					observer: '_updateContents'
+				},
+				
+				/**
+				 * The resolved template element associated with the current column.
+				 */
+				template: {
+					type: Object,
+					observer: '_initContents'
+				},
+				
+				/**
+				 * The numerical column index of the current cell.
+				 */
+				index: {
+					type: String,
+					value: ''
+				},
+				
+				/**
+				 * Whether the item is ready.
+				 */
+				_isReady: {
+					type: Boolean,
+					value: false
+				},
+				
+				/**
+				 * Stores the cell's template instance.
+				 */
+				_instance: {
+					type: Object
+				}
+				
+			},
+			
+			behaviors: [
+				Polymer.Templatizer
+			],
+			
+			ready: function() {
+				this.style.display = 'block';
+				this._isReady = true;
+				this._initContents();
+			},
+			
+			/**
+			 * [Re]Initializes this cell when its column descriptor changes.
+			 */
+			_initContents: function() {
+				if (!this._isReady) return;
+				Polymer.dom(this.root).innerHTML = '';
+				if (!this.column) return;
+				
+				if (!this.type) {
+					this.type = this.column.type;
+				}
+				
+				switch (this.type) {
+					case 'template':
+						if (!this.template) return;
+						this.templatize(this.template);
+						this._instance = this.stamp({ item: this.item });
+						Polymer.dom(this.root).appendChild(this._instance.root);
+						break;
+				}
+				
+				this._updateContents();
+			},
+			
+			/**
+			 * Updates this cell's contents.
+			 */
+			_updateContents: function() {
+				if (!this._isReady) return;
+				if (!this.column || !this.item) return;
+				
+				switch (this.type) {
+					case 'text':
+						Polymer.dom(this.root).textContent = this._contents;
+						break;
+					case 'html':
+						Polymer.dom(this.root).innerHTML = this._contents;
+						break;
+					case 'template':
+						if (!this._instance) return;
+						this._instance.item = this.item;
+						break;
+				}
+			},
+			
+			/**
+			 * Returns the current cell's contents.
+			 * @return {String} The value of the current cell.
+			 */
+			get _contents() {
+				return this.item[this.column.name];
+			}
+			
 		});
 		
 	})();

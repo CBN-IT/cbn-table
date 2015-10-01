@@ -78,7 +78,7 @@ Class name               | Description                   | Default
 				<div id="tableFoot"></div>
 				
 				<!-- An empty row with height: 100% that will take the rest of the unused vertical space inside the table -->
-				<div id="autoExpander"><div class="cbn-table-cell"></div></div>
+				<div id="autoExpander"></div>
 				
 				<!-- The list items will be inserted afterwards -->
 			</iron-list>
@@ -118,6 +118,17 @@ Class name               | Description                   | Default
 				 */
 				_items: {
 					type: Array
+				},
+				
+				/**
+				 * The template to use for iron-list.
+				 * 
+				 * Can also be modified after the `iron-list` initializes (replaces the current items template and 
+				 * re-initializes the whole element).
+				 */
+				_itemTemplate: {
+					type: Object,
+					observer: '_itemTemplateChanged'
 				}
 				
 			},
@@ -126,12 +137,6 @@ Class name               | Description                   | Default
 				Polymer.Templatizer,
 				Polymer.IronResizableBehavior
 			],
-			
-			/**
-			 * Reference to the template to use for iron-list.
-			 * @type {HTMLTemplateElement}
-			 */
-			_itemTemplate: null,
 			
 			/**
 			 * The table header instance (if provided).
@@ -153,10 +158,12 @@ Class name               | Description                   | Default
 			// Element Lifecycle
 			
 			ready: function () {
-				this._initializeTemplates();
 				this._enhanceIronList();
+				this._initializeTemplates();
 				this._initialized = true;
-				this.set('_items', this.items);
+				if (this._itemTemplate) {
+					this.set('_items', this.items);
+				}
 			},
 			
 			attached: function () {
@@ -178,6 +185,11 @@ Class name               | Description                   | Default
 				this._scrollHandler(this.$.ironList.scrollTop);
 			},
 			
+			
+			/**
+			 * Observer for the `items` property.
+			 * @param {Array} items The newly set items array.
+			 */
 			_itemsChanged: function(items) {
 				if (!items) return;
 				if (this._initialized) {
@@ -217,7 +229,10 @@ Class name               | Description                   | Default
 				}
 				
 				// fetch the main template to use for rendering the table rows
-				this._itemTemplate = Polymer.dom(this).querySelector('template:not(.cbn-table-header):not(.cbn-table-footer)');
+				var itemTemplate = Polymer.dom(this).querySelector('template:not(.cbn-table-header):not(.cbn-table-footer)');
+				if (itemTemplate) {
+					this._itemTemplate = itemTemplate;
+				}
 				
 				// fix Templatizer parent properties issue
 				this.async(function() {
@@ -228,6 +243,24 @@ Class name               | Description                   | Default
 						this._fixTemplatizerInstance(this._footInstance._templateInstance);
 					}
 				});
+			},
+			
+			/**
+			 * Changes the `iron-list`'s internal item template.
+			 */
+			_itemTemplateChanged: function() {
+				if (!this._itemTemplate) return;
+				
+				if (!this.$.ironList.ctor) {
+					// iron-list not initialized yet, nothing to do
+					return;
+				}
+				this.$.ironList.resetPhysicalItems();
+				if (this._initialized) {
+					var oldItems = this.$.ironList.items;
+					this.$.ironList.items = [];
+					this.$.ironList.items = oldItems;
+				}
 			},
 			
 			/**
@@ -265,7 +298,25 @@ Class name               | Description                   | Default
 							console.warn('iron-list requires a template to be provided in light-dom');
 						}
 					}
-				},
+				};
+				
+				/**
+				 * Auguments the iron-list with an utility function that resets (i.e. clears) its physical items.
+				 * Useful to replace the list's template and then re-render all items.
+				 */
+				this.$.ironList.resetPhysicalItems = function() {
+					this._physicalItems.forEach(function(item) {
+						item.parentNode.removeChild(item);
+					});
+					this._resetAverage();
+					this._physicalItems = null;
+					this._physicalSizes = null;
+					this._physicalCount = 0;
+					this._physicalStart = 0;
+					this._physicalEnd = 0;
+					this._physicalSize = 0;
+					this.ctor = null;
+				};
 				
 				/**
 				 * Override iron-list's method because the algorithm for calculating the table rows' positions is a bit 
@@ -334,16 +385,16 @@ Class name               | Description                   | Default
 				 */
 				this.$.ironList._refresh = function () {
 					/* see http://www.thecssninja.com/javascript/pointer-events-60fps */
-					var body = document.querySelector('body');
+					/*var body = document.querySelector('body');
 					if (!body.classList.contains('disable-hover')) {
 						body.classList.add('disable-hover');
-					}
+					}*/
 					
 					table._scrollHandler(this._scroller.scrollTop);
 					
-					this.debounce('pointer-events', function() {
+					/*this.debounce('pointer-events', function() {
 						body.classList.remove('disable-hover');
-					}, 0);
+					}, 0);*/
 					
 					var $super = Object.getPrototypeOf(this);
 					$super._refresh.apply(this, arguments); // call the original
@@ -357,10 +408,10 @@ Class name               | Description                   | Default
 					table.$.ironList.scrollTop = Math.min(this._scroller.scrollHeight - this._viewportSize, 
 						Math.max(0, e.deltaY + table._scrollTop));
 					
-					var body = document.querySelector('body');
+					/*var body = document.querySelector('body');
 					if (!body.classList.contains('disable-hover')) {
 						body.classList.add('disable-hover');
-					}
+					}*/
 					e.preventDefault();
 					
 					table.$.ironList._refresh();

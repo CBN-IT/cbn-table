@@ -122,6 +122,7 @@
 	
 	#autoExpander {
 		display: table-row;
+		height: 100% !important;
 		position: static !important;
 	}
 	#autoExpander .cbn-table-cell {
@@ -137,7 +138,7 @@
 	/* see http://www.thecssninja.com/javascript/pointer-events-60fps */
 	/*noinspection CssUnusedSymbol*/
 	body.disable-hover,
-	body.disable-hover /deep/ * {
+	body.disable-hover * {
 		pointer-events: none !important;
 	}
 	

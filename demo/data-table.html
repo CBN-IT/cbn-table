@@ -7,17 +7,27 @@
 	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 	
 	<link rel="import" href="../../polymer/polymer.html">
+	<link rel="import" href="../../iron-icons/iron-icons.html">
+	<link rel="import" href="../../paper-button/paper-button.html">
+	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 	<link rel="import" href="../cbn-data-table.html">
 	
 </head>
 <body>
 
 <template id="t" is="dom-bind">
-	<div style="margin: 0 auto; width:700px;">
+	<div style="margin: 0 auto; width:1000px;">
 		
 		<p><b>Data Table Demo:</b></p>
 		
-		<cbn-data-table style="height: 500px;" items="[[items]]" columns="[[columns]]"></cbn-data-table>
+		<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]">
+			
+			<template id="buttons">
+				<paper-button>[[item.one]]</paper-button>
+				<paper-icon-button icon="icons:close">Y</paper-icon-button>
+			</template>
+			
+		</cbn-data-table>
 		
 	</div>
 </template>
@@ -27,8 +37,11 @@
 		var rows = [];
 		for (var i=0; i<1000; i++) {
 			rows.push(
-				{ one: 'asd' + i, two: 'yes', three: '5' },
-				{ one: 'iop' + i, two: '', three: '6' }
+				{ one: 'asd' + i, two: 'yes', three: '5', one2: 'asd' + i, two2: 'yes', three2: '5',
+					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes', three4: '5'
+				},
+				{ one: 'iop' + i, two: '', three: '6', one2: 'iop' + i, two2: '', three2: '6',
+					one3: 'iop' + i, two3: '', three3: '6', one4: 'iop' + i, two4: '', three4: '6'}
 			);
 		}
 		
@@ -36,18 +49,69 @@
 		t.set('columns', [
 			{
 				name: 'one',
-				type: 'string',
+				type: 'text',
 				caption: 'One'
 			},
 			{
 				name: 'two',
-				type: 'string',
+				type: 'text',
 				caption: 'Three'
 			},
 			{
 				name: 'three',
-				type: 'string',
+				type: 'text',
 				caption: 'Three'
+			},
+			{
+				name: 'one2',
+				type: 'text',
+				caption: 'One'
+			},
+			{
+				name: 'two2',
+				type: 'text',
+				caption: 'Three'
+			},
+			{
+				name: 'three2',
+				type: 'text',
+				caption: 'Three'
+			}, 
+			{
+				name: 'one3',
+				type: 'text',
+				caption: 'One'
+			},
+			{
+				name: 'two3',
+				type: 'text',
+				caption: 'Three'
+			},
+			{
+				name: 'three3',
+				type: 'text',
+				caption: 'Three'
+			},
+			{
+				name: 'one4',
+				type: 'text',
+				caption: 'One'
+			},
+			{
+				name: 'two4',
+				type: 'text',
+				caption: 'Three'
+			},
+			{
+				name: 'three4',
+				type: 'text',
+				caption: 'Three'
+			},
+			{
+				name: 'buttons',
+				type: 'template',
+				caption: 'Buttons',
+				template: '#buttons'
 			}
 		]);
 	});
