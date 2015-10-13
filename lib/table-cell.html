@@ -1,0 +1,154 @@
+<script>
+	(function() {
+		
+		/**
+		 * A separate element used for rendering table cell contents (with configurable types and styles).
+		 */
+		Polymer({
+			is: 'cbn-data-table-cell',
+			
+			properties: {
+				
+				/**
+				 * The type of the cell's contents.
+				 *
+				 * Pre-defined types:
+				 * - 'text': renders the content as plain text;
+				 * - 'html': uses `innerHTML` to set the cell's contents as HTML; unsecure, use with care!
+				 * - 'template': the content is a model object for a Polymer template (secure alternative for html).
+				 */
+				type: {
+					type: String,
+					value: ''
+				},
+				
+				/**
+				 * Reference to the cell's parent table.
+				 */
+				parentTable: {
+					type: Object
+				},
+				
+				/**
+				 * The column's object.
+				 */
+				column: {
+					type: Object,
+					observer: '_initContents'
+				},
+				
+				/**
+				 * The current item object.
+				 */
+				item: {
+					type: Object
+				},
+				
+				/**
+				 * The resolved template element associated with the current column.
+				 */
+				template: {
+					type: Object,
+					observer: '_initContents'
+				},
+				
+				/**
+				 * The numerical column index of the current cell.
+				 */
+				index: {
+					type: String,
+					value: ''
+				},
+				
+				/**
+				 * Whether the item is ready.
+				 */
+				_isReady: {
+					type: Boolean,
+					value: false
+				},
+				
+				/**
+				 * Stores the cell's template instance.
+				 */
+				_instance: {
+					type: Object
+				}
+				
+			},
+			
+			observers: [
+				"_updateContents(item.*)"
+			],
+			
+			behaviors: [
+				Polymer.Templatizer
+			],
+			
+			ready: function () {
+				this.style.display = 'block';
+				this._isReady = true;
+				this._initContents();
+			},
+			
+			/**
+			 * [Re]Initializes this cell when its column descriptor changes.
+			 */
+			_initContents: function () {
+				if (!this._isReady) return;
+				Polymer.dom(this.root).innerHTML = '';
+				if (!this.column) return;
+				
+				if (!this.type) {
+					this.type = this.column.renderAs;
+				}
+				
+				switch (this.type) {
+					case 'template':
+						if (!this.template) return;
+						this.templatize(this.template);
+						this._instance = this.stamp({item: this.item});
+						Polymer.dom(this.root).appendChild(this._instance.root);
+						break;
+				}
+				
+				this._updateContents();
+			},
+			
+			/**
+			 * Updates this cell's contents.
+			 */
+			_updateContents: function () {
+				if (!this._isReady) return;
+				if (!this.column || !this.item) return;
+				
+				switch (this.type) {
+					case 'text':
+						Polymer.dom(this.root).textContent = this._contents;
+						break;
+					case 'html':
+						Polymer.dom(this.root).innerHTML = this._contents;
+						break;
+					case 'template':
+						if (!this._instance) return;
+						this._instance.item = this.item;
+						break;
+				}
+			},
+			
+			/**
+			 * Returns the current cell's display value.
+			 *
+			 * @return {String} The display value of the current cell.
+			 */
+			get _contents() {
+				var meta = this.parentTable.getItemMeta(this.item);
+				if (!meta.display[this.column.name])
+					return this.item[this.column.name];
+				return meta.display[this.column.name];
+			}
+			
+		});
+		
+	})();
+</script>

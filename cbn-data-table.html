@@ -9,6 +9,8 @@ Example:
 
 **Note**: like `iron-list`, the element needs to be explicitly sized!
 
+See [docs/data-table.md](data table documentation) for a detailed usage description.
+
 <br />
 ### Styling
 
@@ -20,7 +22,9 @@ See `cbn-table` for information about styling the element.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-input/iron-input.html">
 
+<link rel="import" href="lib/include.html" />
 <link rel="import" href="cbn-table.html" />
 
 <dom-module id="cbn-data-table">
@@ -40,13 +44,20 @@ See `cbn-table` for information about styling the element.
 		
 		<content select=".before"></content>
 		
-		<cbn-table id="table" items="[[items]]">
+		<cbn-table id="table" items="{{_filteredItems}}">
 			<template class="cbn-table-header">
 				<div class="cbn-table-row">
-					<template is="dom-repeat" items="[[_columns]]"
-							  as="column" index-as="column_index">
-						<div class="cbn-table-cell">
-							<span class="cell-contents">[[column.obj.caption]]</span>
+					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
+						<div class="cbn-table-cell cbn-table-column">
+							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*)]]"
+								on-tap="_columnClicked">[[column.obj.caption]]</div>
+							
+							<template is="dom-if" if="[[ column.obj.filter ]]">
+								<div class="cbn-table cbn-table-filter-container">
+									<input is="iron-input" class="cbn-table cbn-table-input" title="Filter"
+										   bind-value="{{column.currentFilter}}" />
+								</div>
+							</template>
 						</div>
 					</template>
 				</div>
@@ -58,7 +69,7 @@ See `cbn-table` for information about styling the element.
 				<template is="dom-repeat" items="[[_columns]]" 
 						  as="column" index-as="column_index">
 					<div class="cbn-table-cell">
-						<cbn-data-table-cell column="[[column.obj]]" template="[[column.template]]" item="[[item]]" 
+						<cbn-data-table-cell parent-table="[[_self]]" column="[[column.obj]]" template="[[column.template]]" item="[[item]]" 
 											 index="[[column_index]]"></cbn-data-table-cell>
 					</div>
 				</template>
@@ -73,7 +84,8 @@ See `cbn-table` for information about styling the element.
 <script>
 	(function () {
 		
-		Polymer({
+		//noinspection JSUnusedGlobalSymbols
+		CbnTable.DataTable = Polymer({
 			is: 'cbn-data-table',
 			
 			properties: {
@@ -100,18 +112,10 @@ See `cbn-table` for information about styling the element.
 				 */
 				optimizeTemplate: {
 					type: Boolean,
-					value: true
+					value: false
 				},
 				
 				// Private properties
-				
-				/**
-				 * The internal representation of the columns.
-				 */
-				_columns: {
-					type: Array,
-					value: function() { return []; }
-				},
 				
 				/**
 				 * Whether the table's light DOM is ready.
@@ -119,12 +123,21 @@ See `cbn-table` for information about styling the element.
 				_isDomReady: {
 					type: Boolean,
 					value: false
+				},
+				
+				/**
+				 * Self-reference to the element, for use in data bindings. 
+				 */
+				_self: {
+					type: Object,
+					value: function() { return this; }
 				}
 				
 			},
 			
 			behaviors: [
-				Polymer.Templatizer
+				Polymer.Templatizer,
+				CbnTable.FilterBehavior
 			],
 			
 			/**
@@ -153,28 +166,22 @@ See `cbn-table` for information about styling the element.
 			_columnsChanged: function() {
 				if (!this.columns) return;
 				
-				this.set('_columns', []);
-				this._pendingTemplates = [];
+				this._processColumns(this.columns);
 				
-				for (var i=0; i<this.columns.length; i++) {
-					var colDesc = {
-						index: i,
-						obj: this.columns[i]
-					};
-					this.push('_columns', colDesc);
-					
-					if (this.columns[i].type == 'template') {
+				// resolve template references
+				this._pendingTemplates = [];
+				for (var i=0; i<this._columns.length; i++) {
+					if (this._columns[i].obj.renderAs == 'template') {
 						if (this._isDomReady) {
-							this._findColumnTemplate(colDesc);
+							this._findColumnTemplate(this._columns[i]);
 						} else {
-							this._pendingTemplates.push(colDesc);
+							this._pendingTemplates.push(this._columns[i]);
 						}
 					}
 				}
 				
 				this._initItemTemplate();
 			},
-			
 			
 			/**
 			 * Fills the content template of a table column. 
@@ -185,7 +192,7 @@ See `cbn-table` for information about styling the element.
 			_findColumnTemplate: function(colDesc) {
 				var template = Polymer.dom(this).querySelector(colDesc.obj.template);
 				if (template) {
-					this.set('_columns.' + colDesc.index + '.template', template);
+					this.set('_columns.' + colDesc.obj._index + '.template', template);
 				}
 			},
 			
@@ -244,7 +251,7 @@ See `cbn-table` for information about styling the element.
 				
 				notes.forEach(function(note, idx) {
 					idx = idx + noteOffset;
-					// marshall nodes
+					// marshal nodes
 					if (note.templateContent) {
 						this._nodes[idx] = tpl;
 						this._nodes[idx]._content = note.templateContent;
@@ -252,146 +259,40 @@ See `cbn-table` for information about styling the element.
 				}, this);
 				
 				return tpl;
-			}
-			
-			// UI / computation methods
-			
-		});
-		
-		/**
-		 * A separate element used for rendering table cell contents (with configurable types and styles).
-		 */
-		Polymer({
-			is: 'cbn-data-table-cell', 
-			
-			properties: {
-				
-				/**
-				 * The type of the cell's contents.
-				 * 
-				 * Pre-defined types: 
-				 * - 'text': renders the content as plain text;
-				 * - 'html': uses `innerHTML` to set the cell's contents as HTML; unsecure, use with care!
-				 * - 'template': the content is a model object for a Polymer template (secure alternative for html).
-				 */
-				type: {
-					type: String,
-					value: ''
-				},
-				
-				/**
-				 * The column's object.
-				 */
-				column: {
-					type: Object,
-					observer: '_initContents'
-				},
-				
-				/**
-				 * The current item object.
-				 */
-				item: {
-					type: Object
-				},
-				
-				/**
-				 * The resolved template element associated with the current column.
-				 */
-				template: {
-					type: Object,
-					observer: '_initContents'
-				},
-				
-				/**
-				 * The numerical column index of the current cell.
-				 */
-				index: {
-					type: String,
-					value: ''
-				},
-				
-				/**
-				 * Whether the item is ready.
-				 */
-				_isReady: {
-					type: Boolean,
-					value: false
-				},
-				
-				/**
-				 * Stores the cell's template instance.
-				 */
-				_instance: {
-					type: Object
-				}
-				
-			},
-			
-			observers: [
-				"_updateContents(item.*)"
-			],
-			
-			behaviors: [
-				Polymer.Templatizer
-			],
-			
-			ready: function() {
-				this.style.display = 'block';
-				this._isReady = true;
-				this._initContents();
 			},
 			
 			/**
-			 * [Re]Initializes this cell when its column descriptor changes.
+			 * Called when a column is clicked (to re-sort the data).
+			 * 
+			 * @param event The Polymer-augumented event object.
 			 */
-			_initContents: function() {
-				if (!this._isReady) return;
-				Polymer.dom(this.root).innerHTML = '';
-				if (!this.column) return;
-				
-				if (!this.type) {
-					this.type = this.column.type;
-				}
-				
-				switch (this.type) {
-					case 'template':
-						if (!this.template) return;
-						this.templatize(this.template);
-						this._instance = this.stamp({ item: this.item });
-						Polymer.dom(this.root).appendChild(this._instance.root);
-						break;
-				}
-				
-				this._updateContents();
+			_columnClicked: function(event) {
+				this.toggleOrdering(event.model.column.obj.name);
 			},
 			
-			/**
-			 * Updates this cell's contents.
-			 */
-			_updateContents: function(changes) {
-				if (!this._isReady) return;
-				if (!this.column || !this.item) return;
-				
-				switch (this.type) {
-					case 'text':
-						Polymer.dom(this.root).textContent = this._contents;
-						break;
-					case 'html':
-						Polymer.dom(this.root).innerHTML = this._contents;
-						break;
-					case 'template':
-						if (!this._instance) return;
-						this._instance.item = this.item;
-						break;
-				}
-			},
+			// UI computation methods
 			
 			/**
-			 * Returns the current cell's contents.
-			 * @return {String} The value of the current cell.
+			 * Computes the classes of column captions.
+			 * 
+			 * @param {Object} column The column object.
 			 */
-			get _contents() {
-				return this.item[this.column.name];
+			_computeColumnCaptionClasses: function(column) {
+				var addClass = 'cbn-table-column-sortable';
+				this.sortOrdering.some(function(ordering) {
+					if (ordering.name == column.name) {
+						if (ordering.dir) {
+							addClass = 'cbn-table-column-sort-asc';
+						} else {
+							addClass = 'cbn-table-column-sort-desc';
+						}
+						return true;
+					}
+					return false;
+				});
+				
+				// check whether sorting is enabled for the current column
+				return "cbn-table cell-contents " + addClass;
 			}
 			
 		});

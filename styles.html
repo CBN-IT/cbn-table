@@ -130,10 +130,109 @@
 		border: none !important;
 	}
 	
+	/* Data Table Styles */
+	
+	.cbn-table-column .cell-contents {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		padding-right: 20px;
+		position: relative;
+		cursor: pointer;
+		color: #666;
+	}
+	.cbn-table-column .cell-contents:hover {
+		color: #000;
+	}
+	
+	/*noinspection CssNoGenericFontName,CssUnknownProperty*/
+	.cbn-table-column .cell-contents:before, 
+	.cbn-table-column .cell-contents:after {
+		font-family: "cbn-table-icons";
+		
+		position: absolute;
+		top: 50%;
+		right: 2px;
+		font-size: 12px;
+		margin-top: -6px;
+		display: inline-block;
+		line-height: 1;
+		
+		font-style: normal;
+		font-weight: normal;
+		font-variant: normal;
+		text-transform: none;
+		speak: none;
+		text-decoration: inherit;
+		width: 1em;
+		margin-right: .2em;
+		text-align: center;
+		
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+	.cbn-table-column .cell-contents:hover:before,
+	.cbn-table-column .cell-contents:hover:after {
+		color: #000 !important;
+	}
+	
+	.cbn-table-column .cbn-table-column-sortable:before {
+		content: '\e806';
+		margin-top: -10px;
+		color: #999;
+	}
+	.cbn-table-column .cbn-table-column-sortable:after {
+		content: '\e807';
+		margin-top: -2px;
+		color: #999;
+	}
+	
+	.cbn-table-column .cbn-table-column-sort-asc:after {
+		content: '\e807';
+		color: #000;
+		font-weight: bold;
+		font-size: 14px;
+	}
+	.cbn-table-column .cbn-table-column-sort-desc:after {
+		content: '\e806';
+		color: #000;
+		font-weight: bold;
+		font-size: 14px;
+	}
+	
+	.cbn-table-filter-container {
+		padding-top: 0.5em;
+	}
+	
+	.cbn-table-input, .cbn-table-input:focus {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0;
+		padding: 0.3em;
+		outline: 0;
+		
+		background-color: #fff;
+		color: #333;
+		border: 1px solid #DDD;
+		border-radius: 3px;
+	}
+	
 </style></template></dom-module>
 
 <style>
 	/* Global styles */
+	
+	@font-face {
+		font-family: 'cbn-table-icons';
+		src: url('resources/cbn-table-icons.eot?17214155');
+		src: url('resources/cbn-table-icons.eot?17214155#iefix') format('embedded-opentype'),
+			url('resources/cbn-table-icons.woff?17214155') format('woff'),
+			url('resources/cbn-table-icons.ttf?17214155') format('truetype'),
+			url('resources/cbn-table-icons.svg?17214155#cbn-table-icons') format('svg');
+		font-weight: normal;
+		font-style: normal;
+	}
 	
 	/* see http://www.thecssninja.com/javascript/pointer-events-60fps */
 	/*noinspection CssUnusedSymbol*/

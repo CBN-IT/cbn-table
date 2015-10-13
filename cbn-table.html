@@ -64,6 +64,7 @@ Class name               | Description                   | Default
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-list/iron-list.html">
 
+<link rel="import" href="lib/include.html" />
 <link rel="import" href="styles.html" />
 
 <dom-module id="cbn-table">
@@ -94,7 +95,7 @@ Class name               | Description                   | Default
 <script>
 	(function () {
 		
-		Polymer({
+		CbnTable.Table = Polymer({
 			is: 'cbn-table',
 			
 			properties: {
@@ -166,10 +167,6 @@ Class name               | Description                   | Default
 			ready: function () {
 				this._enhanceIronList();
 				this._initializeTemplates();
-				this._initialized = true;
-				if (this._itemTemplate) {
-					this.set('_items', this.items);
-				}
 			},
 			
 			attached: function () {
@@ -259,6 +256,11 @@ Class name               | Description                   | Default
 			 */
 			_itemTemplateChanged: function() {
 				if (!this._itemTemplate) return;
+				
+				if (!this._initialized) {
+					this._initialized = true;
+					this.set('_items', this.items);
+				}
 				
 				if (!this.$.ironList.ctor) {
 					// iron-list not initialized yet, nothing to do

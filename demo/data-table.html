@@ -16,7 +16,7 @@
 <body>
 
 <template id="t" is="dom-bind">
-	<div style="margin: 0 auto; width:1000px;">
+	<div style="margin: 0 auto; width:90%;">
 		
 		<p><b>Data Table Demo:</b></p>
 		
@@ -35,7 +35,7 @@
 <script>
 	window.addEventListener('WebComponentsReady', function() {
 		var rows = [];
-		for (var i=0; i<1000; i++) {
+		for (var i=0; i<10000; i++) {
 			rows.push(
 				{ one: 'asd' + i, two: 'yes', three: '5', one2: 'asd' + i, two2: 'yes', three2: '5',
 					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes', three4: '5'
@@ -49,67 +49,67 @@
 		t.set('columns', [
 			{
 				name: 'one',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'One'
 			},
 			{
 				name: 'two',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'Three'
 			},
 			{
 				name: 'three',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'Three'
 			},
 			{
 				name: 'one2',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'One'
 			},
 			{
 				name: 'two2',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'Three'
 			},
 			{
 				name: 'three2',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'Three'
 			}, 
 			{
 				name: 'one3',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'One'
 			},
 			{
 				name: 'two3',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'Three'
 			},
 			{
 				name: 'three3',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'Three'
 			},
 			{
 				name: 'one4',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'One'
 			},
 			{
 				name: 'two4',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'Three'
 			},
 			{
 				name: 'three4',
-				type: 'text',
+				renderAs: 'text',
 				caption: 'Three'
 			},
 			{
 				name: 'buttons',
-				type: 'template',
+				renderAs: 'template',
 				caption: 'Buttons',
 				template: '#buttons'
 			}
