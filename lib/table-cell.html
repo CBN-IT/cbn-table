@@ -78,7 +78,7 @@
 			},
 			
 			observers: [
-				"_updateContents(item.*)"
+				"_updateContents(item.*, index)"
 			],
 			
 			behaviors: [
@@ -122,16 +122,24 @@
 				if (!this._isReady) return;
 				if (!this.column || !this.item) return;
 				
+				var cellContents;
+				if (this.column.type == 'index') {
+					cellContents = this.index + '';
+				} else {
+					cellContents = this._cellContents;
+				}
+				
 				switch (this.type) {
 					case 'text':
-						Polymer.dom(this.root).textContent = this._contents;
+						Polymer.dom(this.root).textContent = cellContents;
 						break;
 					case 'html':
-						Polymer.dom(this.root).innerHTML = this._contents;
+						Polymer.dom(this.root).innerHTML = cellContents;
 						break;
 					case 'template':
 						if (!this._instance) return;
 						this._instance.item = this.item;
+						this._instance.cellContents = cellContents;
 						break;
 				}
 			},
@@ -141,7 +149,7 @@
 			 *
 			 * @return {String} The display value of the current cell.
 			 */
-			get _contents() {
+			get _cellContents() {
 				var meta = this.parentTable.getItemMeta(this.item);
 				if (!meta.display[this.column.name])
 					return this.item[this.column.name];

@@ -52,7 +52,7 @@ See `cbn-table` for information about styling the element.
 							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*)]]"
 								on-tap="_columnClicked">[[column.obj.caption]]</div>
 							
-							<template is="dom-if" if="[[ column.obj.filter ]]">
+							<template is="dom-if" if="[[column.obj.filter]]">
 								<div class="cbn-table cbn-table-filter-container">
 									<input is="iron-input" class="cbn-table cbn-table-input" title="Filter"
 										   bind-value="{{column.currentFilter}}" />
@@ -69,8 +69,8 @@ See `cbn-table` for information about styling the element.
 				<template is="dom-repeat" items="[[_columns]]" 
 						  as="column" index-as="column_index">
 					<div class="cbn-table-cell">
-						<cbn-data-table-cell parent-table="[[_self]]" column="[[column.obj]]" template="[[column.template]]" item="[[item]]" 
-											 index="[[column_index]]"></cbn-data-table-cell>
+						<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[column.obj]]" 
+											 template="[[column.template]]" index="[[index]]"></cbn-data-table-cell>
 					</div>
 				</template>
 			</div>
@@ -105,6 +105,26 @@ See `cbn-table` for information about styling the element.
 					type: Array,
 					value: function() { return []; },
 					observer: '_columnsChanged'
+				},
+				
+				/**
+				 * Stores the currently enabled data filters (map with the column's name + filtered value).
+				 * You can also modify this externally to apply custom filtering.
+				 */
+				dataFilters: {
+					type: Object,
+					value: function() { return {}; }
+				},
+				
+				/**
+				 * Stores the current column ordering.
+				 * 
+				 * The array contains simple objects that define the column's name (using the `name` property) and its sorting 
+				 * direction (the `dir` property, which can be true for ascending, false for descending).
+				 */
+				sortOrdering: {
+					type: Array,
+					value: function() { return []; }
 				},
 				
 				/**
@@ -228,7 +248,7 @@ See `cbn-table` for information about styling the element.
 				this._columns.forEach(function(column, idx) {
 					content += '<div class="cbn-table-cell">' +
 							'	<cbn-data-table-cell column="[[_columns.' +idx+ '.obj]]" template="[[_columns.' +idx+ '.template]]" ' +
-							'		item="[[item]]" index="' + idx + '"></cbn-data-table-cell>' +
+							'		item="[[item]]" index="[[index]]"></cbn-data-table-cell>' +
 							'</div>';
 				});
 				content += '</div>';
@@ -261,6 +281,8 @@ See `cbn-table` for information about styling the element.
 				return tpl;
 			},
 			
+			// Event handlers:
+			
 			/**
 			 * Called when a column is clicked (to re-sort the data).
 			 * 
@@ -270,7 +292,7 @@ See `cbn-table` for information about styling the element.
 				this.toggleOrdering(event.model.column.obj.name);
 			},
 			
-			// UI computation methods
+			// UI computation methods:
 			
 			/**
 			 * Computes the classes of column captions.
@@ -278,18 +300,21 @@ See `cbn-table` for information about styling the element.
 			 * @param {Object} column The column object.
 			 */
 			_computeColumnCaptionClasses: function(column) {
-				var addClass = 'cbn-table-column-sortable';
-				this.sortOrdering.some(function(ordering) {
-					if (ordering.name == column.name) {
-						if (ordering.dir) {
-							addClass = 'cbn-table-column-sort-asc';
-						} else {
-							addClass = 'cbn-table-column-sort-desc';
+				var addClass = '';
+				if (column.sortable) {
+					addClass = 'cbn-table-column-sortable';
+					this.sortOrdering.some(function(ordering) {
+						if (ordering.name == column.name) {
+							if (ordering.dir) {
+								addClass = 'cbn-table-column-sort-asc';
+							} else {
+								addClass = 'cbn-table-column-sort-desc';
+							}
+							return true;
 						}
-						return true;
-					}
-					return false;
-				});
+						return false;
+					});
+				}
 				
 				// check whether sorting is enabled for the current column
 				return "cbn-table cell-contents " + addClass;

@@ -82,9 +82,6 @@ bindings, methods and listeners; e.g.:
 </template>
 ```
 
-Please note that, due to Polymer Templatizer limitations, parent properties notification may not work correctly 
-(see issue [#2505](https://github.com/Polymer/polymer/issues/2505)).
-
 
 Data Processing Model
 ---------------------
@@ -92,7 +89,7 @@ Data Processing Model
 Each table column has a `name` and a data `type` attribute. Those are used to fetch and interpret the appropriate values
 from each item / row (which is usually an object). 
 
-For example, the column definition `{ "name": "age", "type": "numeric" }` fetches the `age` property of each row and 
+For example, the column definition `{ "name": "age", "type": "integer" }` fetches the `age` property of each row and 
 uses them as numbers (for filtering and sorting).
 
 The `cbn-data-table` element supports customizable data processing callbacks:
