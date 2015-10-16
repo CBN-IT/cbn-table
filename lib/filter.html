@@ -1,0 +1,150 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-input/iron-input.html">
+
+<link rel="import" href="../styles.html" />
+
+<dom-module id="cbn-data-table-filter">
+	<template>
+		<style include="cbn-table-filter-styles"></style>
+		
+		<div id="filterContainer">
+			<template is="dom-if" if="[[!template]]" restamp>
+				<span class="search-icon"></span>
+				<input is="iron-input" class="filter-input" title="Filter"
+					   bind-value="{{filterValue}}" on-focus="_inputFocused" on-blur="_inputBlur"  />
+			</template>
+			
+			<content></content>
+		</div>
+	</template>
+</dom-module>
+
+<script>
+	(function() {
+		
+		/**
+		 * A separate element used for rendering table filtering inputs.
+		 */
+		Polymer({
+			is: 'cbn-data-table-filter',
+			
+			properties: {
+				
+				/**
+				 * The table column object to apply the filter to.
+				 */
+				column: {
+					type: Object
+				},
+				
+				/**
+				 * The user's inputted filter expression.
+				 */
+				filterValue: {
+					type: String,
+					value: '',
+					notify: true
+				},
+				
+				/**
+				 * Reference to the parent table.
+				 */
+				parentTable: {
+					type: Object
+				},
+				
+				/**
+				 * Specifies a custom template to use for rendering the filter inputs (instead of the built-in  
+				 * iron-input element).
+				 */
+				template: {
+					type: Object,
+					value: null,
+					observer: '_render'
+				},
+				
+				/**
+				 * A property used for styling the focused state of the input.
+				 */
+				focused: {
+					type: Boolean,
+					value: false,
+					reflectToAttribute: true
+				}
+				
+			},
+			
+			behaviors: [
+				Polymer.Templatizer
+			],
+			
+			/**
+			 * Templatizer instance properties (whose values can be updated by the template).
+			 */
+			_instanceProps: {
+				filterValue: true
+			},
+			
+			/**
+			 * The element is ready. What now?
+			 */
+			ready: function() {
+				// nothing yet
+			},
+			
+			/**
+			 * Renders the filter elements from the provided template.
+			 */
+			_render: function() {
+				if (!this.template) return;
+				this.templatize(this.template);
+				
+				this._instance = this.stamp({
+					column: this.column,
+					filterValue: this.filterValue
+				});
+				
+				Polymer.dom(this).appendChild(this._instance.root);
+			},
+			
+			/**
+			 * Implements extension point from Templatizer.
+			 * Updates the filter value if the template changes it.
+			 */
+			_forwardInstanceProp: function (inst, prop, value) {
+				if (prop == 'filterValue') {
+					this[prop] = value;
+				}
+			},
+			
+			/**
+			 * Implements extension point from Templatizer.
+			 * Updates the filter value sub-properties (if an object value is used).
+			 */
+			_forwardInstancePath: function (inst, path, value) {
+				if (path.indexOf('filterValue.') === 0) {
+					this.notifyPath('filterValue.' +
+						path.slice('filterValue'.length + 1), value);
+				}
+			},
+			
+			// event handlers
+			
+			/**
+			 * Input 'focus' listener.
+			 */
+			_inputFocused: function() {
+				this.focused = true;
+			},
+			
+			/**
+			 * Input 'blur' listener.
+			 */
+			_inputBlur: function() {
+				this.focused = false;
+			}
+			
+		});
+		
+	})();
+</script>

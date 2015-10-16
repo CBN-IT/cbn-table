@@ -259,8 +259,6 @@ Class name               | Description                   | Default
 				if (!this._itemTemplate) return;
 				var oldItems;
 				
-				console.log('itemTemplateChanged', this._initialized);
-				
 				if (!this._initialized) {
 					this._initialized = true;
 					oldItems = this.items;
@@ -334,7 +332,6 @@ Class name               | Description                   | Default
 					this._physicalEnd = 0;
 					this._physicalSize = 0;
 					this.ctor = null;
-					console.log('physical items reset!');
 				};
 				
 				/**

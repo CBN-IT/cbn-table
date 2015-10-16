@@ -53,10 +53,9 @@ See `cbn-table` for information about styling the element.
 								on-tap="_columnClicked">[[column.obj.caption]]</div>
 							
 							<template is="dom-if" if="[[column.obj.filter]]">
-								<div class="cbn-table cbn-table-filter-container">
-									<input is="iron-input" class="cbn-table cbn-table-input" title="Filter"
-										   bind-value="{{column.currentFilter}}" />
-								</div>
+								<cbn-data-table-filter column="[[column.obj]]" template="[[column.obj.filterElement]]"
+													   filter-value="{{column.currentFilter}}">
+								</cbn-data-table-filter>
 							</template>
 						</div>
 					</template>
@@ -157,7 +156,7 @@ See `cbn-table` for information about styling the element.
 			
 			behaviors: [
 				Polymer.Templatizer,
-				CbnTable.FilterBehavior
+				CbnTable.DataProcessingBehavior
 			],
 			
 			/**
@@ -174,7 +173,7 @@ See `cbn-table` for information about styling the element.
 				this.async(function () {
 					this._isDomReady = true;
 					this._pendingTemplates.forEach(function(colDesc) {
-						this._findColumnTemplate(colDesc);
+						this._resolveColumnElements(colDesc);
 					}, this);
 					this._pendingTemplates = [];
 				});
@@ -191,12 +190,10 @@ See `cbn-table` for information about styling the element.
 				// resolve template references
 				this._pendingTemplates = [];
 				for (var i=0; i<this._columns.length; i++) {
-					if (this._columns[i].obj.renderAs == 'template') {
-						if (this._isDomReady) {
-							this._findColumnTemplate(this._columns[i]);
-						} else {
-							this._pendingTemplates.push(this._columns[i]);
-						}
+					if (this._isDomReady) {
+						this._resolveColumnElements(this._columns[i]);
+					} else {
+						this._pendingTemplates.push(this._columns[i]);
 					}
 				}
 				
@@ -204,16 +201,40 @@ See `cbn-table` for information about styling the element.
 			},
 			
 			/**
-			 * Fills the content template of a table column. 
+			 * Resolves the external elements for a table column (if used). 
 			 * To be called only after the element is attached (so its light dom is accessible).
 			 * 
 			 * @param {Object} colDesc The column descriptor object.
 			 */
-			_findColumnTemplate: function(colDesc) {
-				var template = Polymer.dom(this).querySelector(colDesc.obj.template);
-				if (template) {
-					this.set('_columns.' + colDesc.obj._index + '.template', template);
+			_resolveColumnElements: function(colDesc) {
+				// 1. Column template
+				if (colDesc.obj.renderAs == 'template') {
+					this.set('_columns.' + colDesc.obj._index + '.template', 
+						this._resolveElementSelector(colDesc.obj.template));
 				}
+				
+				// 2. Filter template
+				if (colDesc.obj.filterElement) {
+					this.set('_columns.' + colDesc.obj._index + '.obj.filterElement', 
+						this._resolveElementSelector(colDesc.obj.filterElement));
+				}
+			},
+			
+			/**
+			 * Resolves a string selector, first searching inside the table's local DOM, then among the document root.
+			 * 
+			 * @param {*} selector The selector of the element to resolve.
+			 * @return {Element|null} The DOM element, if found; null otherwise.
+			 */
+			_resolveElementSelector: function(selector) {
+				if (typeof selector === 'string') {
+					var template = Polymer.dom(this).querySelector(selector);
+					if (!template) {
+						template = document.querySelector(selector);
+					}
+					return (template ? template : null);
+				} // else: already a DOM object, return it
+				return selector;
 			},
 			
 			/**
@@ -289,6 +310,8 @@ See `cbn-table` for information about styling the element.
 			 * @param event The Polymer-augumented event object.
 			 */
 			_columnClicked: function(event) {
+				if (!event.model.column.obj.sortable) 
+					return;
 				this.toggleOrdering(event.model.column.obj.name);
 			},
 			

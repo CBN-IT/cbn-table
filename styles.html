@@ -200,22 +200,67 @@
 		font-size: 14px;
 	}
 	
-	.cbn-table-filter-container {
-		padding-top: 0.5em;
+</style></template></dom-module>
+
+<dom-module id="cbn-table-filter-styles"><template><style>
+	
+	:host {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		margin-top: 0.5em;
+		position: relative;
+		outline: none;
 	}
 	
-	.cbn-table-input, .cbn-table-input:focus {
+	.filter-input, .filter-input:focus {
 		display: block;
 		width: 100%;
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0.3em;
+		padding-right: 1.6em;
 		outline: 0;
 		
 		background-color: #fff;
 		color: #333;
 		border: 1px solid #DDD;
 		border-radius: 3px;
+		-webkit-transition: border-color 0.3s; /* Safari */
+		transition: border-color 0.3s;
+	}
+	
+	/*noinspection CssNoGenericFontName,CssUnknownProperty*/
+	.search-icon:before {
+		content: '\e802';
+		font-family: "cbn-table-icons";
+		position: absolute;
+		right: 0;
+		top: 1px;
+		margin-left: -1.8em;
+		
+		font-style: normal;
+		font-weight: normal;
+		font-variant: normal;
+		text-transform: none;
+		speak: none;
+		text-decoration: inherit;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		
+		padding: 0.3em;
+		line-height: 1.25em;
+		font-size: 0.8em;
+		color: #AAAAAA;
+		-webkit-transition: color 0.3s; /* Safari */
+		transition: color 0.3s;
+	}
+	
+	:host([focused]) .filter-input {
+		border-color: #999;
+	}
+	:host([focused]) .search-icon:before {
+		color: #444;
 	}
 	
 </style></template></dom-module>

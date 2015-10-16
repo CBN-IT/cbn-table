@@ -23,8 +23,13 @@
 		<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]">
 			
 			<template id="buttons">
-				<paper-button>[[item.one]]</paper-button>
+				<!--paper-button>[[item.one]]</paper-button-->
 				<paper-icon-button icon="icons:close">Y</paper-icon-button>
+			</template>
+			
+			<template id="extFilter">
+				<input is="iron-input" class="cbn-data-table-filter filter-input"
+					   placeholder="Filter me" bind-value="{{ filterValue }}" />
 			</template>
 			
 		</cbn-data-table>
@@ -54,7 +59,8 @@
 			{
 				name: 'one',
 				renderAs: 'text',
-				caption: 'One'
+				caption: 'One',
+				filterElement: '#extFilter'
 			},
 			{
 				name: 'two',
@@ -113,6 +119,7 @@
 			},
 			{
 				name: 'buttons',
+				type: 'inert',
 				renderAs: 'template',
 				caption: 'Buttons',
 				template: '#buttons'
