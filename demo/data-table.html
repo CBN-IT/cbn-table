@@ -54,13 +54,17 @@
 		t.set('columns', [
 			{
 				type: 'index',
-				caption: 'Nr.'
+				caption: 'Nr.',
+				style: {
+					color: 'gray'
+				}
 			},
 			{
 				name: 'one',
 				renderAs: 'text',
 				caption: 'One',
-				filterElement: '#extFilter'
+				filterElement: '#extFilter',
+				style: 'font-weight: bold;'
 			},
 			{
 				name: 'two',

@@ -49,10 +49,10 @@ See `cbn-table` for information about styling the element.
 				<div class="cbn-table-row">
 					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
 						<div class="cbn-table-cell cbn-table-column">
-							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*)]]"
-								on-tap="_columnClicked">[[column.obj.caption]]</div>
+							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*, sortable)]]"
+								on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle)]]">[[column.obj.caption]]</div>
 							
-							<template is="dom-if" if="[[column.obj.filter]]">
+							<template is="dom-if" if="[[computeIsFilterable(column.obj.filter, filterable)]]">
 								<cbn-data-table-filter column="[[column.obj]]" template="[[column.obj.filterElement]]"
 													   filter-value="{{column.currentFilter}}">
 								</cbn-data-table-filter>
@@ -69,6 +69,7 @@ See `cbn-table` for information about styling the element.
 						  as="column" index-as="column_index">
 					<div class="cbn-table-cell">
 						<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[column.obj]]" 
+											 style$="[[_computeCellStyles(column.obj.style)]]"
 											 template="[[column.template]]" index="[[index]]"></cbn-data-table-cell>
 					</div>
 				</template>
@@ -107,6 +108,22 @@ See `cbn-table` for information about styling the element.
 				},
 				
 				/**
+				 * Whether table filtering is enabled. Defaults to true.
+				 */
+				filterable: {
+					type: Boolean,
+					value: true
+				},
+				
+				/**
+				 * Whether table sorting is enabled. Defaults to true.
+				 */
+				sortable: {
+					type: Boolean,
+					value: true
+				},
+				
+				/**
 				 * Stores the currently enabled data filters (map with the column's name + filtered value).
 				 * You can also modify this externally to apply custom filtering.
 				 */
@@ -128,6 +145,8 @@ See `cbn-table` for information about styling the element.
 				
 				/**
 				 * If set, the table row template will be optimized.
+				 * 
+				 * WARNING: experimental, do not use!
 				 */
 				optimizeTemplate: {
 					type: Boolean,
@@ -324,7 +343,7 @@ See `cbn-table` for information about styling the element.
 			 */
 			_computeColumnCaptionClasses: function(column) {
 				var addClass = '';
-				if (column.sortable) {
+				if (this.sortable && column.sortable) {
 					addClass = 'cbn-table-column-sortable';
 					this.sortOrdering.some(function(ordering) {
 						if (ordering.name == column.name) {
@@ -341,6 +360,39 @@ See `cbn-table` for information about styling the element.
 				
 				// check whether sorting is enabled for the current column
 				return "cbn-table cell-contents " + addClass;
+			},
+			
+			/**
+			 * Returns whether a table column is filterable.
+			 */
+			computeIsFilterable: function(columnFilterable, filterable) {
+				return columnFilterable && filterable;
+			},
+			
+			/**
+			 * Computes the styles to show for a table cell / header element.
+			 * 
+			 * @param {String|Object} styles The style string / object to apply.
+			 */
+			_computeCellStyles: function(styles) {
+				if (typeof styles === 'string')
+					return styles;
+				
+				if (styles && typeof styles === 'object') {
+					var strStyles = '';
+					Object.getOwnPropertyNames(styles).forEach(function (n) {
+						var cssName = n;
+						if (cssName.indexOf('-') === -1) {
+							// convert to dash case
+							cssName = Polymer.CaseMap.camelToDashCase(cssName);
+						}
+						strStyles += cssName + ': ' + styles[n] + ';';
+					});
+					
+					return strStyles;
+				}
+				
+				return '';
 			}
 			
 		});
