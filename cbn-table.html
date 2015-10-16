@@ -95,6 +95,7 @@ Class name               | Description                   | Default
 <script>
 	(function () {
 		
+		//noinspection JSUnusedGlobalSymbols
 		CbnTable.Table = Polymer({
 			is: 'cbn-table',
 			
@@ -252,14 +253,20 @@ Class name               | Description                   | Default
 			},
 			
 			/**
-			 * Changes the `iron-list`'s internal item template.
+			 * Sets/changes the `iron-list`'s internal item template.
 			 */
 			_itemTemplateChanged: function() {
 				if (!this._itemTemplate) return;
+				var oldItems;
+				
+				console.log('itemTemplateChanged', this._initialized);
 				
 				if (!this._initialized) {
 					this._initialized = true;
-					this.set('_items', this.items);
+					oldItems = this.items;
+					this.items = null;
+					this.items = oldItems;
+					return;
 				}
 				
 				if (!this.$.ironList.ctor) {
@@ -268,14 +275,14 @@ Class name               | Description                   | Default
 				}
 				this.$.ironList.resetPhysicalItems();
 				if (this._initialized) {
-					var oldItems = this.$.ironList.items;
+					oldItems = this.$.ironList.items;
 					this.$.ironList.items = [];
 					this.$.ironList.items = oldItems;
 				}
 			},
 			
 			/**
-			 * Enhances the `<iron-list>` object.
+			 * Extends / alters the `<iron-list>` object for adding/overriding some missing features.
 			 */
 			_enhanceIronList: function() {
 				var table = this;
@@ -327,6 +334,7 @@ Class name               | Description                   | Default
 					this._physicalEnd = 0;
 					this._physicalSize = 0;
 					this.ctor = null;
+					console.log('physical items reset!');
 				};
 				
 				/**
@@ -388,6 +396,19 @@ Class name               | Description                   | Default
 						i++;
 					}, itemSet);
 				};
+				
+				/**
+				 * Override iron-list's physical bottom property to additionally include the header's height (if used).
+				 */
+				Object.defineProperty(this.$.ironList, '_physicalBottom', {
+					get: function() {
+						var headSize = 0;
+						if (table.$.tableHead) {
+							headSize = table.$.tableHead.clientHeight;
+						}
+						return this._physicalTop + this._physicalSize + headSize;
+					}
+				});
 				
 				/**
 				 * Called when the list is scrolled.
@@ -576,7 +597,6 @@ Class name               | Description                   | Default
 			 * Notifies it of the parent properties' initial values.
 			 * 
 			 * @param templateInstance The template instance of the elements stamped using Templatizer.
-			 * @private
 			 */
 			_fixTemplatizerInstance: function(templateInstance) {
 				for (var j in templateInstance._parentProps) {
