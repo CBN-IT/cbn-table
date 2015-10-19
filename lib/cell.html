@@ -86,9 +86,13 @@
 			],
 			
 			ready: function () {
-				this.style.display = 'block';
 				this._isReady = true;
 				this._initContents();
+			},
+			
+			attached: function() {
+				this.style.display = 'block';
+				this.style.position = 'relative';
 			},
 			
 			/**

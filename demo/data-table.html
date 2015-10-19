@@ -9,6 +9,7 @@
 	<link rel="import" href="../../polymer/polymer.html">
 	<link rel="import" href="../../iron-icons/iron-icons.html">
 	<link rel="import" href="../../paper-button/paper-button.html">
+	<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
 	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 	<link rel="import" href="../cbn-data-table.html">
 	
@@ -22,8 +23,20 @@
 		
 		<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]">
 			<template id="buttons">
-				<!--paper-button>[[item.one]]</paper-button-->
-				<paper-icon-button icon="icons:close">Y</paper-icon-button>
+				<span>
+					<paper-icon-button icon="icons:pageview">Y</paper-icon-button>
+					<paper-tooltip position="left" offset="5">View</paper-tooltip>
+				</span>
+				
+				<span>
+					<paper-icon-button icon="icons:create">Y</paper-icon-button>
+					<paper-tooltip position="left" offset="5">Edit</paper-tooltip>
+				</span>
+				
+				<span>
+					<paper-icon-button icon="icons:delete">Y</paper-icon-button>
+					<paper-tooltip position="left" offset="5">Delete</paper-tooltip>
+				</span>
 			</template>
 			
 			<template id="extFilter">
@@ -124,6 +137,7 @@
 				name: 'buttons',
 				type: 'inert',
 				renderAs: 'template',
+				headStyle: "width: 200px",
 				caption: 'Buttons',
 				template: '#buttons'
 			}

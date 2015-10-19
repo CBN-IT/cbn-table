@@ -181,11 +181,8 @@ Class name               | Description                   | Default
 			},
 			
 			updateViewport: function () {
-				//var marginTop = this.$.tableHead.clientHeight;
-				//var marginBottom = this.$.tableFoot.clientHeight;
-				//this.$.ironList.style.top = marginTop + "px";
-				//this.$.ironList.style.bottom = marginBottom + "px";
 				this.$.ironList.updateViewportBoundaries();
+				this.$.ironList.scrollToIndex(this.$.ironList.firstVisibleIndex);
 				this._scrollHandler(this.$.ironList.scrollTop);
 			},
 			
