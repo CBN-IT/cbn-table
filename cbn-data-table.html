@@ -52,7 +52,7 @@ See `cbn-table` for information about styling the element.
 							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*, sortable)]]"
 								on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle)]]">[[column.obj.caption]]</div>
 							
-							<template is="dom-if" if="[[computeIsFilterable(column.obj.filter, filterable)]]">
+							<template is="dom-if" if="[[_computeIsFilterable(column.obj.filter, filterable)]]">
 								<cbn-data-table-filter column="[[column.obj]]" template="[[column.obj.filterElement]]"
 													   filter-value="{{column.currentFilter}}">
 								</cbn-data-table-filter>
@@ -331,7 +331,8 @@ See `cbn-table` for information about styling the element.
 			_columnClicked: function(event) {
 				if (!event.model.column.obj.sortable) 
 					return;
-				this.toggleOrdering(event.model.column.obj.name);
+				var ctrl = event.detail.sourceEvent.ctrlKey;
+				this.toggleOrdering(event.model.column.obj.name, ctrl);
 			},
 			
 			// UI computation methods:
@@ -365,7 +366,7 @@ See `cbn-table` for information about styling the element.
 			/**
 			 * Returns whether a table column is filterable.
 			 */
-			computeIsFilterable: function(columnFilterable, filterable) {
+			_computeIsFilterable: function(columnFilterable, filterable) {
 				return columnFilterable && filterable;
 			},
 			
