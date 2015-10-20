@@ -24,7 +24,7 @@
 		<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]">
 			<template id="buttons">
 				<span>
-					<paper-icon-button icon="icons:pageview">Y</paper-icon-button>
+					<paper-icon-button on-tap="_throwEvent" data-event="page-view" icon="icons:pageview">Y</paper-icon-button>
 					<paper-tooltip position="left" offset="5">View</paper-tooltip>
 				</span>
 				

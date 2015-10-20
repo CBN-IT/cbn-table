@@ -50,7 +50,7 @@ See `cbn-table` for information about styling the element.
 					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
 						<div class="cbn-table-cell cbn-table-column">
 							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*, sortable)]]"
-								on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle)]]">[[column.obj.caption]]</div>
+								on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle, column.obj)]]">[[column.obj.caption]]</div>
 							
 							<template is="dom-if" if="[[_computeIsFilterable(column.obj.filter, filterable)]]">
 								<cbn-data-table-filter column="[[column.obj]]" template="[[column.obj.filterElement]]"
@@ -69,7 +69,7 @@ See `cbn-table` for information about styling the element.
 						  as="column" index-as="column_index">
 					<div class="cbn-table-cell">
 						<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[column.obj]]" 
-											 style$="[[_computeCellStyles(column.obj.style)]]"
+											 style$="[[_computeCellStyles(column.obj.style, item, column.obj)]]"
 											 template="[[column.template]]" index="[[index]]"></cbn-data-table-cell>
 					</div>
 				</template>
@@ -326,13 +326,30 @@ See `cbn-table` for information about styling the element.
 			/**
 			 * Called when a column is clicked (to re-sort the data).
 			 * 
-			 * @param event The Polymer-augumented event object.
+			 * @param {Object} event The Polymer-augumented event object.
 			 */
 			_columnClicked: function(event) {
 				if (!event.model.column.obj.sortable) 
 					return;
 				var ctrl = event.detail.sourceEvent.ctrlKey;
 				this.toggleOrdering(event.model.column.obj.name, ctrl);
+			},
+			
+			/**
+			 * Utility method that can be used to generate a custom event from another event.
+			 * 
+			 * @param {Object} event The original Polymer event object.
+			 */
+			_throwEvent: function(event) {
+				var name = event.currentTarget.getAttribute("data-event");
+				if (!name) {
+					console.warn("Please specify a `data-event` attribute!");
+					return;
+				}
+				this.fire(name, {
+					originalEvent: event,
+					item: event.model.item
+				});
 			},
 			
 			// UI computation methods:
@@ -373,13 +390,19 @@ See `cbn-table` for information about styling the element.
 			/**
 			 * Computes the styles to show for a table cell / header element.
 			 * 
-			 * @param {String|Object} styles The style string / object to apply.
+			 * @param {String|Object|Function} styles The style object to compute.
+			 * @return {String} The computed CSS string.
 			 */
 			_computeCellStyles: function(styles) {
-				if (typeof styles === 'string')
+				if (typeof styles === 'string') {
 					return styles;
-				
-				if (styles && typeof styles === 'object') {
+					
+				} else if (typeof styles === 'function') {
+					// the user callback function will compute the actual styles
+					var res = styles.apply(this, arguments.slice(1));
+					return this._computeCellStyles(res);
+					
+				} else if (styles && typeof styles === 'object') {
 					var strStyles = '';
 					Object.getOwnPropertyNames(styles).forEach(function (n) {
 						var cssName = n;
