@@ -75,7 +75,7 @@ Class name               | Description                   | Default
 			<!-- the iron-list::shadow > #items element, which hosts the content, has 'display: table' -->
 			<iron-list id="ironList" items="{{_items}}">
 				<!-- Header and footer containers -->
-				<div id="tableHead" style="position: relative;"></div>
+				<div id="tableHead"></div>
 				<div id="tableFoot"></div>
 				
 				<!-- An empty row with height: 100% that will take the rest of the unused vertical space inside the table -->
@@ -147,17 +147,16 @@ Class name               | Description                   | Default
 			],
 			
 			/**
-			 * The table header instance (if provided).
-			 * @type {Element}
-			 */
-			_footInstance: null,
-			
-			/**
 			 * The table footer instance (if provided).
 			 * @type {Element}
 			 */
 			_headInstance: null,
 			
+			/**
+			 * The table header instance (if provided).
+			 * @type {Element}
+			 */
+			_footInstance: null,
 			
 			/** @namespace this.$.ironList */
 			/** @namespace this.$.tableHead */
@@ -181,8 +180,7 @@ Class name               | Description                   | Default
 			},
 			
 			updateViewport: function () {
-				this.$.ironList.updateViewportBoundaries();
-				this.$.ironList.scrollToIndex(this.$.ironList.firstVisibleIndex);
+				// this.$.ironList._resizeHandler();
 				this._scrollHandler(this.$.ironList.scrollTop);
 			},
 			
@@ -226,8 +224,8 @@ Class name               | Description                   | Default
 					this.templatize(template);
 					instance = this.stamp({});
 					Polymer.dom(this.$.tableFoot).appendChild(instance.root);
-					this.footInstance = this.$.tableFoot.querySelector('*');
-					this._shimStyleScope(this.footInstance);
+					this._footInstance = this.$.tableFoot.querySelector('*');
+					this._shimStyleScope(this._footInstance);
 				} else {
 					this.$.tableFoot.style.display = 'none';
 				}
@@ -281,7 +279,6 @@ Class name               | Description                   | Default
 			 */
 			_enhanceIronList: function() {
 				var table = this;
-				var tableHead = this.$.tableHead;
 				
 				// modify the `iron-list` internal styles
 				var ironListItems = Polymer.dom(this.$.ironList.root).querySelector('#items');
@@ -392,17 +389,25 @@ Class name               | Description                   | Default
 				};
 				
 				/**
-				 * Override iron-list's physical bottom property to additionally include the header's height (if used).
+				 * Override iron-list's physical bottom property to additionally include the footer's height (if used).
 				 */
 				Object.defineProperty(this.$.ironList, '_physicalBottom', {
 					get: function() {
-						var headSize = 0;
+						var addSize = 0;
 						if (table.$.tableHead) {
-							headSize = table.$.tableHead.clientHeight;
+							addSize += table.$.tableHead.clientHeight;
 						}
-						return this._physicalTop + this._physicalSize + headSize;
+						if (table.$.tableFoot) {
+							addSize += table.$.tableFoot.clientHeight;
+						}
+						return this._physicalTop + this._physicalSize + addSize;
 					}
 				});
+				
+				this.$.ironList._resetScrollPosition = function () {
+					var $super = Object.getPrototypeOf(this);
+					$super._resetScrollPosition.apply(this, arguments); // call the original
+				};
 				
 				/**
 				 * Called when the list is scrolled.
@@ -492,8 +497,8 @@ Class name               | Description                   | Default
 					
 					// re-attach the other table elements at the end
 					moveToEnd(Polymer.dom(this).querySelector('#autoExpander'));
-					moveToEnd(Polymer.dom(this).querySelector('#tableFoot'));
 					moveToEnd(Polymer.dom(this).querySelector('#tableHead'));
+					moveToEnd(Polymer.dom(this).querySelector('#tableFoot'));
 					
 					return result;
 				};
@@ -509,10 +514,11 @@ Class name               | Description                   | Default
 			_scrollHandler: function(scrollTop) {
 				if (this._scrollTop === scrollTop)
 					return;
+				
 				this._scrollTop = scrollTop;
 				
-				var footerPos = scrollTop + this.$.ironList._viewportSize - 
-										this.$.tableFoot.clientHeight - 2;
+				var footerPos = -this.$.ironList.$.items.offsetHeight + scrollTop +
+					this.$.ironList._scroller.offsetHeight;
 				
 				this.transform('translate3d(0, ' + scrollTop + 'px, 0)', this.$.tableHead);
 				this.transform('translate3d(0, ' + footerPos + 'px, 0)', this.$.tableFoot);

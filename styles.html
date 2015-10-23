@@ -79,7 +79,7 @@
 	
 	#tableHead {
 		display: table-header-group;
-		position: static !important;
+		position: relative;
 		background: var(--cbn-table-head-background);
 		@apply(--cbn-table-header);
 	}
@@ -107,6 +107,7 @@
 	
 	#tableFoot {
 		display: table-footer-group;
+		position: relative !important;
 		background: var(--cbn-table-foot-background);
 		border-top: var(--cbn-table-border);
 		border-bottom: var(--cbn-table-border);
@@ -114,7 +115,7 @@
 	}
 	#tableFoot .cbn-table-cell {
 		border-top: var(--cbn-table-border);
-		border-bottom: var(--cbn-table-border);
+		border-bottom: none;
 		@apply(--cbn-table-footer-cell);
 	}
 	

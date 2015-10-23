@@ -1,0 +1,85 @@
+<!--
+Code partly snatched from `iron-list`, so there we go:
+
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+
+<script>
+	
+	function findElementInList(container, selector) {
+		var i = 0;
+		var children = container._children;
+		var ms = Polymer.DomApi.matchesSelector;
+		for (; i < children.length; i++) {
+			if (children[i].nodeType === Node.ELEMENT_NODE && ms.call(children[i], selector)) {
+				return children[i];
+			}
+		}
+		return null;
+	}
+	
+	function buildDataSet(size) {
+		var data = [];
+		for (var i=0; i<(size / 2); i++) {
+			data.push(
+				{ one: 'one' + i, two: 'even', three: '3' },
+				{ one: 'one' + i, two: 'odd',  three: '4' }
+			);
+		}
+		return data;
+	}
+	
+	function simulateScroll(config, fn) {
+		var list = config.list;
+		var target = config.target;
+		var delay = config.delay || 1;
+		var contribution = config.contribution || 10;
+		
+		function scroll(dir, prevVal) {
+			if ((dir > 0 && list.scrollTop >= target) ||
+				(dir < 0 && list.scrollTop <= target) ||
+				list.scrollTop === prevVal
+			) {
+				list.scrollTop = target;
+				setTimeout(fn.bind(null, list.scrollTop), 100);
+				return;
+			}
+			prevVal = list.scrollTop;
+			list.scrollTop = list.scrollTop + dir;
+			setTimeout(scroll.bind(null, dir, prevVal), delay);
+		}
+		
+		if (list.scrollTop < target) {
+			scroll(Math.abs(contribution), -1);
+		} else if (list.scrollTop > target) {
+			scroll(-Math.abs(contribution), -1);
+		}
+	}
+	
+	function getFirstItemFromList(list, inclHeader) {
+		var listRect = list.getBoundingClientRect();
+		var header = list.querySelector('#tableHead');
+		var top = listRect.top + 1;
+		if (header && !inclHeader) {
+			top += header.offsetHeight;
+		}
+		return document.elementFromPoint(listRect.left + 1, top);
+	}
+	
+	function getLastItemFromList(list, inclFooter) {
+		var listRect = list.getBoundingClientRect();
+		var footer = list.querySelector('#tableFoot');
+		var top = listRect.top + listRect.height - 1;
+		if (footer && !inclFooter) {
+			top -= footer.offsetHeight;
+		}
+		return document.elementFromPoint(listRect.left + 1, top);
+	}
+	
+</script>

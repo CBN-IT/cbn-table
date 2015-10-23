@@ -1,0 +1,112 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../cbn-table.html">
+
+<dom-module id="x-table">
+	
+	<style>
+		:host {
+			@apply(--layout-fit);
+			@apply(--layout-vertical);
+			display: block;
+		}
+		:host cbn-table {
+			--cbn-table-cell-padding: 2px;
+			--cbn-table-padding: 3px;
+			--cbn-table-border: none;
+			--cbn-table-head-border: none;
+		}
+	</style>
+	
+	<template>
+		<cbn-table style$="[[_computedHeight(listHeight, '')]]" items="[[data]]" id="table">
+			<template class="cbn-table-header">
+				<template is="dom-if" if="[[_enableTableHeader(headerHeight)]]">
+					<div class="cbn-table cbn-table-row">
+						<div style$="[[_computedHeight(headerHeight, 'true')]]" class="cbn-table cbn-table-cell">No.</div>
+						<div style$="[[_computedHeight(headerHeight, 'true')]]" class="cbn-table cbn-table-cell">One</div>
+						<div style$="[[_computedHeight(headerHeight, 'true')]]" class="cbn-table cbn-table-cell">Two</div>
+						<div style$="[[_computedHeight(headerHeight, 'true')]]" class="cbn-table cbn-table-cell">Three</div>
+					</div>
+				</template>
+			</template>
+			<template class="cbn-table-footer">
+				<template is="dom-if" if="[[_enableTableFooter(footerHeight)]]">
+					<div class="cbn-table cbn-table-row">
+						<div style$="[[_computedHeight(footerHeight, 'true')]]" class="cbn-table cbn-table-cell">No.</div>
+						<div style$="[[_computedHeight(footerHeight, 'true')]]" class="cbn-table cbn-table-cell">One</div>
+						<div style$="[[_computedHeight(footerHeight, 'true')]]" class="cbn-table cbn-table-cell">Two</div>
+						<div style$="[[_computedHeight(footerHeight, 'true')]]" class="cbn-table cbn-table-cell">Three</div>
+					</div>
+				</template>
+			</template>
+			
+			<template>
+				<div class="cbn-table-row">
+					<div style$="[[_computedHeight(itemHeight, 'true')]]" class="cbn-table-cell">{{ index }}</div>
+					<div style$="[[_computedHeight(itemHeight, 'true')]]" class="cbn-table-cell">{{ item.one }}</div>
+					<div style$="[[_computedHeight(itemHeight, 'true')]]" class="cbn-table-cell">{{ item.two }}</div>
+					<div style$="[[_computedHeight(itemHeight, 'true')]]" class="cbn-table-cell">{{ item.three }}</div>
+				</div>
+			</template>
+		</cbn-table>
+	</template>
+
+</dom-module>
+
+<script>
+	//noinspection JSUnusedGlobalSymbols
+	Polymer({
+		is: 'x-table',
+		
+		properties: {
+			data: {
+				type: Array
+			},
+			
+			itemHeight: {
+				type: Number,
+				value: 20
+			},
+			
+			listHeight: {
+				type: Number,
+				value: 500
+			},
+			
+			headerHeight: {
+				type: Number,
+				value: 0
+			},
+			
+			footerHeight: {
+				type: Number,
+				value: 0
+			}
+			
+		},
+		
+		get table() {
+			return this.$.table;
+		},
+		
+		_enableTableHeader: function () {
+			return this.headerHeight > 0;
+		},
+		_enableTableFooter: function () {
+			return this.footerHeight > 0;
+		},
+		
+		_computedHeight: function (height, item) {
+			if (item) {
+				height = height - 2*2; // subtract cell padding
+			}
+			var css = 'height: ' + height + 'px;';
+			if (item) {
+				css += 'line-height: ' + height + 'px;';
+			}
+			return css;
+		}
+		
+	});
+</script>
