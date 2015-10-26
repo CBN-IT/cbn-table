@@ -15,8 +15,8 @@
         "src"
     ],
     "dependencies": {
-        "polymer": "Polymer/polymer#^1.1",
-        "iron-list": "PolymerElements/iron-list#~1.1.4",
+        "polymer": "Polymer/polymer#~1.2.0",
+        "iron-list": "PolymerElements/iron-list#~1.1.5",
         "iron-icons": "PolymerElements/iron-icons#^1.0",
         "paper-input": "PolymerElements/paper-input#^1.0",
         "paper-tooltip": "PolymerElements/paper-tooltip#^1.0",
