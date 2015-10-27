@@ -1,0 +1,233 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>iron-list test</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	<script src="../../web-component-tester/browser.js"></script>
+	<script src="../../test-fixture/test-fixture-mocha.js"></script>
+	
+	<link rel="import" href="../../test-fixture/test-fixture.html">
+	<link rel="import" href="helpers.html">
+	<link rel="import" href="../cbn-data-table.html">
+</head>
+<body>
+
+<test-fixture id="dataTable">
+	<template>
+		<cbn-data-table style="height: 500px;"></cbn-data-table>
+	</template>
+</test-fixture>
+
+<test-fixture id="customCellTemplate">
+	<template>
+		<template>
+			<div class="contents"><b>[[index]]</b><i>[[item.three]]</i></div>
+		</template>
+	</template>
+</test-fixture>
+
+<script>
+	suite('cbn-data-table', function () {
+		var container, table, list;
+		
+		var defaultColumns = [
+			{
+				name: 'index',
+				type: 'index',
+				caption: 'INDEX'
+			},
+			{
+				name: 'one',
+				renderAs: 'text',
+				caption: 'One'
+			},
+			{
+				name: 'two',
+				renderAs: 'text',
+				caption: 'Three'
+			},
+			{
+				name: 'three',
+				renderAs: 'text',
+				caption: 'Three'
+			}
+		];
+		
+		setup(function () {
+			container = fixture('dataTable');
+			table = container.$.table;
+			list = table.$.ironList;
+		});
+		
+		test('data table population', function (done) {
+			var setSize = 10;
+			var data = buildDataSet(setSize);
+			container.items = data;
+			container.columns = cloneObj(defaultColumns);
+			flush(function () {
+				var i;
+				
+				assert.equal(list.items.length, setSize, 'items set');
+				assert.isAbove(list._physicalItems.length, 9, 'iron-list physical items stamped');
+				
+				// check header columns
+				var header = table.$.tableHead;
+				assert.ok(header);
+				var columns = header.querySelectorAll('.cbn-table-column');
+				assert.equal(columns.length, defaultColumns.length);
+				for (i=0; i<columns.length; i++) {
+					var columnCaption = columns[i].querySelector('div');
+					assert.ok(columnCaption);
+					assert.equal(columnCaption.innerHTML, defaultColumns[i].caption);
+				}
+				
+				// check physical items
+				var firstRowCells = list._physicalItems[0].querySelectorAll('cbn-data-table-cell');
+				assert.equal(firstRowCells.length, defaultColumns.length);
+				for (i=0; i<firstRowCells.length; i++) {
+					assert.ok(firstRowCells[i].column);
+					assert.equal(firstRowCells[i].column.name, defaultColumns[i].name);
+					if (i > 0) {
+						assert.equal(firstRowCells[i].innerHTML, data[0][defaultColumns[i].name]);
+					}
+				}
+				
+				done();
+			});
+		});
+		
+		test('header/row column styling', function (done) {
+			var columns = cloneObj(defaultColumns);
+			columns[0].headStyle = 'font-weight: bold; color: red;';
+			columns[0].style = 'color: red;';
+			columns[1].style = {
+				color: 'green',
+				fontSize: '12px'
+			};
+			columns[2].headStyle = function (column) {
+				return (column.name == 'two' ? 'background-color: red;' : '');
+			};
+			columns[2].style = function(item) {
+				return (item['two'] == 'even' ? 'background-color: blue;' : 'background-color: #00FFFF;');
+			};
+			
+			container.columns = columns;
+			container.items = buildDataSet(2);
+			
+			flush(function () {
+				assert.equal(list._physicalItems.length, 2);
+				
+				// check header styles
+				var header = table.$.tableHead;
+				var columns = header.querySelectorAll('.cbn-table-column > div');
+				assert.equal(columns[0].style.fontWeight, 'bold');
+				assert.match(columns[0].style.color, /^red|#FF0000|rgb\(255,\s*0,\s*0\)$/);
+				assert.match(columns[2].style.backgroundColor, /^red|#FF0000|rgb\(255,\s*0,\s*0\)$/);
+				
+				// check item styles
+				var firstRowCells = list._physicalItems[0].querySelectorAll('cbn-data-table-cell');
+				assert.match(firstRowCells[0].style.color, /^red|#FF0000|rgb\(255,\s*0,\s*0\)$/);
+				assert.match(firstRowCells[1].style.color, /^green|#00FF00|rgb\(0,\s*255,\s*0\)$/);
+				assert.equal(firstRowCells[1].style.fontSize, '12px');
+				assert.match(firstRowCells[2].style.backgroundColor, /^blue|#0000FF|rgb\(0,\s*0,\s*255\)$/);
+				
+				var sndRowCells = list._physicalItems[1].querySelectorAll('cbn-data-table-cell');
+				assert.match(sndRowCells[2].style.backgroundColor, /^yellow|#00FFFF|rgb\(0,\s*255,\s*255\)$/);
+				
+				done();
+			});
+		});
+		
+		test('data filtering', function (done) {
+			var columns = cloneObj(defaultColumns);
+			columns[1].filter = 'equals';
+			columns[2].filter = 'contains-ci';
+			columns[3].filter = function(val, expression) {
+				return val != expression;
+			};
+			container.columns = columns;
+			
+			var items = buildDataSet(10);
+			container.items = items.slice();
+			
+			flush(function () {
+				// no filters enabled
+				container.filter();
+				assert.deepEqual(container._filteredItems, items);
+				
+				container.filter({ one: 'one1' });
+				assert.deepEqual(container._filteredItems, [ items[2], items[3] ]);
+				
+				container.set('_columns.2.currentFilter', 've');
+				assert.deepEqual(container._filteredItems, items.filter(function(item) {
+					return item.two.match(/ve/);
+				}));
+				
+				// multiple filters
+				container.filter({ one: 'one1', two: 'dd', three: '5' });
+				assert.deepEqual(container._filteredItems, [ items[3] ]);
+				container.filter({ one: 'one1', two: 'dd', three: '4' });
+				assert.deepEqual(container._filteredItems, [ ]);
+				
+				// original items array must remain unchanged
+				assert.deepEqual(container.items, items);
+				
+				done();
+			});
+		});
+		
+		test('data sorting', function (done) {
+			var columns = cloneObj(defaultColumns);
+			columns[1].type = 'natural';
+			columns.push({
+				name: 'x',
+				type: 'integer',
+				caption: 'X'
+			});
+			container.columns = columns;
+			
+			var items = buildDataSet(100);
+			container.items = items.slice();
+			
+			flush(function () {
+				// ascending, one field
+				container.filter(null, [ { name: 'x', dir: true } ]);
+				assert.deepEqual(container._filteredItems, items);
+				
+				// descending, one field
+				container.filter(null, [ { name: 'x', dir: false } ]);
+				assert.deepEqual(container._filteredItems, items.slice().reverse());
+				
+				// multiple fields
+				container.filter(null, [ { name: 'one', dir: true }, { name: 'x', dir: false } ]);
+				var sortedItems = items.slice().sort(function(item1, item2) {
+					if (item1.one == item2.one)
+						return item2.x*1 - item1.x*1;
+					return item1.one.substring(3)*1 - item2.one.substring(3)*1;
+				});
+				assert.deepEqual(container._filteredItems, sortedItems);
+				
+				// original items array must remain unchanged
+				assert.deepEqual(container.items, items);
+				
+				done();
+			});
+		});
+		
+	});
+</script>
+
+</body>
+</html>

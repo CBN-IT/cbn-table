@@ -176,11 +176,15 @@ Class name               | Description                   | Default
 			},
 			
 			detached: function () {
-				
 			},
 			
+			/**
+			 * Updates the iron-list's viewport.
+			 * 
+			 * Must be called after the table's dimensions / visibility are changed.
+			 */
 			updateViewport: function () {
-				// this.$.ironList._resizeHandler();
+				this.$.ironList._resizeHandler();
 				this._scrollHandler(this.$.ironList.scrollTop);
 			},
 			

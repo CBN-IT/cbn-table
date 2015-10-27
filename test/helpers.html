@@ -12,6 +12,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <script>
 	
+	function cloneObj(obj) {
+		return JSON.parse(JSON.stringify(obj));
+	}
+	
 	function findElementInList(container, selector) {
 		var i = 0;
 		var children = container._children;
@@ -26,10 +30,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 	
 	function buildDataSet(size) {
 		var data = [];
+		var x = 0;
 		for (var i=0; i<(size / 2); i++) {
 			data.push(
-				{ one: 'one' + i, two: 'even', three: '3' },
-				{ one: 'one' + i, two: 'odd',  three: '4' }
+				{ one: 'one' + i, two: 'even', three: '3', x: x++ },
+				{ one: 'one' + i, two: 'odd',  three: '4', x: x++ }
 			);
 		}
 		return data;

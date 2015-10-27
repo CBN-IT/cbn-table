@@ -261,7 +261,7 @@ See `cbn-table` for information about styling the element.
 			 */
 			_initItemTemplate: function() {
 				// cleanup
-				var existing = Polymer.dom(this.$.table).querySelector('template.template-container');
+				var existing = Polymer.dom(this.$.table).querySelector('template.item-template');
 				if (existing) {
 					existing.parentNode.removeChild(existing);
 				}
@@ -287,9 +287,10 @@ See `cbn-table` for information about styling the element.
 				var content = '<div class="cbn-table-row">';
 				this._columns.forEach(function(column, idx) {
 					content += '<div class="cbn-table-cell">' +
-							'	<cbn-data-table-cell column="[[_columns.' +idx+ '.obj]]" template="[[_columns.' +idx+ '.template]]" ' +
-							'		item="[[item]]" index="[[index]]"></cbn-data-table-cell>' +
-							'</div>';
+						'	<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[_columns.' +idx+ '.obj]]"' +
+								 'style$="[[_computeCellStyles(_columns.' +idx+ '.obj.style, item, _columns.' +idx+ '.obj)]]"' +
+								 'template="[[_columns.' +idx+ '.template]]" index="[[index]]"></cbn-data-table-cell>' +
+						'</div>';
 				});
 				content += '</div>';
 				tpl.innerHTML = content;
@@ -399,7 +400,7 @@ See `cbn-table` for information about styling the element.
 					
 				} else if (typeof styles === 'function') {
 					// the user callback function will compute the actual styles
-					var res = styles.apply(this, arguments.slice(1));
+					var res = styles.apply(this, Array.prototype.slice.call(arguments, 1));
 					return this._computeCellStyles(res);
 					
 				} else if (styles && typeof styles === 'object') {

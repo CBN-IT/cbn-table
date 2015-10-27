@@ -30,6 +30,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 	</template>
 </test-fixture>
 
+<test-fixture id="altItemTemplate">
+	<template>
+		<template>
+			<div class="cbn-table-row">
+				<div style="height: 6px;line-height: 6px;" class="cbn-table-cell">{{ index }}</div>
+				<div style="height: 6px;line-height: 6px;" class="cbn-table-cell">{{ item.one }}</div>
+				<div style="height: 6px;line-height: 6px;" class="cbn-table-cell">{{ item.two }}</div>
+				<div style="height: 6px;line-height: 6px;" class="cbn-table-cell">99</div>
+			</div>
+		</template>
+	</template>
+</test-fixture>
+
 <script>
 	suite('cbn-table & table-enhanced iron-list', function () {
 		var container, table, list;
@@ -46,6 +59,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				assert.equal(list.items.length, container.data.length, 'items set');
 				assert.isAbove(list._physicalItems.length, 0, 'physical items stamped');
 				done();
+			});
+		});
+		
+		test('empty list', function (done) {
+			container.data = [];
+			flush(function () {
+				assert.isAbove(list._physicalItems.length, 0, 'initial physical item stamped');
+				
+				container.data = buildDataSet(10);
+				flush(function () {
+					assert.isAbove(list._physicalItems.length, 9, 'all physical items stamped');
+					done();
+				});
 			});
 		});
 		
@@ -229,7 +255,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			});
 		});
 		
-		
+		test('change item template', function (done) {
+			var rowHeight = 60;
+			
+			container.data = buildDataSet(10);
+			container.itemHeight = rowHeight;
+			container.headerHeight = 50;
+			container.footerHeight = 40;
+			container.listHeight = 500;
+			
+			flush(function () {
+				assert.equal(list._physicalItems.length, 10);
+				list._physicalItems.forEach(function (item) {
+					assert.equal(item.offsetHeight, rowHeight);
+				});
+				
+				table._itemTemplate = fixture('altItemTemplate');
+				rowHeight = 10;
+				flush(function () {
+					assert.equal(list._physicalItems.length, 10);
+					list._physicalItems.forEach(function (item) {
+						assert.equal(item.offsetHeight, rowHeight);
+					});
+					var first = getFirstItemFromList(list);
+					assert.ok(first, 'first visible item');
+					assert.equal(first.textContent, '0', 'first item index');
+					assert.equal(first.offsetTop, container.headerHeight, 'first item position');
+					assert.equal(first.offsetHeight, rowHeight, 'first item height');
+					
+					done();
+				});
+			});
+		});
 		
 	});
 </script>
