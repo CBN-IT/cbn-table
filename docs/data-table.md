@@ -138,11 +138,13 @@ while its `display` callback converts this back to String based on a `column.dat
 
 The data table supports the following built-in types:
 
-- `string`: the cell's value is type-casted to String, filtered using ;
+- `string`: the cell's value is type-casted to String;
 - `boolean`: if `item[column.name]` is set and truth-y, the value is true; false otherwise;
 - `integer`: parses the cell's value to integer; if the parsing failed, the value is considered to be null / empty.
 - `float`: same as above, but accepts also decimals after the radix point;
-- `date`: requires and uses the Moment.js library to parse/format dates; it accepts the following `column` object 
+- `natural`: cell's value is casted to string, but the sort order is natural (if the value contains any numbers, their
+   values are used instead of the standard ASCII/Unicode order);
+- `date`: requires and uses the Moment.js library to parse/format dates; it accepts the following `column` object
    properties: 
    - `column.dateFormat`: the format used to display the values;
    - `column.dateValueFormat`: the format used to parse the raw cell values; if empty, then `dateFormat` is used instead;
