@@ -18,7 +18,7 @@ Example:
 <cbn-data-table items="{{ data }}" columns='
 		{ "name": "firstName", "caption": "First Name" },
 		{ "name": "lastName", "caption": "Last Name" },
-		{ "name": "email", "caption": "Email", "renderAs": "email", "template": "emailCell" }'>
+		{ "name": "email", "caption": "Email", "renderAs": "template", "template": "#emailCell" }'>
 	<template id="emailCell">
 		<a href="[[ computeMailTo(item.email) ]]">[[ item.email ]]</a>
 	</template>

@@ -106,6 +106,7 @@
 				if (!this.type) {
 					this.type = this.column.renderAs;
 				}
+				this._instance = null;
 				
 				switch (this.type) {
 					case 'template':
@@ -141,7 +142,7 @@
 						Polymer.dom(this.root).innerHTML = cellContents;
 						break;
 					case 'template':
-						if (!this._instance) return;
+						if (!this.template && !this._instance) return;
 						this._instance.item = this.item;
 						this._instance.cellContents = cellContents;
 						break;

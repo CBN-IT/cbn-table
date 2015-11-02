@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	<title>Cbn-Data-Table inside container element</title>
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	
+	<link rel="import" href="../../iron-icons/iron-icons.html">
+	<link rel="import" href="../../paper-button/paper-button.html">
+	<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
+	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+	
+	<link rel="import" href="../cbn-data-table.html">
+	
+	<dom-module id="x-container">
+		<template>
+			<style>
+				:host { display: block; }
+			</style>
+			<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]">
+				<template id="buttons">
+					<span>
+						<paper-icon-button on-tap="_throwEvent" data-event="page-view" icon="icons:pageview">Y</paper-icon-button>
+						<paper-tooltip position="left" offset="5">View</paper-tooltip>
+					</span>
+					
+					<span>
+						<paper-icon-button icon="icons:create">Y</paper-icon-button>
+						<paper-tooltip position="left" offset="5">Edit</paper-tooltip>
+					</span>
+					
+					<span>
+						<paper-icon-button icon="icons:delete">Y</paper-icon-button>
+						<paper-tooltip position="left" offset="5">Delete</paper-tooltip>
+					</span>
+				</template>
+				
+				<template id="extFilter">
+					<input is="iron-input" class="cbn-data-table-filter filter-input"
+						   placeholder="Filter me" bind-value="{{ filterValue }}" />
+				</template>
+				
+			</cbn-data-table>
+		</template>
+	</dom-module>
+	
+	<script>
+		Polymer({
+			is: 'x-container',
+			properties: {
+				columns: {
+					type: Array,
+					value: function() {
+						return [
+							{
+								type: 'index',
+								caption: 'Nr.',
+								style: {
+									color: 'gray'
+								}
+							},
+							{
+								name: 'one',
+								renderAs: 'text',
+								caption: 'One',
+								type: 'natural',
+								filterElement: '#extFilter',
+								style: 'font-weight: bold;'
+							},
+							{
+								name: 'two',
+								renderAs: 'text',
+								caption: 'Three'
+							},
+							{
+								name: 'three',
+								renderAs: 'text',
+								caption: 'Three'
+							},
+							{
+								name: 'buttons',
+								type: 'inert',
+								renderAs: 'template',
+								headStyle: "width: 200px",
+								caption: 'Buttons',
+								template: '#buttons'
+							}
+						];
+					}
+				},
+				items: {
+					type: Array,
+					value: function() {
+						var rows = [];
+						for (var i=0; i<10000; i++) {
+							rows.push(
+								{ one: 'asd' + i, two: 'yes', three: '5', one2: 'asd' + i, two2: 'yes', three2: '5',
+									one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes', three4: '5'
+								},
+								{ one: 'iop' + i, two: '', three: '6', one2: 'iop' + i, two2: '', three2: '6',
+									one3: 'iop' + i, two3: '', three3: '6', one4: 'iop' + i, two4: '', three4: '6'}
+							);
+						}
+						return rows;
+					}
+				}
+			}
+		});
+	</script>
+	
+</head>
+<body>
+
+<div style="margin: 0 auto; width:700px;">
+	
+	<p><b>Demo:</b></p>
+	
+	<x-container style="height: 700px;"></x-container>
+	
+</div>
+
+</body>
+</html>

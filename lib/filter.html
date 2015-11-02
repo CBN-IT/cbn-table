@@ -96,6 +96,11 @@
 			 * Renders the filter elements from the provided template.
 			 */
 			_render: function() {
+				if (this._instance) {
+					Polymer.dom(this).removeChild(this._instance.root);
+					this._instance = null;
+				}
+				
 				if (!this.template) return;
 				this.templatize(this.template);
 				
