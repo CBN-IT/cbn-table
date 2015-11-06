@@ -1,15 +1,11 @@
-<dom-module id="cbn-table-styles-private"><template><style>
-	
-	:host {
-		display: block;
-		position: relative;
-		background: white;
-		
+<!-- Default values for the custom properties -->
+<style is="custom-style">
+	:root {
 		/* Default values for CSS variables: */
 		--cbn-table-background: transparent;
+		--cbn-table-padding: 0.3em;
 		--cbn-table-border: 1px solid #E3E3E3;
 		--cbn-table-cell-padding: 0.7em 0.5em;
-		--cbn-table-padding: 0.3em;
 		--cbn-table-head-background: white;
 		--cbn-table-head-border: 1px solid #CCCCCC;
 		--cbn-table-head-shadow: 0 5px 4px -3px rgba(0, 0, 0, 0.25);
@@ -33,6 +29,15 @@
 			color: #353535;
 			border-left: none; border-right: none;
 		};
+	}
+</style>
+
+<dom-module id="cbn-table-styles-private"><template><style>
+	
+	:host {
+		display: block;
+		position: relative;
+		background: white;
 		
 		/* Apply some of the styles to host */
 		background: var(--cbn-table-background);

@@ -16,9 +16,17 @@
 	<dom-module id="x-container">
 		<template>
 			<style>
-				:host { display: block; }
+				:root {
+					display: block;
+				}
+				
+				.cls {
+					--cbn-table-border: 1px solid #F00;
+					--cbn-table-cell-padding: 10px;
+				}
+				
 			</style>
-			<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]">
+			<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]" class="cls">
 				<template id="buttons">
 					<span>
 						<paper-icon-button on-tap="_throwEvent" data-event="page-view" icon="icons:pageview">Y</paper-icon-button>
