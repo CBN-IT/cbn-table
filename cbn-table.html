@@ -39,13 +39,16 @@ Custom property               | Description                   | Default
 `--cbn-table-head-border`     | Border for table's header     | `1px solid #666666`
 `--cbn-table-head-shadow`     | Shadow for the header         | `0 5px 4px -3px rgba(0, 0, 0, 0.25)`
 `--cbn-table-foot-background` | Table footer background       | `white`
-`--cbn-table-container`       | Mixin for the table container | *border and shadow around*
+`--cbn-table-container`       | Mixin for the table container | /*border and shadow around*/
 `--cbn-table-row`             | Mixin for the table's rows    | 
-`--cbn-table-cell`            | Mixin for the table's cells   | *color and border definitions*
+`--cbn-table-row-altn`        | Alternate table row styles    | 
+`--cbn-table-row-hover`       | Table row, hovered            | /*yellowish background color*/
+`--cbn-table-row-selected`    | Table row, selected           | /*yellowish background color*/
+`--cbn-table-cell`            | Mixin for the table's cells   | /*color and border definitions*/
 `--cbn-table-header`          | Mixin for the table's header  | 
-`--cbn-table-header-cell`     | Mixin for a header cell       | *border fixes*
+`--cbn-table-header-cell`     | Mixin for a header cell       | /*border fixes*/
 `--cbn-table-footer`          | Mixin for the table's footer  | 
-`--cbn-table-footer-cell`     | Mixin for a footer cell       | *border fixes*
+`--cbn-table-footer-cell`     | Mixin for a footer cell       | /*border fixes*/
 
 <br />
 The element automatically toggles the following CSS classes when certain things happen:
@@ -73,7 +76,10 @@ Class name               | Description                   | Default
 		
 		<div id="innerContainer">
 			<!-- the iron-list::shadow > #items element, which hosts the content, has 'display: table' -->
-			<iron-list id="ironList" items="{{_items}}">
+			<iron-list id="ironList" items="{{_items}}" 
+					   selection-enabled="[[selectionEnabled]]" multi-selection="[[multiSelection]]"
+					   selected-items="{{selectedItems}}">
+				
 				<!-- Header and footer containers -->
 				<div id="tableHead"></div>
 				<div id="tableFoot"></div>
@@ -81,7 +87,7 @@ Class name               | Description                   | Default
 				<!-- An empty row with height: 100% that will take the rest of the unused vertical space inside the table -->
 				<div id="autoExpander"></div>
 				
-				<!-- The list items will be inserted afterwards -->
+				<!-- The list items will be inserted here -->
 			</iron-list>
 			
 			<content></content>
@@ -110,6 +116,33 @@ Class name               | Description                   | Default
 					observer: '_itemsChanged'
 				},
 				
+				/**
+				 * Set to true to enable row selection using tap / enter key press events.
+				 */
+				selectionEnabled: {
+					type: Boolean,
+					value: false
+				},
+				
+				/**
+				 * Set to true to enable multiple table rows selection.
+				 */
+				multiSelection: {
+					type: Boolean,
+					value: false
+				},
+				
+				/**
+				 * When `multiSelection` is true, this is an array that contains the selected items.
+				 */
+				selectedItems: {
+					type: Object,
+					notify: true
+				},
+				
+				/**
+				 * Whether the item is correctly initialized (i.e. the item template was provided).
+				 */
 				_initialized: {
 					type: Boolean,
 					value: false
@@ -505,6 +538,79 @@ Class name               | Description                   | Default
 					moveToEnd(Polymer.dom(this).querySelector('#tableFoot'));
 					
 					return result;
+				};
+				
+				/**
+				 * When the selection gets enabled, also bind a mousedown event to prevent text selectiom from 
+				 * appearing while selecting table rows.
+				 */
+				this.$.ironList._selectionEnabledChanged = function(selectionEnabled, onlyMouseDown) {
+					if (onlyMouseDown !== true) {
+						var $super = Object.getPrototypeOf(this);
+						$super._selectionEnabledChanged.apply(this, arguments);
+					}
+					
+					if (selectionEnabled) {
+						this.listen(this, 'mousedown', '_selectionHandler');
+					} else {
+						this.unlisten(this, 'mousedown', '_selectionHandler');
+					}
+				};
+				this.$.ironList._selectionEnabledChanged(this.$.ironList.selectionEnabled, true);
+				
+				/**
+				 * Override the item press / tap event to implement a more advanced multiple selection behavior:
+				 * 
+				 * - if the ctrl key is pressed, the item's selection is toggled;
+				 * - if the shift key is pressed, all items from the last pressed item to the current one are selected / 
+				 *   deselected (based on the current item's status);
+				 * - otherwise, the multiple selection will be cleared and the current item will be the only one selected.
+				 * 
+				 * @param {Event} e The tap / click event object.
+				 */
+				this.$.ironList._selectionHandler = function(e) {
+					if (e.type == 'mousedown') {
+						if (e.shiftKey) {
+							e.preventDefault();
+						}
+						
+					} else if (e.type !== 'keypress' || e.keyCode === 13) {
+						var srce = e.detail.sourceEvent;
+						var model = this.modelForElement(e.target);
+						if (model) {
+							if (this.multiSelection) {
+								if (srce.ctrlKey) {
+									this.toggleSelectionForItem(model[this.as]);
+									this._lastSelectedItemIdx = model[this.indexAs];
+									console.log('_lastSelectedItemIdx', this._lastSelectedItemIdx);
+									
+								} else if (srce.shiftKey) {
+									this.clearSelection();
+									document.getSelection().removeAllRanges();
+									var starti = this._lastSelectedItemIdx || 0, endi = model[this.indexAs];
+									if (starti > endi) {
+										starti = endi;
+										endi = this._lastSelectedItemIdx;
+									}
+									console.log('select from', starti, 'to', endi);
+									for (var i=starti; i<=endi; i++) {
+										this.selectItem(i);
+									}
+									// workaround: redraw the items
+									this._update();
+									
+								} else {
+									this.clearSelection();
+									this.toggleSelectionForItem(model[this.as]);
+									this._lastSelectedItemIdx = model[this.indexAs];
+									console.log('_lastSelectedItemIdx', this._lastSelectedItemIdx);
+								}
+							} else {
+								this.toggleSelectionForItem(model[this.as]);
+								this._lastSelectedItemIdx = model[this.indexAs];
+							}
+						}
+					}
 				};
 				
 			},

@@ -44,7 +44,8 @@ See `cbn-table` for information about styling the element.
 		
 		<content select=".before"></content>
 		
-		<cbn-table id="table" items="{{_filteredItems}}">
+		<cbn-table id="table" items="{{_filteredItems}}" 
+				   selection-enabled multi-selection selected-items="{{selectedItems}}">
 			<template class="cbn-table-header">
 				<div class="cbn-table-row">
 					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
@@ -64,7 +65,7 @@ See `cbn-table` for information about styling the element.
 		</cbn-table>
 		
 		<template id="itemTemplate">
-			<div class="cbn-table-row">
+			<div class$="[[_computeRowClasses(item, selected)]]">
 				<template is="dom-repeat" items="[[_columns]]" 
 						  as="column" index-as="column_index">
 					<div class="cbn-table-cell">
@@ -95,6 +96,15 @@ See `cbn-table` for information about styling the element.
 				 */
 				items: {
 					type: Array,
+					value: function() { return []; }
+				},
+				
+				/**
+				 * Stores the currently selected items.
+				 */
+				selectedItems: {
+					type: Array,
+					notify: true,
 					value: function() { return []; }
 				},
 				
@@ -357,6 +367,14 @@ See `cbn-table` for information about styling the element.
 			},
 			
 			// UI computation methods:
+			
+			/**
+			 * Computes the CSS classes of a table row.
+			 */
+			_computeRowClasses: function(item, selected) {
+				return 'cbn-table-row cbn-table' +
+					(selected ? ' selected' : '');
+			},
 			
 			/**
 			 * Computes the classes of column captions.
