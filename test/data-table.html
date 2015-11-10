@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>iron-list test</title>
+	<title>Cbn-Data-Table Test</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 	
 	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
@@ -39,7 +39,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </test-fixture>
 
 <script>
-	suite('cbn-data-table', function () {
+	suite('cbn-data-table' + (Polymer.Settings.useShadow ? ' (shadow dom)' : '' ), function () {
 		var container, table, list;
 		
 		var defaultColumns = [
