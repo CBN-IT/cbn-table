@@ -582,7 +582,6 @@ Class name               | Description                   | Default
 								if (srce.ctrlKey) {
 									this.toggleSelectionForItem(model[this.as]);
 									this._lastSelectedItemIdx = model[this.indexAs];
-									console.log('_lastSelectedItemIdx', this._lastSelectedItemIdx);
 									
 								} else if (srce.shiftKey) {
 									this.clearSelection();
@@ -592,7 +591,6 @@ Class name               | Description                   | Default
 										starti = endi;
 										endi = this._lastSelectedItemIdx;
 									}
-									console.log('select from', starti, 'to', endi);
 									for (var i=starti; i<=endi; i++) {
 										this.selectItem(i);
 									}
@@ -603,7 +601,6 @@ Class name               | Description                   | Default
 									this.clearSelection();
 									this.toggleSelectionForItem(model[this.as]);
 									this._lastSelectedItemIdx = model[this.indexAs];
-									console.log('_lastSelectedItemIdx', this._lastSelectedItemIdx);
 								}
 							} else {
 								this.toggleSelectionForItem(model[this.as]);

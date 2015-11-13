@@ -61,6 +61,24 @@
 				},
 				
 				/**
+				 * Whether the current row is selected.
+				 */
+				selected: {
+					type: Boolean,
+					value: false,
+					observer: '_rowStatusChanged'
+				},
+				
+				/**
+				 * Whether the current row is hovered.
+				 */
+				hovered: {
+					type: Boolean,
+					value: false,
+					observer: '_rowStatusChanged'
+				},
+				
+				/**
 				 * Whether the item is ready.
 				 */
 				_isReady: {
@@ -75,6 +93,10 @@
 					type: Object
 				}
 				
+			},
+			
+			listeners: {
+				'cbn-table-row-hover': '_handleRowHover'
 			},
 			
 			observers: [
@@ -121,6 +143,19 @@
 			},
 			
 			/**
+			 * Returns the root data host for the currently templatized element to the element's original host, not the 
+			 * data table. 
+			 * This is required to make client computed properties / event listeners work.
+			 */
+			_getRootDataHost: function() {
+				var templatized = this._templatized;
+				if (templatized && templatized._lightParent && templatized._lightParent.host) {
+					return templatized._lightParent.host;
+				}
+				return Polymer.Templatizer._getRootDataHost.apply(this, arguments);
+			},
+			
+			/**
 			 * Updates this cell's contents.
 			 */
 			_updateContents: function () {
@@ -144,9 +179,30 @@
 					case 'template':
 						if (!this.template && !this._instance) return;
 						this._instance.item = this.item;
+						this._instance.index = this.index;
 						this._instance.cellContents = cellContents;
+						this._instance.selected = this.selected;
+						this._instance.hovered = this.hovered;
 						break;
 				}
+			},
+			
+			/**
+			 * Observes changes to the selected and hovered attributes.
+			 */
+			_rowStatusChanged: function () {
+				if (this.type == 'template') {
+					if (!this.template && !this._instance) return;
+					this._instance.selected = this.selected;
+					this._instance.hovered = this.hovered;
+				}
+			},
+			
+			/**
+			 * Handles a `cbn-table-row-hover` event, fired when a table row is hovered / unhovered.
+			 */
+			_handleRowHover: function(event) {
+				this.hovered = event.detail.hovered;
 			},
 			
 			/**

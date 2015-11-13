@@ -65,13 +65,15 @@ See `cbn-table` for information about styling the element.
 		</cbn-table>
 		
 		<template id="itemTemplate">
-			<div class$="[[_computeRowClasses(item, selected)]]">
-				<template is="dom-repeat" items="[[_columns]]" 
+			<div class$="[[_computeRowClasses(item, selected)]]" on-tap="_rowClicked" 
+				 on-mouseenter="_rowHoveredStatusChanged" on-mouseleave="_rowHoveredStatusChanged">
+				<template is="dom-repeat" items="[[_columns]]"
 						  as="column" index-as="column_index">
 					<div class="cbn-table-cell">
-						<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[column.obj]]" 
+						<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[column.obj]]"
+											 selected="[[selected]]" index="[[index]]"
 											 style$="[[_computeCellStyles(column.obj.style, item, column.obj)]]"
-											 template="[[column.template]]" index="[[index]]"></cbn-data-table-cell>
+											 template="[[column.template]]"></cbn-data-table-cell>
 					</div>
 				</template>
 			</div>
@@ -219,8 +221,10 @@ See `cbn-table` for information about styling the element.
 				// resolve template references
 				this._pendingTemplates = [];
 				for (var i=0; i<this._columns.length; i++) {
-					this._columns[i].filterTemplate = null;
-					this._columns[i].template = null;
+					if (!this._columns[i].filterTemplate)
+						this._columns[i].filterTemplate = null;
+					if (!this._columns[i].template)
+						this._columns[i].template = null;
 					
 					if (this._isDomReady) {
 						this._resolveColumnElements(this._columns[i]);
@@ -240,15 +244,16 @@ See `cbn-table` for information about styling the element.
 			 */
 			_resolveColumnElements: function(colDesc) {
 				// 1. Column template
-				if (colDesc.obj.renderAs == 'template') {
+				if (colDesc.obj.renderAs == 'template' && colDesc.obj.template) {
 					this.set('_columns.' + colDesc.obj._index + '.template', 
 						this._resolveElementSelector(colDesc.obj.template));
 				}
 				
 				// 2. Filter template
 				if (colDesc.obj.filterElement) {
-					this.set('_columns.' + colDesc.obj._index + '.filterTemplate', 
-						this._resolveElementSelector(colDesc.obj.filterElement));
+					if (!this._columns[colDesc.obj._index].filterTemplate)
+						this.set('_columns.' + colDesc.obj._index + '.filterTemplate', 
+							this._resolveElementSelector(colDesc.obj.filterElement));
 				}
 			},
 			
@@ -364,6 +369,34 @@ See `cbn-table` for information about styling the element.
 					originalEvent: event,
 					item: event.model.item
 				});
+			},
+			
+			/**
+			 * Handles the row tap / dblclick events.
+			 */
+			_rowClicked: function(event) {
+				if (event.type == 'tap') {
+					this.fire('cbn-table-row-tapped', {
+						model: event.model
+					});
+				} else if (event.type == 'dblclick') {
+					this.fire('cbn-table-row-dblclicked', {
+						model: event.model
+					});
+				}
+			},
+			
+			/**
+			 * Called when the row is hovered/unhovered to notify all cells of this.
+			 */
+			_rowHoveredStatusChanged: function(event) {
+				var hovered = (event.type == 'mouseenter');
+				var cells = event.currentTarget.querySelectorAll('cbn-data-table-cell');
+				for (var i=0; i<cells.length; i++) {
+					cells[i].fire('cbn-table-row-hover', {
+						hovered: hovered
+					});
+				}
 			},
 			
 			// UI computation methods:

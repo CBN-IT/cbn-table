@@ -1,0 +1,141 @@
+<link rel="import" href="../../paper-checkbox/paper-checkbox.html">
+
+<link rel="import" href="../styles.html" />
+
+<dom-module id="cbn-table-checkbox-selection">
+	<template>
+		
+		<template id="cellTemplate">
+			<div style="position: relative;">
+				<!-- Parent props: selected, hovered, index -->
+				<span style$="[[_computeIndexTextStyles(selected, hovered)]]">[[index]]</span>
+				<paper-checkbox style$="[[_computeCheckboxStyles(selected, hovered)]]"
+								checked$="{{ selected }}">[[ label ]]</paper-checkbox>
+			</div>
+		</template>
+		
+	</template>
+</dom-module>
+
+<script>
+	(function(scope) {
+		
+		//noinspection JSUnusedGlobalSymbols
+		/**
+		 * A checkbox selection and index cell element for `cbn-data-table`.
+		 */
+		scope.CheckboxSelectionColumn = Polymer({
+			is: 'cbn-table-checkbox-selection',
+			
+			properties: {
+				
+				label: {
+					type: String,
+					value: ''
+				},
+				
+				/**
+				 * The target column object.
+				 */
+				column: {
+					type: Object
+				},
+				
+				/**
+				 * The column descriptor object (which stores view metadata).
+				 */
+				colDesc: {
+					type: Object
+				},
+				
+				/**
+				 * Reference to the parent table.
+				 */
+				parentTable: {
+					type: Object
+				}
+			},
+			
+			observers: [
+				'_injectTemplate(column, colDesc, parentTable)'
+			],
+			
+			ready: function() {
+				this._injectTemplate();
+			},
+			
+			/**
+			 * Injects the cell template element into the column descriptor object.
+			 */
+			_injectTemplate: function() {
+				/** @namespace this.$.cellTemplate */
+				//noinspection JSUnresolvedVariable
+				if (this.$ && this.$.cellTemplate && this.column && this.colDesc && this.parentTable) {
+					if (!this.parentTable._columns[this.column._index]) {
+						// the element is ready sooner than expected; no problem:
+						this.colDesc.template = this.$.cellTemplate;
+					} else {
+						this.parentTable.set('_columns.' + this.column._index + '.template',
+							this.$.cellTemplate);
+					}
+				}
+			},
+			
+			// Computation methods (for the cell template)
+			
+			_computeCheckboxStyles: function(selected, hovered) {
+				var styles = 'display: block; text-align: center; transition: opacity; transition-duration: 0.3s;';
+				if (selected) {
+					styles += 'opacity: 1.0;';
+				} else if (hovered) {
+					styles += 'opacity: 0.6;';
+				} else {
+					styles += 'opacity: 0;';
+				}
+				return styles;
+			},
+			
+			_computeIndexTextStyles: function(selected, hovered) {
+				var styles = 'display: block; text-align: center; position: absolute; padding-right: 8px;' + 
+					'z-index: 999; font-weight: bold; top:0; left:0; right: 0; bottom: 0; ' +
+					'transition: opacity; transition-duration: 0.1s;';
+				if (selected) {
+					styles += 'opacity: 0;';
+				} else if (hovered) {
+					styles += 'opacity: 0;';
+				} else {
+					styles += 'opacity: 1.0;';
+				}
+				return styles;
+			}
+			
+		});
+		
+		// register it as column data type
+		scope.DataTypes["selection-index"] = {
+			value: function(/*item, column*/) { return null; },
+			filter: false, compare: false, // unfilterable / unsortable
+			
+			/**
+			 * Column pre-processing callback.
+			 * @param {Object} column The normalized column object.
+			 * @param {Object} colDesc The column descriptor object (which contains view metadata).
+			 */
+			column: function(column, colDesc) {
+				var el = new scope.CheckboxSelectionColumn();
+				
+				/** @namespace column.checkboxLabel */
+				el.label = column.checkboxLabel || '';
+				
+				el.parentTable = this;
+				el.column = column;
+				el.colDesc = colDesc;
+				
+				column.renderAs = 'template';
+				column._cellInstance = el;
+			}
+		};
+		
+		
+	})(CbnTable);
+</script>
