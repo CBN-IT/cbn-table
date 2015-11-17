@@ -376,14 +376,16 @@ See `cbn-table` for information about styling the element.
 			 */
 			_rowClicked: function(event) {
 				if (event.type == 'tap') {
+					if(event.detail.sourceEvent.detail == 1){
 					this.fire('cbn-table-row-tapped', {
-						model: event.model
+							item: event.model.item
 					});
-				} else if (event.type == 'dblclick') {
+					} else if(event.detail.sourceEvent.detail == 2){
 					this.fire('cbn-table-row-dblclicked', {
-						model: event.model
+							item: event.model.item
 					});
 				}
+				} 
 			},
 			
 			/**
