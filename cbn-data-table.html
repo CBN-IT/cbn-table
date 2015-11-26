@@ -91,8 +91,8 @@ See `cbn-table` for information about styling the element.
 				<content select=".after"></content>
 			</div>
 			<div style="padding-right:5px">
-				<paper-icon-button icon="check-box" class="action"></paper-icon-button>
-				<paper-icon-button icon="check-box-outline-blank" class="action"></paper-icon-button>
+				<paper-icon-button icon="check-box" class="action" on-tap="selectAll"></paper-icon-button>
+				<paper-icon-button icon="check-box-outline-blank" class="action" on-tap="clearSelection"></paper-icon-button>
 				<paper-icon-button icon="microsoft-office:excel" class="colored excel action"></paper-icon-button>
 				<paper-menu-button>
 					<paper-icon-button icon="editor:insert-chart" style="color: #3277ec;" class="dropdown-trigger action"></paper-icon-button>
