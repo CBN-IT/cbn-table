@@ -21,7 +21,12 @@
         "paper-input": "PolymerElements/paper-input#^1.0",
         "paper-checkbox": "PolymerElements/paper-checkbox#^1.0",
         "paper-tooltip": "PolymerElements/paper-tooltip#^1.0",
-        "paper-icon-button": "PolymerElements/paper-icon-button#^1.0"
+        "paper-icon-button": "PolymerElements/paper-icon-button#^1.0",
+        "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.0",
+        "paper-menu": "PolymerElements/paper-menu#^1.0.0",
+        "paper-menu-button": "PolymerElements/paper-menu-button#^1.0.0",
+        "paper-item": "PolymerElements/paper-item#^1.0.0",
+        "cbn-icons": "git@bitbucket.org:cbn-it/cbn-icons#polymer1.0"
     },
     "devDependencies": {
         "iron-component-page": "PolymerElements/iron-component-page#^1.0",
