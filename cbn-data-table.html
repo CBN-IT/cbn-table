@@ -200,6 +200,30 @@ See `cbn-table` for information about styling the element.
 			ready: function () {
 			},
 			
+			/**
+			 * Selects the specified item / index.
+			 * @param {Number|Object} i The item object / index to select.
+			 */
+			selectItem: function(i) {
+				this.$.table.selectItem(i);
+			},
+			
+			/**
+			 * Selects all table rows.
+			 */
+			selectAll: function() {
+				this.$.table.selectAll();
+			},
+			
+			/**
+			 * Deselects all table rows.
+			 */
+			clearSelection: function() {
+				this.$.table.clearSelection();
+			},
+			
+			// Element implementation:
+			
 			attached: function() {
 				this.async(function () {
 					this._isDomReady = true;

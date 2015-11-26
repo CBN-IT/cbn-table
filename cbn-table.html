@@ -221,6 +221,33 @@ Class name               | Description                   | Default
 				this._scrollHandler(this.$.ironList.scrollTop);
 			},
 			
+			/**
+			 * Selects the specified item / index.
+			 * @param {Number|Object} i The item object / index to select.
+			 */
+			selectItem: function(i) {
+				if (!this.selectionEnabled) return;
+				this.$.ironList.selectItem(i);
+			},
+			
+			/**
+			 * Selects all table rows.
+			 */
+			selectAll: function() {
+				if (!this.selectionEnabled) return;
+				for (var i=0; i<this._items.length; i++) {
+					this.$.ironList.selectItem(i);
+				}
+				this.$.ironList._update();
+			},
+			
+			/**
+			 * Deselects all table rows.
+			 */
+			clearSelection: function() {
+				if (!this.selectionEnabled) return;
+				this.$.ironList.clearSelection();
+			},
 			
 			/**
 			 * Observer for the `items` property.
