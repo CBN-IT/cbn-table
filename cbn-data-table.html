@@ -577,7 +577,7 @@ See `cbn-table` for information about styling the element.
 				html += "document.getElementById('formRaport').submit();";
 				html += "<" + "/script>" + "</html>";
 				iframe.contentDocument.write(html);
-				console.log("hash="+this.$.menuReports.selected);
+				this.$.menuReports.select("");
 			}
 
 		});
