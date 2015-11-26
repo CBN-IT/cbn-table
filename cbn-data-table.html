@@ -22,37 +22,98 @@ See `cbn-table` for information about styling the element.
 -->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/editor-icons.html">
+<link rel="import" href="../cbn-icons/microsoft-office-icons.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 
 <link rel="import" href="lib/include.html" />
 <link rel="import" href="cbn-table.html" />
 
 <dom-module id="cbn-data-table">
 	<template>
-		<style>
+		<style is="custom-style">
 			:host {
 				display: block;
 				position: relative;
+			@apply(--layout-vertical);
 			}
 			#table {
-				position: absolute;
 				top: 0; left: 0;
 				bottom: 0; right: 0;
 				z-index: 1;
 			}
+			.action{
+				padding:8px 2px;width: 30px;height: 40px;
+			}
+			.action:hover{
+				fill-opacity: 0.5;
+			}
+			.item-sablon iron-icon{
+				margin-right:10px;
+				margin-left:0px;
+			}
+			.item-sablon{
+				border-top: 1px solid #ccc;
+				padding:0 10px;
+				min-height: 35px;
+			}
+
+			paper-menu-button {
+				padding: 0px;
+			--paper-menu-button-dropdown: {
+				 font-size: 30px !important;
+				 top: 50px !important;
+				 right: 165px !important;
+				 max-width: 450px !important;
+				 width: 200px !important;
+			 };
+			}
+			paper-menu{
+				padding:0px;
+			}
 		</style>
-		
-		<content select=".before"></content>
-		
-		<cbn-table id="table" items="{{_filteredItems}}" 
-				   selection-enabled multi-selection selected-items="{{selectedItems}}">
+
+		<paper-material elevation="1" class="horizontal layout">
+			<div class="flex">
+				<content select=".before"></content>
+			</div>
+			<div>
+				<content select=".after"></content>
+			</div>
+			<div style="padding-right:5px">
+				<paper-icon-button icon="check-box" class="action"></paper-icon-button>
+				<paper-icon-button icon="check-box-outline-blank" class="action"></paper-icon-button>
+				<paper-icon-button icon="microsoft-office:excel" class="colored excel action"></paper-icon-button>
+				<paper-menu-button>
+					<paper-icon-button icon="editor:insert-chart" style="color: #3277ec;" class="dropdown-trigger action"></paper-icon-button>
+					<paper-menu id="menuReports" class="dropdown-content" horizontal-align="right" attr-for-selected="hash" on-iron-select="generateReport">
+						<template is="dom-repeat" items="{{reports}}" as="report">
+							<paper-item class="item-sablon" hash$="{{report._hash}}"><iron-icon icon$="microsoft-office:{{report.tipGenerare}}" class$="colored {{report.tipGenerare}}"></iron-icon>{{report.numeSablon}}</paper-item>
+						</template>
+					</paper-menu>
+				</paper-menu-button>
+			</div>
+		</paper-material>
+
+		<cbn-table id="table" items="{{_filteredItems}}"
+				   selection-enabled multi-selection selected-items="{{selectedItems}}" class="flex">
 			<template class="cbn-table-header">
 				<div class="cbn-table-row">
 					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
 						<div class="cbn-table-cell cbn-table-column">
 							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*, sortable)]]"
-								on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle, column.obj)]]">[[column.obj.caption]]</div>
-							
+								 on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle, column.obj)]]">[[column.obj.caption]]</div>
+
 							<template is="dom-if" if="[[_computeIsFilterable(column.obj.filter, filterable)]]">
 								<cbn-data-table-filter column="[[column.obj]]" template="[[column.filterTemplate]]"
 													   filter-value="{{column.currentFilter}}">
@@ -63,9 +124,9 @@ See `cbn-table` for information about styling the element.
 				</div>
 			</template>
 		</cbn-table>
-		
+
 		<template id="itemTemplate">
-			<div class$="[[_computeRowClasses(item, selected)]]" on-tap="_rowClicked" 
+			<div class$="[[_computeRowClasses(item, selected)]]" on-tap="_rowClicked"
 				 on-mouseenter="_rowHoveredStatusChanged" on-mouseleave="_rowHoveredStatusChanged">
 				<template is="dom-repeat" items="[[_columns]]"
 						  as="column" index-as="column_index">
@@ -78,7 +139,7 @@ See `cbn-table` for information about styling the element.
 				</template>
 			</div>
 		</template>
-		
+
 		<content></content>
 	</template>
 
@@ -86,13 +147,13 @@ See `cbn-table` for information about styling the element.
 
 <script>
 	(function () {
-		
+
 		//noinspection JSUnusedGlobalSymbols
 		CbnTable.DataTable = Polymer({
 			is: 'cbn-data-table',
-			
+
 			properties: {
-				
+
 				/**
 				 * An array with the table rows to display.
 				 */
@@ -100,7 +161,7 @@ See `cbn-table` for information about styling the element.
 					type: Array,
 					value: function() { return []; }
 				},
-				
+
 				/**
 				 * Stores the currently selected items.
 				 */
@@ -109,7 +170,7 @@ See `cbn-table` for information about styling the element.
 					notify: true,
 					value: function() { return []; }
 				},
-				
+
 				/**
 				 * An array with the table's columns.
 				 */
@@ -118,7 +179,23 @@ See `cbn-table` for information about styling the element.
 					value: function() { return []; },
 					observer: '_columnsChanged'
 				},
-				
+
+				/**
+				 * An array with reports.
+				 */
+				reports: {
+					type: Array,
+					value: function() { return []; }
+				},
+
+				/**
+				 *
+				 */
+				params: {
+					type: Object,
+					value: function() { return {}; }
+				},
+
 				/**
 				 * Whether table filtering is enabled. Defaults to true.
 				 */
@@ -126,7 +203,7 @@ See `cbn-table` for information about styling the element.
 					type: Boolean,
 					value: true
 				},
-				
+
 				/**
 				 * Whether table sorting is enabled. Defaults to true.
 				 */
@@ -134,7 +211,7 @@ See `cbn-table` for information about styling the element.
 					type: Boolean,
 					value: true
 				},
-				
+
 				/**
 				 * Stores the currently enabled data filters (map with the column's name + filtered value).
 				 * You can also modify this externally to apply custom filtering.
@@ -143,30 +220,30 @@ See `cbn-table` for information about styling the element.
 					type: Object,
 					value: function() { return {}; }
 				},
-				
+
 				/**
 				 * Stores the current column ordering.
-				 * 
-				 * The array contains simple objects that define the column's name (using the `name` property) and its sorting 
+				 *
+				 * The array contains simple objects that define the column's name (using the `name` property) and its sorting
 				 * direction (the `dir` property, which can be true for ascending, false for descending).
 				 */
 				sortOrdering: {
 					type: Array,
 					value: function() { return []; }
 				},
-				
+
 				/**
 				 * If set, the table row template will be optimized.
-				 * 
+				 *
 				 * WARNING: experimental, do not use!
 				 */
 				optimizeTemplate: {
 					type: Boolean,
 					value: false
 				},
-				
+
 				// Private properties
-				
+
 				/**
 				 * Whether the table's light DOM is ready.
 				 */
@@ -174,32 +251,32 @@ See `cbn-table` for information about styling the element.
 					type: Boolean,
 					value: false
 				},
-				
+
 				/**
-				 * Self-reference to the element, for use in data bindings. 
+				 * Self-reference to the element, for use in data bindings.
 				 */
 				_self: {
 					type: Object,
 					value: function() { return this; }
 				}
-				
+
 			},
-			
+
 			behaviors: [
 				Polymer.Templatizer,
 				CbnTable.DataProcessingBehavior
 			],
-			
+
 			/**
 			 * Stores the cell templates that needs to be resolved when the element is attached to the document.
 			 */
 			_pendingTemplates: [],
-			
+
 			// Element Lifecycle
-			
+
 			ready: function () {
 			},
-			
+
 			attached: function() {
 				this.async(function () {
 					this._isDomReady = true;
@@ -209,15 +286,15 @@ See `cbn-table` for information about styling the element.
 					this._pendingTemplates = [];
 				});
 			},
-			
+
 			/**
 			 * Called when the `columns` property is changed.
 			 */
 			_columnsChanged: function() {
 				if (!this.columns) return;
-				
+
 				this._processColumns(this.columns);
-				
+
 				// resolve template references
 				this._pendingTemplates = [];
 				for (var i=0; i<this._columns.length; i++) {
@@ -225,41 +302,41 @@ See `cbn-table` for information about styling the element.
 						this._columns[i].filterTemplate = null;
 					if (!this._columns[i].template)
 						this._columns[i].template = null;
-					
+
 					if (this._isDomReady) {
 						this._resolveColumnElements(this._columns[i]);
 					} else {
 						this._pendingTemplates.push(this._columns[i]);
 					}
 				}
-				
+
 				this._initItemTemplate();
 			},
-			
+
 			/**
-			 * Resolves the external elements for a table column (if used). 
+			 * Resolves the external elements for a table column (if used).
 			 * To be called only after the element is attached (so its light dom is accessible).
-			 * 
+			 *
 			 * @param {Object} colDesc The column descriptor object.
 			 */
 			_resolveColumnElements: function(colDesc) {
 				// 1. Column template
 				if (colDesc.obj.renderAs == 'template' && colDesc.obj.template) {
-					this.set('_columns.' + colDesc.obj._index + '.template', 
+					this.set('_columns.' + colDesc.obj._index + '.template',
 						this._resolveElementSelector(colDesc.obj.template));
 				}
-				
+
 				// 2. Filter template
 				if (colDesc.obj.filterElement) {
 					if (!this._columns[colDesc.obj._index].filterTemplate)
-						this.set('_columns.' + colDesc.obj._index + '.filterTemplate', 
+						this.set('_columns.' + colDesc.obj._index + '.filterTemplate',
 							this._resolveElementSelector(colDesc.obj.filterElement));
 				}
 			},
-			
+
 			/**
 			 * Resolves a string selector, first searching inside the table's local DOM, then among the document root.
-			 * 
+			 *
 			 * @param {*} selector The selector of the element to resolve.
 			 * @return {Element|null} The DOM element, if found; null otherwise.
 			 */
@@ -273,7 +350,7 @@ See `cbn-table` for information about styling the element.
 				} // else: already a DOM object, return it
 				return selector;
 			},
-			
+
 			/**
 			 * Initializes the element's item template.
 			 */
@@ -283,20 +360,20 @@ See `cbn-table` for information about styling the element.
 				if (existing) {
 					existing.parentNode.removeChild(existing);
 				}
-				
+
 				if (this.optimizeTemplate) {
 					// [re]generate the item template
 					this.$.table._itemTemplate = this._generateOptimizedItemTemplate();
-					
+
 				} else {
 					//noinspection JSUnresolvedVariable
 					this.$.table._itemTemplate = this.$.itemTemplate;
 				}
 			},
-			
+
 			/**
 			 * Generates an optimized table row template (to minimize rendering overhead).
-			 * 
+			 *
 			 * @return {Element} The generated template.
 			 */
 			_generateOptimizedItemTemplate: function() {
@@ -306,28 +383,28 @@ See `cbn-table` for information about styling the element.
 				this._columns.forEach(function(column, idx) {
 					content += '<div class="cbn-table-cell">' +
 						'	<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[_columns.' +idx+ '.obj]]"' +
-								 'style$="[[_computeCellStyles(_columns.' +idx+ '.obj.style, item, _columns.' +idx+ '.obj)]]"' +
-								 'template="[[_columns.' +idx+ '.template]]" index="[[index]]"></cbn-data-table-cell>' +
+						'style$="[[_computeCellStyles(_columns.' +idx+ '.obj.style, item, _columns.' +idx+ '.obj)]]"' +
+						'template="[[_columns.' +idx+ '.template]]" index="[[index]]"></cbn-data-table-cell>' +
 						'</div>';
 				});
 				content += '</div>';
 				tpl.innerHTML = content;
-				
+
 				// Initialize the template's annotations (see Polymer/standard/annotations.html)
 				Polymer.dom(this.root).appendChild(tpl);
 				Polymer.dom.flush();
-				
+
 				var notes = [];
 				Polymer.Annotations.prepElement = this._prepElement.bind(this);
-				Polymer.Annotations._parseTemplate(tpl, Array.prototype.indexOf.call(this.root._lightChildren, tpl), 
+				Polymer.Annotations._parseTemplate(tpl, Array.prototype.indexOf.call(this.root._lightChildren, tpl),
 					notes, { bindings: [], events: [] } // root parent
 				);
 				Polymer.Annotations.prepElement = null;
-				
+
 				var noteOffset = this._notes.length;
 				Array.prototype.push.apply(this._notes, notes);
 				this._processAnnotations(notes);
-				
+
 				notes.forEach(function(note, idx) {
 					idx = idx + noteOffset;
 					// marshal nodes
@@ -336,27 +413,27 @@ See `cbn-table` for information about styling the element.
 						this._nodes[idx]._content = note.templateContent;
 					}
 				}, this);
-				
+
 				return tpl;
 			},
-			
+
 			// Event handlers:
-			
+
 			/**
 			 * Called when a column is clicked (to re-sort the data).
-			 * 
+			 *
 			 * @param {Object} event The Polymer-augumented event object.
 			 */
 			_columnClicked: function(event) {
-				if (!event.model.column.obj.sortable) 
+				if (!event.model.column.obj.sortable)
 					return;
 				var ctrl = event.detail.sourceEvent.ctrlKey;
 				this.toggleOrdering(event.model.column.obj.name, ctrl);
 			},
-			
+
 			/**
 			 * Utility method that can be used to generate a custom event from another event.
-			 * 
+			 *
 			 * @param {Object} event The original Polymer event object.
 			 */
 			_throwEvent: function(event) {
@@ -370,24 +447,24 @@ See `cbn-table` for information about styling the element.
 					item: event.model.item
 				});
 			},
-			
+
 			/**
 			 * Handles the row tap / dblclick events.
 			 */
 			_rowClicked: function(event) {
 				if (event.type == 'tap') {
 					if(event.detail.sourceEvent.detail == 1){
-					this.fire('cbn-table-row-tapped', {
+						this.fire('cbn-table-row-tapped', {
 							item: event.model.item
-					});
+						});
 					} else if(event.detail.sourceEvent.detail == 2){
-					this.fire('cbn-table-row-dblclicked', {
+						this.fire('cbn-table-row-dblclicked', {
 							item: event.model.item
-					});
+						});
+					}
 				}
-				} 
 			},
-			
+
 			/**
 			 * Called when the row is hovered/unhovered to notify all cells of this.
 			 */
@@ -400,9 +477,9 @@ See `cbn-table` for information about styling the element.
 					});
 				}
 			},
-			
+
 			// UI computation methods:
-			
+
 			/**
 			 * Computes the CSS classes of a table row.
 			 */
@@ -410,10 +487,10 @@ See `cbn-table` for information about styling the element.
 				return 'cbn-table-row cbn-table' +
 					(selected ? ' selected' : '');
 			},
-			
+
 			/**
 			 * Computes the classes of column captions.
-			 * 
+			 *
 			 * @param {Object} column The column object.
 			 */
 			_computeColumnCaptionClasses: function(column) {
@@ -432,33 +509,33 @@ See `cbn-table` for information about styling the element.
 						return false;
 					});
 				}
-				
+
 				// check whether sorting is enabled for the current column
 				return "cbn-table cell-contents " + addClass;
 			},
-			
+
 			/**
 			 * Returns whether a table column is filterable.
 			 */
 			_computeIsFilterable: function(columnFilterable, filterable) {
 				return columnFilterable && filterable;
 			},
-			
+
 			/**
 			 * Computes the styles to show for a table cell / header element.
-			 * 
+			 *
 			 * @param {String|Object|Function} styles The style object to compute.
 			 * @return {String} The computed CSS string.
 			 */
 			_computeCellStyles: function(styles) {
 				if (typeof styles === 'string') {
 					return styles;
-					
+
 				} else if (typeof styles === 'function') {
 					// the user callback function will compute the actual styles
 					var res = styles.apply(this, Array.prototype.slice.call(arguments, 1));
 					return this._computeCellStyles(res);
-					
+
 				} else if (styles && typeof styles === 'object') {
 					var strStyles = '';
 					Object.getOwnPropertyNames(styles).forEach(function (n) {
@@ -469,14 +546,41 @@ See `cbn-table` for information about styling the element.
 						}
 						strStyles += cssName + ': ' + styles[n] + ';';
 					});
-					
+
 					return strStyles;
 				}
-				
+
 				return '';
+			},
+
+			generateReport: function(){
+				var keys = [];
+				for(var i=0;i<this.selectedItems.length;i++){
+					keys.push(this.selectedItems[i]._hash);
+				}
+				keys = JSON.stringify(keys);
+				var iframe = document.createElement("iframe");
+				iframe.style.display = "none";
+				document.body.appendChild(iframe);
+				var html = "<!DOCTYPE html><html><head><title></title></head><body><form id='formRaport' action='/do/Raport' target=\"_blank\" method='POST'>";
+				html += "<input type='hidden' name='namespace' value='" + this.namespace + "'/>";
+				html += "<input type='hidden' name='hashReport' value='" + this.$.menuReports.selected + "'/>";
+				html += "<input type='hidden' name='keys' value='" + keys + "'/>";
+
+				var nameParams = Object.keys(this.params);
+				for(i=0;i<nameParams.length;i++){
+					html += "<input type='hidden' name='"+nameParams[i]+"' value='" + this.params[nameParams] + "'/>";
+				}
+
+				html += "<input type='hidden' name='download' value='inline'/>";
+				html += "</form></body><script>";
+				html += "document.getElementById('formRaport').submit();";
+				html += "<" + "/script>" + "</html>";
+				iframe.contentDocument.write(html);
+				console.log("hash="+this.$.menuReports.selected);
 			}
-			
+
 		});
-		
+
 	})();
 </script>
