@@ -81,9 +81,12 @@ See `cbn-table` for information about styling the element.
 			paper-menu{
 				padding:0px;
 			}
+			#actionBar{
+				@apply(--cbn-data-table-action-bar);
+			}
 		</style>
 
-		<paper-material elevation="1" class="horizontal layout">
+		<paper-material elevation="1" class="horizontal layout" id="actionBar">
 			<div class="flex">
 				<content select=".before"></content>
 			</div>
