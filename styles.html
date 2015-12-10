@@ -4,7 +4,7 @@
 		/* Default values for CSS variables: */
 		--cbn-table-background: transparent;
 		--cbn-table-padding: 0.3em;
-		--cbn-table-border: 1px solid #E3E3E3;
+		--cbn-table-border: 1px solid #E0E0E0;
 		--cbn-table-cell-padding: 0.1em 0.2em;
 		--cbn-table-head-background: white;
 		--cbn-table-head-border: 1px solid #CCCCCC;
@@ -19,10 +19,10 @@
 			border-left: none; border-right: none;
 		};
 		--cbn-table-row-hover: {
-			background: #F5F5F5;
+			background: #EEEEEE;
 		};
 		--cbn-table-row-selected: {
-			background: #FFFDE3;
+			background: #F5F5F5;
 		};
 		--cbn-table-header-cell: {
 			font-weight: bold;
@@ -71,7 +71,7 @@
 	.cbn-table-row:nth-child(odd) {
 		@apply(--cbn-table-row-altn);
 	}
-	.cbn-table-row:hover {
+	.cbn-table-row:hover, .cbn-table-row.selected:hover {
 		@apply(--cbn-table-row-hover);
 	}
 	.cbn-table-row.selected {
@@ -118,9 +118,16 @@
 	.scroll-top #tableHead:after {
 		box-shadow: none;
 	}
+	
+	#tableHead .cbn-table-row:hover, 
+	#tableFoot .cbn-table-row:hover {
+		background: transparent;
+	}
+	
 	#tableHead .cbn-table-cell {
 		@apply(--cbn-table-header-cell);
 	}
+	
 	.scroll-top #tableHead .cbn-table-cell {
 		box-shadow: none;
 		border-bottom: var(--cbn-table-head-border);
@@ -161,7 +168,7 @@
 		padding-right: 20px;
 		position: relative;
 		cursor: pointer;
-		color: #666;
+		color: rgba(0,0,0, .54);
 	}
 	.cbn-table-column .cell-contents:hover {
 		color: #000;
