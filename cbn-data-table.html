@@ -104,16 +104,16 @@ See `cbn-table` for information about styling the element.
 				</paper-menu-button>
 			</div>
 		</paper-material>
-
+		
 		<cbn-table id="table" items="{{_filteredItems}}"
 				   selection-enabled multi-selection selected-items="{{selectedItems}}" class="flex">
 			<template class="cbn-table-header">
-				<div class="cbn-table-row">
+				<div class="cbn-table-row cbn-table">
 					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
-						<div class="cbn-table-cell cbn-table-column">
+						<div class="cbn-table-cell cbn-table-column cbn-table">
 							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*, sortable)]]"
 								 on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle, column.obj)]]">[[column.obj.caption]]</div>
-
+							
 							<template is="dom-if" if="[[_computeIsFilterable(column.obj.filter, filterable)]]">
 								<cbn-data-table-filter column="[[column.obj]]" template="[[column.filterTemplate]]"
 													   filter-value="{{column.currentFilter}}">
