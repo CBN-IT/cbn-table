@@ -84,6 +84,9 @@ See `cbn-table` for information about styling the element.
 			#actionBar{
 				@apply(--cbn-data-table-action-bar);
 			}
+			#defaultActionBar{
+				@apply(--cbn-data-table-default-action-bar);
+			}
 		</style>
 
 		<paper-material elevation="1" class="horizontal layout" id="actionBar">
@@ -93,7 +96,7 @@ See `cbn-table` for information about styling the element.
 			<div>
 				<content select=".after"></content>
 			</div>
-			<div style="padding-right:5px">
+			<div style="padding-right:5px" id="defaultActionBar">
 				<paper-icon-button icon="check-box" class="action" on-tap="selectAll"></paper-icon-button>
 				<paper-icon-button icon="check-box-outline-blank" class="action" on-tap="clearSelection"></paper-icon-button>
 				<paper-icon-button icon="microsoft-office:excel" class="colored excel action"></paper-icon-button>
