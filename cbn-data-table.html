@@ -97,10 +97,16 @@ See `cbn-table` for information about styling the element.
 				<content select=".after"></content>
 			</div>
 			<div style="padding-right:5px" id="defaultActionBar">
-				<paper-icon-button icon="check-box" class="action" on-tap="selectAll"></paper-icon-button>
-				<paper-icon-button icon="check-box-outline-blank" class="action" on-tap="clearSelection"></paper-icon-button>
-				<paper-icon-button icon="microsoft-office:excel" class="colored excel action"></paper-icon-button>
-				<paper-menu-button>
+				<paper-icon-button icon="check-box" class="action" on-tap="selectAll" id="selectAll"></paper-icon-button>
+				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="selectAll">Selectare totala</paper-tooltip>
+
+				<paper-icon-button icon="check-box-outline-blank" class="action" on-tap="clearSelection" id="clearSelection"></paper-icon-button>
+				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="clearSelection">Deselectare</paper-tooltip>
+
+				<paper-icon-button icon="microsoft-office:excel" class="colored excel action" id="exportExcel"></paper-icon-button>
+				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="exportExcel">Salvare ca Excel</paper-tooltip>
+
+				<paper-menu-button id="report">
 					<paper-icon-button icon="editor:insert-chart" style="color: #3277ec;" class="dropdown-trigger action"></paper-icon-button>
 					<paper-menu id="menuReports" class="dropdown-content" horizontal-align="right" attr-for-selected="hash" on-iron-select="generateReport">
 						<template is="dom-repeat" items="{{reports}}" as="report">
@@ -108,6 +114,8 @@ See `cbn-table` for information about styling the element.
 						</template>
 					</paper-menu>
 				</paper-menu-button>
+				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="report">Aplica raport</paper-tooltip>
+
 			</div>
 		</paper-material>
 		
