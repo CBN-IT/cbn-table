@@ -32,6 +32,7 @@ See `cbn-table` for information about styling the element.
 <link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../save-excel/save-excel.html">
 <link rel="import" href="../iron-icons/editor-icons.html">
 <link rel="import" href="../cbn-icons/microsoft-office-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
@@ -102,8 +103,9 @@ See `cbn-table` for information about styling the element.
 
 				<paper-icon-button icon="check-box-outline-blank" class="action" on-tap="clearSelection" id="clearSelection"></paper-icon-button>
 				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="clearSelection">Deselectare</paper-tooltip>
+				<save-excel id="saveExcel"></save-excel>
+				<paper-icon-button icon="microsoft-office:excel" class="colored excel action" id="exportExcel" on-tap="saveExcel"></paper-icon-button>
 
-				<paper-icon-button icon="microsoft-office:excel" class="colored excel action" id="exportExcel"></paper-icon-button>
 				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="exportExcel">Salvare ca Excel</paper-tooltip>
 
 				<paper-menu-button id="report" horizontal-align="right" vertical-align="top" vertical-offset="40">
@@ -291,6 +293,41 @@ See `cbn-table` for information about styling the element.
 			ready: function () {
 			},
 			
+			saveExcel: function(){
+				var data = this.selectedItems;
+				if (data == undefined || data.length == 0) {
+				
+						data = this._filteredItems;
+				}
+				var header = [];
+				var headerIds = [];
+				for (var i in this.columns) {
+					var column = this.columns[i];
+					if (!column.hidden && column.type != "index" && column.type != "inert") {
+						header.push(column.caption);
+						headerIds.push(column.name);
+					}
+				}
+				
+				var returnData = [];
+				returnData.push(header);
+				if (!(data instanceof Array)) {
+					data = [data];
+				}
+				for (i in data) {
+					var row = [];
+					for (var c in headerIds) {
+						if (data[i] != undefined) {
+							
+							row.push(data[i][headerIds[c]]);
+						}
+
+					}
+					returnData.push(row);
+				}
+				this.$.saveExcel.data = returnData;
+				this.$.saveExcel.arrayToXLSX();	
+			},
 			/**
 			 * Selects the specified item / index.
 			 * @param {Number|Object} i The item object / index to select.
