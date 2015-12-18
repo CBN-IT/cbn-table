@@ -72,8 +72,8 @@ See `cbn-table` for information about styling the element.
 				padding: 0px;
 				--paper-menu-button-dropdown: {
 					font-size: 30px !important;
-					top: 50px !important;
-					right: 165px !important;
+					/*top: 50px !important;*/
+					/*right: 165px !important;*/
 					max-width: 450px !important;
 					width: 200px !important;
 				};
@@ -106,7 +106,7 @@ See `cbn-table` for information about styling the element.
 				<paper-icon-button icon="microsoft-office:excel" class="colored excel action" id="exportExcel"></paper-icon-button>
 				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="exportExcel">Salvare ca Excel</paper-tooltip>
 
-				<paper-menu-button id="report">
+				<paper-menu-button id="report" horizontal-align="right" vertical-align="top" vertical-offset="40">
 					<paper-icon-button icon="editor:insert-chart" style="color: #3277ec;" class="dropdown-trigger action"></paper-icon-button>
 					<paper-menu id="menuReports" class="dropdown-content" horizontal-align="right" attr-for-selected="hash" on-iron-select="generateReport">
 						<template is="dom-repeat" items="{{reports}}" as="report">
