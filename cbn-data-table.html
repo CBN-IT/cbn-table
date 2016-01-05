@@ -149,7 +149,7 @@ See `cbn-table` for information about styling the element.
 		</cbn-table>
 
 		<template id="itemTemplate">
-			<div class$="[[_computeRowClasses(item, selected)]]" on-tap="_rowClicked"
+			<div class$="[[_computeRowClasses(item, selected, index)]]" on-tap="_rowClicked"
 				 on-mouseenter="_rowHoveredStatusChanged" on-mouseleave="_rowHoveredStatusChanged">
 				<template is="dom-repeat" items="[[_columns]]"
 						  as="column" index-as="column_index">
@@ -551,11 +551,11 @@ See `cbn-table` for information about styling the element.
 			/**
 			 * Computes the CSS classes of a table row.
 			 */
-			_computeRowClasses: function(item, selected) {
+			_computeRowClasses: function(item, selected, index) {
 				return 'cbn-table-row cbn-table' +
 					(selected ? ' selected' : '') +
-					(item.index == 0 ? ' first-row' : '') +
-					(item.index == this.items.length-1 ? ' last-row' : '');
+					(index === 0 ? ' first-row' : '') +
+					(index === this.items.length-1 ? ' last-row' : '');
 			},
 			
 			/**
