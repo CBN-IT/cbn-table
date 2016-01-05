@@ -152,12 +152,11 @@ See `cbn-table` for information about styling the element.
 				 on-mouseenter="_rowHoveredStatusChanged" on-mouseleave="_rowHoveredStatusChanged">
 				<template is="dom-repeat" items="[[_columns]]"
 						  as="column" index-as="column_index">
-					<div class="cbn-table-cell">
-						<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[column.obj]]"
-											 selected="[[selected]]" index="[[index]]"
-											 style$="[[_computeCellStyles(column.obj.style, item, column.obj)]]"
-											 template="[[column.template]]"></cbn-data-table-cell>
-					</div>
+					<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[column.obj]]"
+										 selected="[[selected]]" index="[[index]]"
+										 style$="[[_computeCellStyles(column.obj.style, item, column.obj)]]"
+										 class="cbn-table-cell"
+										 template="[[column.template]]"></cbn-data-table-cell>
 				</template>
 			</div>
 		</template>
@@ -504,6 +503,7 @@ See `cbn-table` for information about styling the element.
 			 * @param {Object} event The original Polymer event object.
 			 */
 			_throwEvent: function(event) {
+				event.stopPropagation();
 				var name = event.currentTarget.getAttribute("data-event");
 				if (!name) {
 					console.warn("Please specify a `data-event` attribute!");
