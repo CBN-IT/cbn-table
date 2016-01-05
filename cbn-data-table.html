@@ -293,47 +293,21 @@ See `cbn-table` for information about styling the element.
 			ready: function () {
 			},
 			
-			saveExcel: function(){
-				var data = this.selectedItems;
-				if (data == undefined || data.length == 0) {
-				
-						data = this._filteredItems;
-				}
-				var header = [];
-				var headerIds = [];
-				for (var i in this.columns) {
-					var column = this.columns[i];
-					if (!column.hidden && column.type != "index" && column.type != "inert") {
-						header.push(column.caption);
-						headerIds.push(column.name);
-					}
-				}
-				
-				var returnData = [];
-				returnData.push(header);
-				if (!(data instanceof Array)) {
-					data = [data];
-				}
-				for (i in data) {
-					var row = [];
-					for (var c in headerIds) {
-						if (data[i] != undefined) {
-							
-							row.push(data[i][headerIds[c]]);
-						}
-
-					}
-					returnData.push(row);
-				}
-				this.$.saveExcel.data = returnData;
-				this.$.saveExcel.arrayToXLSX();	
-			},
 			/**
 			 * Selects the specified item / index.
 			 * @param {Number|Object} i The item object / index to select.
 			 */
 			selectItem: function(i) {
 				this.$.table.selectItem(i);
+			},
+			
+			/**
+			 * Toggles the selection status of the specified item / index.
+			 * @param {Number|Object} i The item object / index to toggle.
+			 * @param {Boolean} [selected] The selection status to set (override).
+			 */
+			toggleSelection: function(i, selected) {
+				this.$.table.toggleSelection(i, selected);
 			},
 			
 			/**
@@ -552,9 +526,9 @@ See `cbn-table` for information about styling the element.
 					});
 				}
 			},
-
+			
 			// UI computation methods:
-
+			
 			/**
 			 * Computes the CSS classes of a table row.
 			 */
@@ -564,7 +538,7 @@ See `cbn-table` for information about styling the element.
 					(item.index == 0 ? ' first-row' : '') +
 					(item.index == this.items.length-1 ? ' last-row' : '');
 			},
-
+			
 			/**
 			 * Computes the classes of column captions.
 			 *
@@ -586,18 +560,18 @@ See `cbn-table` for information about styling the element.
 						return false;
 					});
 				}
-
+				
 				// check whether sorting is enabled for the current column
 				return "cbn-table cell-contents " + addClass;
 			},
-
+			
 			/**
 			 * Returns whether a table column is filterable.
 			 */
 			_computeIsFilterable: function(columnFilterable, filterable) {
 				return columnFilterable && filterable;
 			},
-
+			
 			/**
 			 * Computes the styles to show for a table cell / header element.
 			 *
@@ -607,12 +581,12 @@ See `cbn-table` for information about styling the element.
 			_computeCellStyles: function(styles) {
 				if (typeof styles === 'string') {
 					return styles;
-
+					
 				} else if (typeof styles === 'function') {
 					// the user callback function will compute the actual styles
 					var res = styles.apply(this, Array.prototype.slice.call(arguments, 1));
 					return this._computeCellStyles(res);
-
+					
 				} else if (styles && typeof styles === 'object') {
 					var strStyles = '';
 					Object.getOwnPropertyNames(styles).forEach(function (n) {
@@ -623,13 +597,13 @@ See `cbn-table` for information about styling the element.
 						}
 						strStyles += cssName + ': ' + styles[n] + ';';
 					});
-
+					
 					return strStyles;
 				}
-
+				
 				return '';
 			},
-
+			
 			generateReport: function(){
 				var iframe = document.createElement("iframe");
 				iframe.style.display = "none";
@@ -651,8 +625,45 @@ See `cbn-table` for information about styling the element.
 				html += "<" + "/script>" + "</html>";
 				iframe.contentDocument.write(html);
 				this.$.menuReports.select("");
-			}
-
+			},
+			
+			saveExcel: function(){
+				var data = this.selectedItems;
+				if (data == undefined || data.length == 0) {
+					
+					data = this._filteredItems;
+				}
+				var header = [];
+				var headerIds = [];
+				for (var i in this.columns) {
+					var column = this.columns[i];
+					if (!column.hidden && column.type != "index" && column.type != "inert") {
+						header.push(column.caption);
+						headerIds.push(column.name);
+					}
+				}
+				
+				var returnData = [];
+				returnData.push(header);
+				if (!(data instanceof Array)) {
+					data = [data];
+				}
+				for (i in data) {
+					var row = [];
+					for (var c in headerIds) {
+						if (data[i] != undefined) {
+							
+							row.push(data[i][headerIds[c]]);
+						}
+						
+					}
+					returnData.push(row);
+				}
+				this.$.saveExcel.data = returnData;
+				this.$.saveExcel.arrayToXLSX();
+			},
+			
+			
 		});
 
 	})();

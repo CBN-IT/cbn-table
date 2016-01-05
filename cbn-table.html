@@ -231,6 +231,22 @@ Class name               | Description                   | Default
 			},
 			
 			/**
+			 * Toggles the specified item / index.
+			 * @param {Number|Object} i The item object / index to toggle.
+			 * @param {Boolean} [selected] The selection status to set (override).
+			 */
+			toggleSelection: function(i, selected) {
+				if (!this.selectionEnabled) return;
+				if (selected === undefined) {
+					this.$.ironList.toggleSelectionForItem(i);
+				} else if (selected) {
+					this.$.ironList.selectItem(i);
+				} else {
+					this.$.ironList.deselectItem(i);
+				}
+			},
+			
+			/**
 			 * Selects all table rows.
 			 */
 			selectAll: function() {
@@ -646,7 +662,6 @@ Class name               | Description                   | Default
 				if (!start) start = 0;
 				if (!end) end = this._items.length;
 				
-				console.log('srange', start, end);
 				for (var i=start; i<end; i++) {
 					item = this.$.ironList._getNormalizedItem(i);
 					model = this.$.ironList._getModelFromItem(item);
