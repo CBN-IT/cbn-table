@@ -137,7 +137,9 @@ See `cbn-table` for information about styling the element.
 								</cbn-data-table-filter>
 							</template>
 							<template is="dom-if" if="[[_computeIsIndex(column.obj.type)]]">
-								<paper-icon-button icon="[[_computeIndexIcon(selectedItems.length, items.length)]]" class="indexButton" id="indexButton" on-tap="selectAllNone"></paper-icon-button>
+								<div>
+									<paper-icon-button icon="[[_computeIndexIcon(selectedItems.length, items.length)]]" class="indexButton" id="indexButton" on-tap="selectAllNone"></paper-icon-button>
+								</div>
 							</template>
 						</div>
 					</template>
