@@ -42,7 +42,7 @@ See `cbn-table` for information about styling the element.
 
 <dom-module id="cbn-data-table">
 	<template>
-		<style is="custom-style">
+		<style>
 			:host {
 				display: block;
 				position: relative;
@@ -59,6 +59,12 @@ See `cbn-table` for information about styling the element.
 			.action:hover{
 				fill-opacity: 0.5;
 			}
+			.indexButton{
+				padding: 0 3px;
+				width: 30px;
+				height: 30px;
+			}
+
 			.item-sablon iron-icon{
 				margin-right:10px;
 				margin-left:0px;
@@ -98,11 +104,6 @@ See `cbn-table` for information about styling the element.
 				<content select=".after"></content>
 			</div>
 			<div style="padding-right:5px" id="defaultActionBar">
-				<paper-icon-button icon="check-box" class="action" on-tap="selectAll" id="selectAll"></paper-icon-button>
-				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="selectAll">Selectare totala</paper-tooltip>
-
-				<paper-icon-button icon="check-box-outline-blank" class="action" on-tap="clearSelection" id="clearSelection"></paper-icon-button>
-				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="clearSelection">Deselectare</paper-tooltip>
 				<save-excel id="saveExcel"></save-excel>
 				<paper-icon-button icon="microsoft-office:excel" class="colored excel action" id="exportExcel" on-tap="saveExcel"></paper-icon-button>
 
@@ -134,6 +135,9 @@ See `cbn-table` for information about styling the element.
 								<cbn-data-table-filter column="[[column.obj]]" template="[[column.filterTemplate]]"
 													   filter-value="{{column.currentFilter}}">
 								</cbn-data-table-filter>
+							</template>
+							<template is="dom-if" if="[[_computeIsIndex(column.obj.type)]]">
+								<paper-icon-button icon="[[_computeIndexIcon(selectedItems.length, items.length)]]" class="indexButton" id="indexButton" on-tap="selectAllNone"></paper-icon-button>
 							</template>
 						</div>
 					</template>
@@ -315,6 +319,18 @@ See `cbn-table` for information about styling the element.
 			 */
 			selectAll: function() {
 				this.$.table.selectAll();
+			},
+
+			/**
+			 * Selects all table rows.
+			 */
+			selectAllNone: function() {
+				if(this.$.table.selectedItems.length===0){
+					this.selectAll();
+				} else {
+					this.clearSelection();
+				}
+				
 			},
 			
 			/**
@@ -570,6 +586,25 @@ See `cbn-table` for information about styling the element.
 			 */
 			_computeIsFilterable: function(columnFilterable, filterable) {
 				return columnFilterable && filterable;
+			},
+			
+			/**
+			 * Returns whether a table column is an index column.
+			 */
+			_computeIsIndex: function(type) {
+				return type==="selection-index" || type==="index";
+			},
+
+			/**
+			 * Computes the icon of the Select All/None button.
+			 */
+			_computeIndexIcon: function() {
+				if (this.selectedItems.length === this.items.length)
+					return "icons:check-box";
+				if (this.selectedItems.length > 0)
+					return "icons:indeterminate-check-box";
+
+				return "icons:check-box-outline-blank"
 			},
 			
 			/**
