@@ -560,7 +560,9 @@ See `cbn-table` for information about styling the element.
 			 */
 			_computeRowClasses: function(item, selected) {
 				return 'cbn-table-row cbn-table' +
-					(selected ? ' selected' : '');
+					(selected ? ' selected' : '') +
+					(item.index == 0 ? ' first-row' : '') +
+					(item.index == this.items.length-1 ? ' last-row' : '');
 			},
 
 			/**
