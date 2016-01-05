@@ -15,10 +15,16 @@
 			box-shadow: 0 2px 7px 0 rgba(0, 0, 0, 0.14), 0 2px 5px 0 rgba(0, 0, 0, 0.22);
 		};
 		--cbn-table-cell: {
-			color: #353535;
+			/*color: #353535;*/ /*removed because color is inherited and we prefer to give it from row*/
 			border-left: none; border-right: none;
 		};
+		--cbn-table-row: {
+			color: #353535;
+		};
 		--cbn-table-row-hover: {
+			background: #EEEEEE;
+		};
+		--cbn-table-row-selected-hover:{
 			background: #EEEEEE;
 		};
 		--cbn-table-row-selected: {
@@ -33,7 +39,7 @@
 		};
 		--cbn-table-footer-cell: {
 			font-weight: bold;
-			color: #353535;
+			/*color: #353535;*/ /*removed because color is inherited and we prefer to give it from row*/
 			border-left: none; border-right: none;
 		};
 	}
@@ -71,8 +77,11 @@
 	.cbn-table-row:nth-child(odd) {
 		@apply(--cbn-table-row-altn);
 	}
-	.cbn-table-row:hover, .cbn-table-row.selected:hover {
+	.cbn-table-row:hover {
 		@apply(--cbn-table-row-hover);
+	}
+	.cbn-table-row.selected:hover{
+		@apply(--cbn-table-row-selected-hover);
 	}
 	.cbn-table-row.selected {
 		@apply(--cbn-table-row-selected);
@@ -247,8 +256,7 @@
 		width: 100%;
 		box-sizing: border-box;
 		margin: 0;
-		padding: 0.3em;
-		padding-right: 1.6em;
+		padding: 0.3em 1.6em 0.3em 0.3em;
 		outline: 0;
 		
 		background-color: #fff;
