@@ -624,6 +624,7 @@ Class name               | Description                   | Default
 									this._lastSelectedItemIdx = model[this.indexAs];
 									
 								} else if (srce.shiftKey) {
+									//TODO this is supposed to be like gmail not windows
 									this.clearSelection();
 									document.getSelection().removeAllRanges();
 									var starti = this._lastSelectedItemIdx || 0, endi = model[this.indexAs];
