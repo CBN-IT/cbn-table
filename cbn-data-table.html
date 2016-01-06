@@ -647,7 +647,6 @@ See `cbn-table` for information about styling the element.
 				iframe.style.display = "none";
 				document.body.appendChild(iframe);
 				var html = "<!DOCTYPE html><html><head><title></title></head><body><form id='formRaport' action='/do/Raport' target=\"_blank\" method='POST'>";
-				html += "<input type='hidden' name='namespace' value='" + this.namespace + "'/>";
 				html += "<input type='hidden' name='hashReport' value='" + this.$.menuReports.selected + "'/>";
 				for(var i=0;i<this.selectedItems.length;i++){
 					html += "<input type='hidden' name='keys' value='" + this.selectedItems[i]._hash + "'/>";
@@ -655,7 +654,7 @@ See `cbn-table` for information about styling the element.
 				
 				var nameParams = Object.keys(this.params);
 				for(i=0;i<nameParams.length;i++){
-					html += "<input type='hidden' name='"+nameParams[i]+"' value='" + this.params[nameParams] + "'/>";
+					html += "<input type='hidden' name='"+nameParams[i]+"' value='" + this.params[nameParams[i]] + "'/>";
 				}
 				html += "<input type='hidden' name='download' value='inline'/>";
 				html += "</form></body><script>";
