@@ -164,7 +164,7 @@ Class name               | Description                   | Default
 				_itemTemplate: {
 					type: Object,
 					observer: '_itemTemplateChanged'
-				}
+				},
 				
 				/**
 				 * Called when the table has finished re-rendering.
@@ -222,7 +222,7 @@ Class name               | Description                   | Default
 			},
 			
 			/**
-			 * Selects the specified item / index.
+			 * Selects the specified item / index (deselecting all others).
 			 * @param {Number|Object} i The item object / index to select.
 			 */
 			selectItem: function(i) {
@@ -232,7 +232,7 @@ Class name               | Description                   | Default
 			
 			/**
 			 * Toggles the specified item / index.
-			 * @param {Number|Object} i The item object / index to toggle.
+			 * @param {Number|Object|Array} i The item object / index / range to toggle.
 			 * @param {Boolean} [selected] The selection status to set (override).
 			 */
 			toggleSelection: function(i, selected) {
@@ -601,9 +601,9 @@ Class name               | Description                   | Default
 				/**
 				 * Override the item press / tap event to implement a more advanced multiple selection behavior:
 				 * 
-				 * - if the ctrl key is pressed, the item's selection is toggled;
-				 * - if the shift key is pressed, all items from the last pressed item to the current one are selected / 
-				 *   deselected (based on the current item's status);
+				 * - if the ctrl key is pressed, a single item's selection status is toggled;
+				 * - if the shift key is pressed, all items from the last pressed item to the current one are toggled
+				 *   (based on the current item's selection status) - the same behavior as GMail;
 				 * - otherwise, the multiple selection will be cleared and the current item will be the only one selected.
 				 * 
 				 * @param {Event} e The tap / click event object.
@@ -618,30 +618,34 @@ Class name               | Description                   | Default
 						var srce = e.detail.sourceEvent;
 						var model = this.modelForElement(e.target);
 						if (model) {
+							var itemIndex = model[this.indexAs];
 							if (this.multiSelection) {
 								if (srce.ctrlKey) {
 									this.toggleSelectionForItem(model[this.as]);
 									this._lastSelectedItemIdx = model[this.indexAs];
+									this._lastSelectedRange = null;
 									
 								} else if (srce.shiftKey) {
-									//TODO this is supposed to be like gmail not windows
-									this.clearSelection();
 									document.getSelection().removeAllRanges();
-									var starti = this._lastSelectedItemIdx || 0, endi = model[this.indexAs];
-									if (starti > endi) {
-										starti = endi;
-										endi = this._lastSelectedItemIdx;
+									var starti = this._lastSelectedItemIdx || 0, endi = itemIndex;
+									if (this._lastSelectedRange) {
+										table._selectRange(this._lastSelectedRange[0], this._lastSelectedRange[1],
+											true, true);
+										starti = this._lastSelectedRange[0];
 									}
-									table._selectRange(starti, endi+1);
+									this._lastSelectedRange = [ starti, endi ];
+									table._selectRange(starti, endi, model[this.selectedAs], true);
 									
 								} else {
 									this.clearSelection();
 									this.toggleSelectionForItem(model[this.as]);
-									this._lastSelectedItemIdx = model[this.indexAs];
+									this._lastSelectedItemIdx = itemIndex;
+									this._lastSelectedRange = null;
 								}
 							} else {
 								this.toggleSelectionForItem(model[this.as]);
-								this._lastSelectedItemIdx = model[this.indexAs];
+								this._lastSelectedItemIdx = itemIndex;
+								this._lastSelectedRange = null;
 							}
 						}
 					}
@@ -650,31 +654,66 @@ Class name               | Description                   | Default
 			},
 			
 			/**
-			 * Optimized function that selects a range of items.
+			 * Optimized function that selects / deselects a range of items.
 			 * 
-			 * @param {Number} [start] The start index to begin selection from.
-			 * @param {Number} [end] The end index to end selection to (exclusive).
+			 * @param {Number}  [start]    The start index to begin selection from.
+			 * @param {Number}  [end]      The end index to end selection to (inclusive).
+			 * @param {Boolean} [deselect] Whether to deselect (true) or select (false-y).
+			 * @param {Boolean} [keepSelected] Whether to keep current selection.
 			 */
-			_selectRange: function(start, end) {
-				var selectedItems = [], remainingItems;
+			_selectRange: function(start, end, deselect, keepSelected) {
+				var selectedItems, remainingItems;
 				var item, model, args, icol, key, skey;
 				var selector = this.$.ironList.$.selector;
 				
-				if (!start) start = 0;
-				if (!end) end = this._items.length;
+				if (start === undefined) start = 0;
+				if (end === undefined) end = this._items.length - 1;
+				if (end >= this._items.length) end = this._items.length - 1;
+				if (start > end) {
+					var aux = start;
+					start = end;
+					end = aux;
+				}
 				
-				for (var i=start; i<end; i++) {
-					item = this.$.ironList._getNormalizedItem(i);
+				var keepItemKeys = {};
+				var keepItems = [];
+				if (keepSelected) {
+					this.selectedItems.forEach(function(item) {
+						key = this.$.ironList._collection.getKey(item);
+						keepItemKeys[key] = keepItems.length;
+						keepItems.push(item);
+					}, this);
+				}
+				selectedItems = [];
+				for (var i=start; i<=end; i++) {
+					item = this.$.ironList._getNormalizedItem(parseInt(i));
+					model = this.$.ironList._getModelFromItem(item);
+					key = this.$.ironList._collection.getKey(item);
+					if (keepItemKeys[key] !== undefined) {
+						if (deselect) {
+							delete keepItemKeys[key];
+						}
+					} else if (!deselect) {
+						selectedItems.push(item);
+					}
+				}
+				for (key in keepItemKeys) {
+					//noinspection JSUnfilteredForInLoop
+					i = keepItemKeys[key];
+					selectedItems.push(keepItems[i]);
+				}
+				
+				// hack for initializing the array-selector collection
+				this.selectItem(start);
+				this.clearSelection();
+				
+				// set the selectedAs property to true to all selected items
+				selectedItems.forEach(function(item) {
 					model = this.$.ironList._getModelFromItem(item);
 					if (model) {
 						model[this.$.ironList.selectedAs] = true;
 					}
-					
-					selectedItems.push(item);
-				}
-				
-				this.selectItem(start);
-				this.clearSelection();
+				}, this);
 				
 				// javascript has limits on the number of arguments one can call a function with,
 				// so we may need to call push multiple times

@@ -13,15 +13,27 @@
 	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 	<link rel="import" href="../cbn-data-table.html">
 	
+	<style is="custom-style">
+		#appContainer {
+			@apply(--layout-vertical);
+			@apply(--layout-fit);
+		}
+		
+		#table {
+			@apply(--layout-flex);
+			margin-bottom: 0.8em;
+		}
+		
+	</style>
+	
 </head>
 <body>
 
 <template id="t" is="dom-bind">
-	<div style="margin: 0 auto; width:90%;">
-		
+	<div style="margin: 0 auto; width:90%;" id="appContainer">
 		<p><b>Data Table Demo:</b></p>
 		
-		<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]">
+		<cbn-data-table id="table" items="[[items]]" columns="[[columns]]">
 			<template id="buttons">
 				<span>
 					<paper-icon-button on-tap="_throwEvent" data-event="page-view" icon="icons:pageview">Y</paper-icon-button>
