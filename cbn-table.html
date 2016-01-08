@@ -662,6 +662,8 @@ Class name               | Description                   | Default
 				var item, model, args, icol, key, skey;
 				var selector = this.$.ironList.$.selector;
 				
+				if (!this._items.length) return;
+				
 				if (start === undefined) start = 0;
 				if (end === undefined) end = this._items.length - 1;
 				if (end >= this._items.length) end = this._items.length - 1;
