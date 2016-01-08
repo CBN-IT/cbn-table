@@ -414,54 +414,50 @@ Class name               | Description                   | Default
 				this.$.ironList._positionItems = function (itemSet) {
 					this._adjustScrollPosition();
 					
-					/**
-					 * Sums the elements of an array, from start to end.
-					 * @param arr The array to iterate.
-					 * @param start The index of the first element to sum.
-					 * @param end The index of the element to stop at (excluded from the sum).
-					 * @returns {number} The calculated sum of the elements.
+					var physTop = this._physicalTop;
+					var physStart = this._physicalStart;
+					var prevIdx = null;
+					var offsetDiff = 0;
+					
+					/*
+					 * Because the list's elements don't have "position: absolute", the translation transformation
+					 * is applied relative to the physical item's original position.
+					 * So, initially, we need to subtract the sum of the heights of all items above the physical start 
+					 * item.
 					 */
-					function sumArr(arr, start, end) {
-						var sum = 0;
-						if (end < start) { var aux = start; start = end; end = aux; }
-						for (var i=start; i<end; i++) { sum += arr[i]; }
-						return sum;
+					for (var i = 0; i < physStart; i++) {
+						offsetDiff += this._physicalSizes[i];
 					}
 					
-					var physTop = this._physicalTop;
-					var i = 0;
-					this._iterateItems(function (pidx) {
+					this._iterateItems(function (pidx, vidx) {
 						var physEl = this._physicalItems[pidx];
-						/**
-						 * Because the list's elements don't have "position: absolute", the translation transformation 
-						 * is applied relative to the element's initial position, which depends on the source order of the 
-						 * physical items. But, because of an iron-list optimization which can change the fill order of 
-						 * the physical elements, we may need to swap their positions to retain the expected order.
-						 * So the elements `i` and `pidx` must be rendered as swapped: one (the one with lesser pidx) 
-						 * will have the Y coordinate of -[diff]px and the other, the opposite value (a positive translation 
-						 * with the same magnitude).
-						 */
-						var diff = sumArr(this._physicalSizes, i, pidx);
-						if (i < pidx) diff = -diff;
 						
-						this.transform('translate3d(0, ' + (physTop + diff) + 'px, 0)', physEl);
+						/*
+						 * Iron-list cycles through the physical elements. When this happens, we need to recalculate the 
+						 * offset used from now on.
+						 */
+						if (prevIdx > pidx) {
+							for (var i = 0; i <= prevIdx; i++) {
+								offsetDiff -= this._physicalSizes[i];
+							}
+						}
+						prevIdx = pidx;
+						this.transform('translate3d(0, ' + (physTop - offsetDiff) + 'px, 0)', physEl);
 						
 						// if the current physicalItem stores the first row, add the .first-row class to it
-						if (physEl._templateInstance[this.indexAs] == 0) {
+						if (vidx== 0) {
 							if (!physEl.classList.contains('first-row'))
 								physEl.classList.add('first-row');
 						} else {
 							physEl.classList.remove('first-row');
 						}
 						// do the same to the last row
-						if (physEl._templateInstance[this.indexAs] == (this._virtualCount-1)) {
+						if (vidx == (this._virtualCount-1)) {
 							if (!physEl.classList.contains('last-row'))
 								physEl.classList.add('last-row');
 						} else {
 							physEl.classList.remove('last-row');
 						}
-						
-						i++;
 					}, itemSet);
 				};
 				

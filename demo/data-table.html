@@ -65,8 +65,10 @@
 	window.addEventListener('WebComponentsReady', function() {
 		var rows = [];
 		for (var i=0; i<2000; i++) {
+			var longStr = 'dolorem ' + i + ' ipsum quia dolor ' + (i*66 % 1000) + ' sit amet ' + (i*132 % 4000) + 
+				' Donec id scelerisque nibh. Etiam ac mattis tortor. Nulla interdum eget justo id egestas.' ;
 			rows.push(
-				{ one: 'asd' + i, two: 'yes', three: '5', one2: 'asd' + i, two2: 'yes', three2: '5',
+				{ one: 'asd' + i, two: 'yes', three: '5', one2: (i % 5 == 0 ? longStr : 'standard' + i), two2: 'yes', three2: '5',
 					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes', three4: '5'
 				},
 				{ one: 'iop' + i, two: '', three: '6', one2: 'iop' + i, two2: '', three2: '6',
