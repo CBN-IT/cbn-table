@@ -255,12 +255,21 @@
 		outline: none;
 	}
 	
+	#filterContainer {
+		height: 1.6em;
+		min-width: 4em;
+		position: relative;
+	}
+	
 	.filter-input, .filter-input:focus {
 		display: block;
+		z-index: 1;
 		width: 100%;
+		position: absolute; top: 0; left: 0; bottom: 0; right: 0;
 		box-sizing: border-box;
 		margin: 0;
-		padding: 0.3em 1.6em 0.3em 0.3em;
+		
+		padding: 0.3em 1.3em 0.3em 0.3em;
 		outline: 0;
 		
 		background-color: #fff;
@@ -272,8 +281,8 @@
 	}
 	
 	/*noinspection CssNoGenericFontName,CssUnknownProperty*/
-	.search-icon:before {
-		content: '\e802';
+	.search-icon {
+		z-index: 2;
 		font-family: "cbn-table-icons";
 		position: absolute;
 		right: 0;
