@@ -141,14 +141,13 @@
 			},
 			
 			/**
-			 * Returns the root data host for the currently templatized element to the element's original host, not the 
-			 * data table. 
+			 * Returns the root data host for the currently templatized element to its shadow root element, if any.
 			 * This is required to make client computed properties / event listeners work.
 			 */
 			_getRootDataHost: function() {
-				var templatized = this._templatized;
-				if (templatized && templatized._lightParent && templatized._lightParent.host) {
-					return templatized._lightParent.host;
+				var templatizedDom = this._templatized ? Polymer.dom(this._templatized) : null;
+				if (templatizedDom && templatizedDom.getOwnerRoot() && templatizedDom.getOwnerRoot().host) {
+					return templatizedDom.getOwnerRoot().host;
 				}
 				return Polymer.Templatizer._getRootDataHost.apply(this, arguments);
 			},
