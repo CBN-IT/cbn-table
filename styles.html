@@ -35,7 +35,7 @@
 			border-bottom-width: 2px;
 			border-left: none; border-right: none;
 			border-top: none;
-			padding: 0.6em 0.2em;
+			padding: 0.3em 0.2em;
 		};
 		--cbn-table-footer-cell: {
 			font-weight: bold;
@@ -169,11 +169,61 @@
 	}
 	
 	/* Data Table Styles */
+	.cbn-table-caption-row .cbn-table-cell,
+	.scroll-top #tableHead .cbn-table-caption-row .cbn-table-cell {
+		border-bottom: 0;
+		padding-bottom: 0;
+	}
+	#tableHead .cbn-table-filters-row .cbn-table-cell {
+		padding-top: 0;
+	}
+	
+	.cbn-table-column {
+		vertical-align: bottom;
+	}
+	
+	.column-wrapper{
+		/* height: 100%; */
+		@apply(--layout-vertical);
+	}
+	
+	.column-placeholder {
+		height: 1.75em;
+		line-height: 1.75em;
+	}
+	.column-hidden {
+		display: none;
+	}
+	
+	.column-index-button {
+		height: 100%;
+		@apply(--layout-vertical);	
+		justify-content: space-around;
+		align-items: center;
+	}
+	.column-index-button span {
+		font-size: 0.8em;
+		line-height: 0.6em;
+		font-weight: normal;
+	}
+	.column-index-button .selection-tag {
+		color: #01B;
+	}
+	.column-index-button .total-tag {
+		color: black;
+	}
 	
 	.cbn-table-column .cell-contents {
+		flex: 1;
+		vertical-align: middle;
+		
+		@apply(--layout-vertical);
+		justify-content: center;
+		
 		display: block;
 		width: 100%;
 		box-sizing: border-box;
+		padding: 0;
 		padding-right: 20px;
 		position: relative;
 		cursor: pointer;
@@ -255,12 +305,21 @@
 		outline: none;
 	}
 	
+	#filterContainer {
+		height: 1.6em;
+		min-width: 4em;
+		position: relative;
+	}
+	
 	.filter-input, .filter-input:focus {
 		display: block;
+		z-index: 1;
 		width: 100%;
+		position: absolute; top: 0; left: 0; bottom: 0; right: 0;
 		box-sizing: border-box;
 		margin: 0;
-		padding: 0.3em 1.6em 0.3em 0.3em;
+		
+		padding: 0.3em 1.3em 0.3em 0.3em;
 		outline: 0;
 		
 		background-color: #fff;
@@ -272,8 +331,8 @@
 	}
 	
 	/*noinspection CssNoGenericFontName,CssUnknownProperty*/
-	.search-icon:before {
-		content: '\e802';
+	.search-icon {
+		z-index: 2;
 		font-family: "cbn-table-icons";
 		position: absolute;
 		right: 0;

@@ -128,9 +128,11 @@ See `cbn-table` for information about styling the element.
 			<template class="cbn-table-header">
 				<div class="cbn-table-row cbn-table">
 					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
-						<div class="cbn-table-cell cbn-table-column cbn-table">
+						<div class="cbn-table-cell cbn-table-column cbn-table"><div class="column-wrapper">
 							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*, sortable)]]"
-								 on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle, column.obj)]]">[[column.obj.caption]]</div>
+								 on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle, column.obj)]]">
+								<span>[[column.obj.caption]]</span>
+							</div>
 							
 							<template is="dom-if" if="[[_computeIsFilterable(column.obj.filter, filterable)]]">
 								<cbn-data-table-filter column="[[column.obj]]" template="[[column.filterTemplate]]"
@@ -138,11 +140,16 @@ See `cbn-table` for information about styling the element.
 								</cbn-data-table-filter>
 							</template>
 							<template is="dom-if" if="[[_computeIsIndex(column.obj.type)]]">
-								<div style="text-align: center;">
-									<paper-icon-button icon="[[_computeIndexIcon(selectedItems.length, items.length)]]" class="indexButton" id="indexButton" on-tap="selectAllNone"></paper-icon-button>
+								<div class="style-scope cbn-table column-index-button" style="text-align: center;">
+									<span class="cbn-table selection-tag">[[selectedItems.length]]</span>
+									<paper-icon-button icon="[[_computeIndexIcon(selectedItems.length, _filteredItems.length)]]" class="indexButton" id="indexButton" on-tap="selectAllNone"></paper-icon-button>
+									<span class="cbn-table total-tag">[[_filteredItems.length]]</span>
 								</div>
 							</template>
-						</div>
+							<template is="dom-if" if="[[_computeNeedsPlaceholder(column.obj, filterable)]]">
+								<div class="style-scope cbn-table column-placeholder">&nbsp;</div>
+							</template>
+						</div></div>
 					</template>
 				</div>
 			</template>
@@ -565,6 +572,9 @@ See `cbn-table` for information about styling the element.
 			 */
 			_computeColumnCaptionClasses: function(column) {
 				var addClass = '';
+				if (this._computeIsIndex(column.type)) {
+					return 'column-hidden';
+				}
 				if (this.sortable && column.sortable) {
 					addClass = 'cbn-table-column-sortable';
 					this.sortOrdering.some(function(ordering) {
@@ -596,6 +606,13 @@ See `cbn-table` for information about styling the element.
 			 */
 			_computeIsIndex: function(type) {
 				return type==="selection-index" || type==="index";
+			},
+			
+			/**
+			 * Returns whether the column needs a placeholder element (has no checkbox or filter).
+			 */
+			_computeNeedsPlaceholder: function(column, filterable) {
+				return !(this._computeIsIndex(column.type) || this._computeIsFilterable(column.filter, filterable));
 			},
 
 			/**

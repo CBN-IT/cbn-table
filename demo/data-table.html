@@ -13,15 +13,27 @@
 	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 	<link rel="import" href="../cbn-data-table.html">
 	
+	<style is="custom-style">
+		#appContainer {
+			@apply(--layout-vertical);
+			@apply(--layout-fit);
+		}
+		
+		#table {
+			@apply(--layout-flex);
+			margin-bottom: 0.8em;
+		}
+		
+	</style>
+	
 </head>
 <body>
 
 <template id="t" is="dom-bind">
-	<div style="margin: 0 auto; width:90%;">
-		
+	<div style="margin: 0 auto; width:90%;" id="appContainer">
 		<p><b>Data Table Demo:</b></p>
 		
-		<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]">
+		<cbn-data-table id="table" items="[[items]]" columns="[[columns]]">
 			<template id="buttons">
 				<span>
 					<paper-icon-button on-tap="_throwEvent" data-event="page-view" icon="icons:pageview">Y</paper-icon-button>
@@ -53,8 +65,10 @@
 	window.addEventListener('WebComponentsReady', function() {
 		var rows = [];
 		for (var i=0; i<2000; i++) {
+			var longStr = 'dolorem ' + i + ' ipsum quia dolor ' + (i*66 % 1000) + ' sit amet ' + (i*132 % 4000) + 
+				' Donec id scelerisque nibh. Etiam ac mattis tortor. Nulla interdum eget justo id egestas.' ;
 			rows.push(
-				{ one: 'asd' + i, two: 'yes', three: '5', one2: 'asd' + i, two2: 'yes', three2: '5',
+				{ one: 'asd' + i, two: 'yes', three: '5', one2: (i % 5 == 0 ? longStr : 'standard' + i), two2: 'yes', three2: '5',
 					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes', three4: '5'
 				},
 				{ one: 'iop' + i, two: '', three: '6', one2: 'iop' + i, two2: '', three2: '6',
@@ -82,7 +96,7 @@
 			{
 				name: 'two',
 				renderAs: 'text',
-				caption: 'Three'
+				caption: 'Short column with a very long name'
 			},
 			{
 				name: 'three',
