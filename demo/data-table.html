@@ -9,7 +9,7 @@
 	<link rel="import" href="../../polymer/polymer.html">
 	<link rel="import" href="../../iron-icons/iron-icons.html">
 	<link rel="import" href="../../paper-button/paper-button.html">
-	<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
+	<link rel="import" href="../../cbn-tooltip/cbn-tooltip.html">
 	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 	<link rel="import" href="../cbn-data-table.html">
 	
@@ -22,6 +22,11 @@
 		#table {
 			@apply(--layout-flex);
 			margin-bottom: 0.8em;
+			/* (Use for debugging positioning issues) 
+			--cbn-table-row: {
+				background: rgba(255, 0, 0, 0.3);
+			}
+			*/
 		}
 		
 	</style>
@@ -37,17 +42,17 @@
 			<template id="buttons">
 				<span>
 					<paper-icon-button on-tap="_throwEvent" data-event="page-view" icon="icons:pageview">Y</paper-icon-button>
-					<paper-tooltip position="left" offset="5">View</paper-tooltip>
+					<cbn-tooltip for="paper-icon-button" position="top">View</cbn-tooltip>
 				</span>
 				
 				<span>
 					<paper-icon-button icon="icons:create">Y</paper-icon-button>
-					<paper-tooltip position="left" offset="5">Edit</paper-tooltip>
+					<cbn-tooltip for="paper-icon-button" position="left">Edit</cbn-tooltip>
 				</span>
 				
 				<span>
 					<paper-icon-button icon="icons:delete">Y</paper-icon-button>
-					<paper-tooltip position="left" offset="5">Delete</paper-tooltip>
+					<cbn-tooltip for="paper-icon-button" position="left">Delete</cbn-tooltip>
 				</span>
 			</template>
 			
@@ -65,14 +70,15 @@
 	window.addEventListener('WebComponentsReady', function() {
 		var rows = [];
 		for (var i=0; i<2000; i++) {
-			var longStr = 'dolorem ' + i + ' ipsum quia dolor ' + (i*66 % 1000) + ' sit amet ' + (i*132 % 4000) + 
-				' Donec id scelerisque nibh. Etiam ac mattis tortor. Nulla interdum eget justo id egestas.' ;
+			var longStr = 'dolorem ipsum quia dolor sit amet ' + 
+				'Donec id scelerisque nibh. Etiam ac mattis tortor. Nulla interdum eget justo id egestas.' ;
+			//longStr = longStr.substr(0, Math.floor(i/2000.0 * longStr.length));
 			rows.push(
-				{ one: 'asd' + i, two: 'yes', three: '5', one2: (i % 5 == 0 ? longStr : 'standard' + i), two2: 'yes', three2: '5',
-					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes', three4: '5'
+				{ one: 'asd' + i, two: 'yes', three: '5', one2: (i && i%40 == 0 ? longStr : 'asdasd'), two2: 'yes', three2: '5',
+					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes asfdas d fas af', three4: '5'
 				},
-				{ one: 'iop' + i, two: '', three: '6', one2: 'iop' + i, two2: '', three2: '6',
-					one3: 'iop' + i, two3: '', three3: '6', one4: 'iop' + i, two4: '', three4: '6'}
+				{ one: 'iop' + i, two: '', three: '6', one2: (i && i%40 == 0 ? longStr : 'asdasd'), two2: '', three2: '6',
+					one3: 'iop' + i, two3: '', three3: '6', one4: 'iop lalala lalalal' + i, two4: '', three4: '6'}
 			);
 		}
 		

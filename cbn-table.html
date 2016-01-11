@@ -405,6 +405,8 @@ Class name               | Description                   | Default
 					this.ctor = null;
 				};
 				
+				
+				
 				/**
 				 * Override iron-list's method because the algorithm for calculating the table rows' positions is a bit 
 				 * different (see implementation for details).
@@ -418,7 +420,6 @@ Class name               | Description                   | Default
 					var physStart = this._physicalStart;
 					var prevIdx = null;
 					var offsetDiff = 0;
-					
 					/*
 					 * Because the list's elements don't have "position: absolute", the translation transformation
 					 * is applied relative to the physical item's original position.
@@ -430,35 +431,45 @@ Class name               | Description                   | Default
 					}
 					
 					this._iterateItems(function (pidx, vidx) {
-						var physEl = this._physicalItems[pidx];
-						
-						/*
-						 * Iron-list cycles through the physical elements. When this happens, we need to recalculate the 
-						 * offset used from now on.
-						 */
-						if (prevIdx > pidx) {
-							for (var i = 0; i <= prevIdx; i++) {
-								offsetDiff -= this._physicalSizes[i];
+							var physEl = this._physicalItems[pidx];
+							/*
+							 * Iron-list cycles through the physical elements. When this happens, we need to recalculate the 
+							 * offset used from now on.
+							 */
+							if (prevIdx > pidx) {
+								for (var i = 0; i <= prevIdx; i++) {
+									offsetDiff -= this._physicalSizes[i];
+								}
 							}
-						}
-						prevIdx = pidx;
-						this.transform('translate3d(0, ' + (physTop - offsetDiff) + 'px, 0)', physEl);
-						
-						// if the current physicalItem stores the first row, add the .first-row class to it
-						if (vidx== 0) {
-							if (!physEl.classList.contains('first-row'))
-								physEl.classList.add('first-row');
-						} else {
-							physEl.classList.remove('first-row');
-						}
-						// do the same to the last row
-						if (vidx == (this._virtualCount-1)) {
-							if (!physEl.classList.contains('last-row'))
-								physEl.classList.add('last-row');
-						} else {
-							physEl.classList.remove('last-row');
-						}
-					}, itemSet);
+							prevIdx = pidx;
+							this.transform('translate3d(0, ' + (physTop - offsetDiff) + 'px, 0)', physEl);
+							
+							// if the current physicalItem stores the first row, add the .first-row class to it
+							if (vidx == 0) {
+								if (!physEl.classList.contains('first-row'))
+									physEl.classList.add('first-row');
+							} else {
+								physEl.classList.remove('first-row');
+							}
+							// do the same to the last row
+							if (vidx == (this._virtualCount - 1)) {
+								if (!physEl.classList.contains('last-row'))
+									physEl.classList.add('last-row');
+							} else {
+								physEl.classList.remove('last-row');
+							}
+						}, itemSet);
+				};
+				
+				/**
+				 * Patch iron-list's _update method to get rid of the itemSet optimization (which doesn't work with 
+				 * tables very well).
+				 */
+				this.$.ironList._update = function() {
+					var args = Array.prototype.slice.call(arguments);
+					args[0] = null;
+					var $super = Object.getPrototypeOf(this);
+					$super._update.apply(this, args); // call the original
 				};
 				
 				/**
