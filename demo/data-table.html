@@ -9,33 +9,50 @@
 	<link rel="import" href="../../polymer/polymer.html">
 	<link rel="import" href="../../iron-icons/iron-icons.html">
 	<link rel="import" href="../../paper-button/paper-button.html">
-	<link rel="import" href="../../paper-tooltip/paper-tooltip.html">
+	<link rel="import" href="../../cbn-tooltip/cbn-tooltip.html">
 	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 	<link rel="import" href="../cbn-data-table.html">
+	
+	<style is="custom-style">
+		#appContainer {
+			@apply(--layout-vertical);
+			@apply(--layout-fit);
+		}
+		
+		#table {
+			@apply(--layout-flex);
+			margin-bottom: 0.8em;
+			/* (Use for debugging positioning issues) 
+			--cbn-table-row: {
+				background: rgba(255, 0, 0, 0.3);
+			}
+			*/
+		}
+		
+	</style>
 	
 </head>
 <body>
 
 <template id="t" is="dom-bind">
-	<div style="margin: 0 auto; width:90%;">
-		
+	<div style="margin: 0 auto; width:90%;" id="appContainer">
 		<p><b>Data Table Demo:</b></p>
 		
-		<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]">
+		<cbn-data-table id="table" items="[[items]]" columns="[[columns]]">
 			<template id="buttons">
 				<span>
 					<paper-icon-button on-tap="_throwEvent" data-event="page-view" icon="icons:pageview">Y</paper-icon-button>
-					<paper-tooltip position="left" offset="5">View</paper-tooltip>
+					<cbn-tooltip for="paper-icon-button" position="bottom">View lalaa</cbn-tooltip>
 				</span>
 				
 				<span>
 					<paper-icon-button icon="icons:create">Y</paper-icon-button>
-					<paper-tooltip position="left" offset="5">Edit</paper-tooltip>
+					<cbn-tooltip for="paper-icon-button" position="right">Edit test lalala</cbn-tooltip>
 				</span>
 				
 				<span>
 					<paper-icon-button icon="icons:delete">Y</paper-icon-button>
-					<paper-tooltip position="left" offset="5">Delete</paper-tooltip>
+					<cbn-tooltip for="paper-icon-button" position="left">Delete or do something</cbn-tooltip>
 				</span>
 			</template>
 			
@@ -53,12 +70,15 @@
 	window.addEventListener('WebComponentsReady', function() {
 		var rows = [];
 		for (var i=0; i<2000; i++) {
+			var longStr = 'dolorem ipsum quia dolor sit amet ' + 
+				'Donec id scelerisque nibh. Etiam ac mattis tortor. Nulla interdum eget justo id egestas.' ;
+			//longStr = longStr.substr(0, Math.floor(i/2000.0 * longStr.length));
 			rows.push(
-				{ one: 'asd' + i, two: 'yes', three: '5', one2: 'asd' + i, two2: 'yes', three2: '5',
-					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes', three4: '5'
+				{ one: 'asd' + i, two: 'yes', three: '5', one2: (i && i%40 == 0 ? longStr : 'asdasd'), two2: 'yes', three2: '5',
+					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes asfdas d fas af', three4: '5'
 				},
-				{ one: 'iop' + i, two: '', three: '6', one2: 'iop' + i, two2: '', three2: '6',
-					one3: 'iop' + i, two3: '', three3: '6', one4: 'iop' + i, two4: '', three4: '6'}
+				{ one: 'iop' + i, two: '', three: '6', one2: (i && i%40 == 0 ? longStr : 'asdasd'), two2: '', three2: '6',
+					one3: 'iop' + i, two3: '', three3: '6', one4: 'iop lalala lalalal' + i, two4: '', three4: '6'}
 			);
 		}
 		
@@ -82,7 +102,7 @@
 			{
 				name: 'two',
 				renderAs: 'text',
-				caption: 'Three'
+				caption: 'Short column with a very long name'
 			},
 			{
 				name: 'three',

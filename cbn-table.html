@@ -164,7 +164,7 @@ Class name               | Description                   | Default
 				_itemTemplate: {
 					type: Object,
 					observer: '_itemTemplateChanged'
-				}
+				},
 				
 				/**
 				 * Called when the table has finished re-rendering.
@@ -222,7 +222,7 @@ Class name               | Description                   | Default
 			},
 			
 			/**
-			 * Selects the specified item / index.
+			 * Selects the specified item / index (deselecting all others).
 			 * @param {Number|Object} i The item object / index to select.
 			 */
 			selectItem: function(i) {
@@ -232,7 +232,7 @@ Class name               | Description                   | Default
 			
 			/**
 			 * Toggles the specified item / index.
-			 * @param {Number|Object} i The item object / index to toggle.
+			 * @param {Number|Object|Array} i The item object / index / range to toggle.
 			 * @param {Boolean} [selected] The selection status to set (override).
 			 */
 			toggleSelection: function(i, selected) {
@@ -405,6 +405,8 @@ Class name               | Description                   | Default
 					this.ctor = null;
 				};
 				
+				
+				
 				/**
 				 * Override iron-list's method because the algorithm for calculating the table rows' positions is a bit 
 				 * different (see implementation for details).
@@ -414,55 +416,60 @@ Class name               | Description                   | Default
 				this.$.ironList._positionItems = function (itemSet) {
 					this._adjustScrollPosition();
 					
-					/**
-					 * Sums the elements of an array, from start to end.
-					 * @param arr The array to iterate.
-					 * @param start The index of the first element to sum.
-					 * @param end The index of the element to stop at (excluded from the sum).
-					 * @returns {number} The calculated sum of the elements.
+					var physTop = this._physicalTop;
+					var physStart = this._physicalStart;
+					var prevIdx = null;
+					var offsetDiff = 0;
+					/*
+					 * Because the list's elements don't have "position: absolute", the translation transformation
+					 * is applied relative to the physical item's original position.
+					 * So, initially, we need to subtract the sum of the heights of all items above the physical start 
+					 * item.
 					 */
-					function sumArr(arr, start, end) {
-						var sum = 0;
-						if (end < start) { var aux = start; start = end; end = aux; }
-						for (var i=start; i<end; i++) { sum += arr[i]; }
-						return sum;
+					for (var i = 0; i < physStart; i++) {
+						offsetDiff += this._physicalSizes[i];
 					}
 					
-					var physTop = this._physicalTop;
-					var i = 0;
-					this._iterateItems(function (pidx) {
-						var physEl = this._physicalItems[pidx];
-						/**
-						 * Because the list's elements don't have "position: absolute", the translation transformation 
-						 * is applied relative to the element's initial position, which depends on the source order of the 
-						 * physical items. But, because of an iron-list optimization which can change the fill order of 
-						 * the physical elements, we may need to swap their positions to retain the expected order.
-						 * So the elements `i` and `pidx` must be rendered as swapped: one (the one with lesser pidx) 
-						 * will have the Y coordinate of -[diff]px and the other, the opposite value (a positive translation 
-						 * with the same magnitude).
-						 */
-						var diff = sumArr(this._physicalSizes, i, pidx);
-						if (i < pidx) diff = -diff;
-						
-						this.transform('translate3d(0, ' + (physTop + diff) + 'px, 0)', physEl);
-						
-						// if the current physicalItem stores the first row, add the .first-row class to it
-						if (physEl._templateInstance[this.indexAs] == 0) {
-							if (!physEl.classList.contains('first-row'))
-								physEl.classList.add('first-row');
-						} else {
-							physEl.classList.remove('first-row');
-						}
-						// do the same to the last row
-						if (physEl._templateInstance[this.indexAs] == (this._virtualCount-1)) {
-							if (!physEl.classList.contains('last-row'))
-								physEl.classList.add('last-row');
-						} else {
-							physEl.classList.remove('last-row');
-						}
-						
-						i++;
-					}, itemSet);
+					this._iterateItems(function (pidx, vidx) {
+							var physEl = this._physicalItems[pidx];
+							/*
+							 * Iron-list cycles through the physical elements. When this happens, we need to recalculate the 
+							 * offset used from now on.
+							 */
+							if (prevIdx > pidx) {
+								for (var i = 0; i <= prevIdx; i++) {
+									offsetDiff -= this._physicalSizes[i];
+								}
+							}
+							prevIdx = pidx;
+							this.transform('translate3d(0, ' + (physTop - offsetDiff) + 'px, 0)', physEl);
+							
+							// if the current physicalItem stores the first row, add the .first-row class to it
+							if (vidx == 0) {
+								if (!physEl.classList.contains('first-row'))
+									physEl.classList.add('first-row');
+							} else {
+								physEl.classList.remove('first-row');
+							}
+							// do the same to the last row
+							if (vidx == (this._virtualCount - 1)) {
+								if (!physEl.classList.contains('last-row'))
+									physEl.classList.add('last-row');
+							} else {
+								physEl.classList.remove('last-row');
+							}
+						}, itemSet);
+				};
+				
+				/**
+				 * Patch iron-list's _update method to get rid of the itemSet optimization (which doesn't work with 
+				 * tables very well).
+				 */
+				this.$.ironList._update = function() {
+					var args = Array.prototype.slice.call(arguments);
+					args[0] = null;
+					var $super = Object.getPrototypeOf(this);
+					$super._update.apply(this, args); // call the original
 				};
 				
 				/**
@@ -601,9 +608,9 @@ Class name               | Description                   | Default
 				/**
 				 * Override the item press / tap event to implement a more advanced multiple selection behavior:
 				 * 
-				 * - if the ctrl key is pressed, the item's selection is toggled;
-				 * - if the shift key is pressed, all items from the last pressed item to the current one are selected / 
-				 *   deselected (based on the current item's status);
+				 * - if the ctrl key is pressed, a single item's selection status is toggled;
+				 * - if the shift key is pressed, all items from the last pressed item to the current one are toggled
+				 *   (based on the current item's selection status) - the same behavior as GMail;
 				 * - otherwise, the multiple selection will be cleared and the current item will be the only one selected.
 				 * 
 				 * @param {Event} e The tap / click event object.
@@ -618,29 +625,34 @@ Class name               | Description                   | Default
 						var srce = e.detail.sourceEvent;
 						var model = this.modelForElement(e.target);
 						if (model) {
+							var itemIndex = model[this.indexAs];
 							if (this.multiSelection) {
 								if (srce.ctrlKey) {
 									this.toggleSelectionForItem(model[this.as]);
 									this._lastSelectedItemIdx = model[this.indexAs];
+									this._lastSelectedRange = null;
 									
 								} else if (srce.shiftKey) {
-									this.clearSelection();
 									document.getSelection().removeAllRanges();
-									var starti = this._lastSelectedItemIdx || 0, endi = model[this.indexAs];
-									if (starti > endi) {
-										starti = endi;
-										endi = this._lastSelectedItemIdx;
+									var starti = this._lastSelectedItemIdx || 0, endi = itemIndex;
+									if (this._lastSelectedRange) {
+										table._selectRange(this._lastSelectedRange[0], this._lastSelectedRange[1],
+											true, true);
+										starti = this._lastSelectedRange[0];
 									}
-									table._selectRange(starti, endi+1);
+									this._lastSelectedRange = [ starti, endi ];
+									table._selectRange(starti, endi, model[this.selectedAs], true);
 									
 								} else {
 									this.clearSelection();
 									this.toggleSelectionForItem(model[this.as]);
-									this._lastSelectedItemIdx = model[this.indexAs];
+									this._lastSelectedItemIdx = itemIndex;
+									this._lastSelectedRange = null;
 								}
 							} else {
 								this.toggleSelectionForItem(model[this.as]);
-								this._lastSelectedItemIdx = model[this.indexAs];
+								this._lastSelectedItemIdx = itemIndex;
+								this._lastSelectedRange = null;
 							}
 						}
 					}
@@ -649,31 +661,68 @@ Class name               | Description                   | Default
 			},
 			
 			/**
-			 * Optimized function that selects a range of items.
+			 * Optimized function that selects / deselects a range of items.
 			 * 
-			 * @param {Number} [start] The start index to begin selection from.
-			 * @param {Number} [end] The end index to end selection to (exclusive).
+			 * @param {Number}  [start]    The start index to begin selection from.
+			 * @param {Number}  [end]      The end index to end selection to (inclusive).
+			 * @param {Boolean} [deselect] Whether to deselect (true) or select (false-y).
+			 * @param {Boolean} [keepSelected] Whether to keep current selection.
 			 */
-			_selectRange: function(start, end) {
-				var selectedItems = [], remainingItems;
+			_selectRange: function(start, end, deselect, keepSelected) {
+				var selectedItems, remainingItems;
 				var item, model, args, icol, key, skey;
 				var selector = this.$.ironList.$.selector;
 				
-				if (!start) start = 0;
-				if (!end) end = this._items.length;
+				if (!this._items.length) return;
 				
-				for (var i=start; i<end; i++) {
-					item = this.$.ironList._getNormalizedItem(i);
+				if (start === undefined) start = 0;
+				if (end === undefined) end = this._items.length - 1;
+				if (end >= this._items.length) end = this._items.length - 1;
+				if (start > end) {
+					var aux = start;
+					start = end;
+					end = aux;
+				}
+				
+				var keepItemKeys = {};
+				var keepItems = [];
+				if (keepSelected) {
+					this.selectedItems.forEach(function(item) {
+						key = this.$.ironList._collection.getKey(item);
+						keepItemKeys[key] = keepItems.length;
+						keepItems.push(item);
+					}, this);
+				}
+				selectedItems = [];
+				for (var i=start; i<=end; i++) {
+					item = this.$.ironList._getNormalizedItem(parseInt(i));
+					model = this.$.ironList._getModelFromItem(item);
+					key = this.$.ironList._collection.getKey(item);
+					if (keepItemKeys[key] !== undefined) {
+						if (deselect) {
+							delete keepItemKeys[key];
+						}
+					} else if (!deselect) {
+						selectedItems.push(item);
+					}
+				}
+				for (key in keepItemKeys) {
+					//noinspection JSUnfilteredForInLoop
+					i = keepItemKeys[key];
+					selectedItems.push(keepItems[i]);
+				}
+				
+				// hack for initializing the array-selector collection
+				this.selectItem(start);
+				this.clearSelection();
+				
+				// set the selectedAs property to true to all selected items
+				selectedItems.forEach(function(item) {
 					model = this.$.ironList._getModelFromItem(item);
 					if (model) {
 						model[this.$.ironList.selectedAs] = true;
 					}
-					
-					selectedItems.push(item);
-				}
-				
-				this.selectItem(start);
-				this.clearSelection();
+				}, this);
 				
 				// javascript has limits on the number of arguments one can call a function with,
 				// so we may need to call push multiple times
