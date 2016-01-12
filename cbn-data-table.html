@@ -42,64 +42,8 @@ See `cbn-table` for information about styling the element.
 
 <dom-module id="cbn-data-table">
 	<template>
-		<style>
-			:host {
-				display: block;
-				position: relative;
-				@apply(--layout-vertical);
-			}
-			#table {
-				top: 0; left: 0;
-				bottom: 0; right: 0;
-				z-index: 1;
-			}
-			.action{
-				padding:8px 2px;width: 30px;height: 40px;
-			}
-			.action:hover{
-				fill-opacity: 0.5;
-			}
-			
-			.indexButton {
-				padding: 0 3px;
-				width: 30px;
-				height: 30px;
-				color: #5D5D5D;
-				margin: -2px 0;
-			}
-
-			.item-sablon iron-icon{
-				margin-right:10px;
-				margin-left:0px;
-			}
-			.item-sablon{
-				border-top: 1px solid #ccc;
-				padding:0 10px;
-				min-height: 35px;
-			}
-			
-			paper-menu-button {
-				padding: 0px;
-				--paper-menu-button-dropdown: {
-					font-size: 30px !important;
-					/*top: 50px !important;*/
-					/*right: 165px !important;*/
-					max-width: 450px !important;
-					width: 200px !important;
-				};
-			}
-			paper-menu{
-				padding:0px;
-			}
-			#actionBar{
-				@apply(--cbn-data-table-action-bar);
-			}
-			#defaultActionBar{
-				@apply(--cbn-data-table-default-action-bar);
-			}
-		</style>
 		<style include="cbn-data-table-styles-private"></style>
-
+		
 		<paper-material elevation="1" class="horizontal layout" id="actionBar">
 			<div class="flex horizontal layout center">
 				<content select=".before"></content>

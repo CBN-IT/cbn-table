@@ -25,7 +25,8 @@
         "paper-menu": "PolymerElements/paper-menu#^1.0.0",
         "paper-menu-button": "PolymerElements/paper-menu-button#^1.0.0",
         "paper-item": "PolymerElements/paper-item#^1.0.0",
-        "cbn-icons": "git@bitbucket.org:cbn-it/cbn-icons#polymer1.0"
+        "cbn-icons": "git@bitbucket.org:cbn-it/cbn-icons#polymer1.0",
+        "save-excel": "git@bitbucket.org:cbn-it/save-excel#polymer1.0"
     },
     "devDependencies": {
         "iron-component-page": "PolymerElements/iron-component-page#^1.0",

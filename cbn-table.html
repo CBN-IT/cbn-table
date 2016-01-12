@@ -325,16 +325,6 @@ Class name               | Description                   | Default
 				if (itemTemplate) {
 					this._itemTemplate = itemTemplate;
 				}
-				
-				// fix Templatizer parent properties issue
-				this.async(function() {
-					if (this._headInstance) {
-						this._fixTemplatizerInstance(this._headInstance._templateInstance);
-					}
-					if (this._footInstance) {
-						this._fixTemplatizerInstance(this._footInstance._templateInstance);
-					}
-				});
 			},
 			
 			/**
@@ -496,12 +486,6 @@ Class name               | Description                   | Default
 					}
 				});
 				
-				this.$.ironList._resetScrollPosition = function (pos) {
-					if (pos <= 1.01) pos = 0;
-					var $super = Object.getPrototypeOf(this);
-					$super._resetScrollPosition.apply(this, arguments); // call the original
-				};
-				
 				/**
 				 * Called when the list is scrolled.
 				 * Used to update the positions of the header and footer (because "position: fixed" is a no-go for HTML 
@@ -570,11 +554,6 @@ Class name               | Description                   | Default
 						Polymer.dom(table.$.effectiveTable).appendChild(inst.root);
 					}
 					
-					physicalItems.forEach(function(item){
-						// hack to fix Templatizer not initializing parent properties
-						table._fixTemplatizerInstance(item._templateInstance);
-					}, this);
-					
 					/**
 					 * Detaches and reattaches an element in order to move it at the end of the DOM parent.
 					 * @param {HTMLElement} element The element to move at the end.
@@ -628,6 +607,7 @@ Class name               | Description                   | Default
 						}
 						
 					} else if (e.type !== 'keypress' || e.keyCode === 13) {
+						//noinspection JSUnresolvedVariable
 						var srce = e.detail.sourceEvent;
 						var model = this.modelForElement(e.target);
 						if (model) {
@@ -822,19 +802,6 @@ Class name               | Description                   | Default
 				}
 				if (this._footInstance) {
 					this._footInstance._templateInstance.notifyPath(path, value, true);
-				}
-			},
-			
-			/**
-			 * Fixes an element instantiated via Templatizer. 
-			 * Notifies it of the parent properties' initial values.
-			 * 
-			 * @param templateInstance The template instance of the elements stamped using Templatizer.
-			 */
-			_fixTemplatizerInstance: function(templateInstance) {
-				for (var j in templateInstance._parentProps) {
-					if (!templateInstance._parentProps.hasOwnProperty(j)) continue;
-					templateInstance._notifyPath(j, templateInstance._rootDataHost[j]);
 				}
 			}
 			
