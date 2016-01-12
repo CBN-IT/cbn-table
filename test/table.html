@@ -104,9 +104,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			container.headerHeight = 40;
 			container.listHeight = 500;
 			flush(function () {
-				var headerEl = list.querySelector('#tableHead');
+				var headerEl = Polymer.dom(table).querySelector('.cbn-table-header-container');
 				assert.ok(headerEl, 'header present');
-				var firstHeaderItem = getFirstItemFromList(list, true);
+				var firstHeaderItem = getFirstItemFromTable(table, true);
 				assert.ok(headerEl.contains(firstHeaderItem), 'header is the first element');
 				
 				var listRect = list.getBoundingClientRect();
@@ -116,7 +116,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				assert.equal(headerRect.left - listRect.left, 0, 'header position (left)');
 				
 				// check the first item's position
-				var first = getFirstItemFromList(list);
+				var first = getFirstItemFromTable(table);
 				assert.ok(first, 'first visible item');
 				assert.equal(first.textContent, '0', 'first item index');
 				assert.equal(first.offsetTop, container.headerHeight, 'first list item position');
@@ -144,10 +144,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			container.listHeight = 500;
 			
 			flush(function () {
-				var footerEl = list.querySelector('#tableFoot');
+				var footerEl = Polymer.dom(table).querySelector('.cbn-table-footer-container');
 				assert.ok(footerEl, 'footer present');
-				var firstFooterItem = getLastItemFromList(list, true);
-				assert.ok(footerEl.contains(firstFooterItem), 'header is the first element');
+				table.updateViewport();
+				var lastItem = getLastItemFromTable(table, true);
+				assert.ok(footerEl.contains(lastItem), 'footer is the last list item');
 				
 				var listRect = list.getBoundingClientRect();
 				var footerRect = footerEl.getBoundingClientRect();
@@ -172,7 +173,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				
 				function checkFirstVisible() {
 					assert.equal(list.firstVisibleIndex, scrollToItem);
-					assert.equal(getFirstItemFromList(list).textContent, scrollToItem);
+					assert.equal(getFirstItemFromTable(table).textContent, scrollToItem);
 				}
 				
 				function doneScrollDown() {
@@ -214,7 +215,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				list.scrollToIndex(0);
 				assert.equal(list.firstVisibleIndex, 0);
 				
-				var rowHeight = getFirstItemFromList(list).offsetHeight;
+				var rowHeight = getFirstItemFromTable(table).offsetHeight;
 				var viewportHeight = list.offsetHeight - container.headerHeight - container.footerHeight;
 				var itemsPerViewport = Math.floor(viewportHeight / rowHeight);
 				list.scrollToIndex(99);
@@ -241,14 +242,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			container.footerHeight = 40;
 			container.listHeight = 500;
 			flush(function () {
-				var firstItem = getFirstItemFromList(list);
+				var firstItem = getFirstItemFromTable(table);
 				assert.equal(firstItem.textContent, '0');
-				list.items = null;
+				table.items = [];
 				flush(function () {
-					assert.notEqual(getFirstItemFromList(list), firstItem);
-					list.items = buildDataSet(100);
+					var hiddenRow = getFirstItemFromTable(table);
+					if (hiddenRow) {
+						hiddenRow = Polymer.dom(hiddenRow).parentNode;
+					}
+					assert.ok(!hiddenRow || hiddenRow.hasAttribute('hidden'), 'table emptied');
+					
+					table.items = buildDataSet(100);
 					flush(function () {
-						assert.equal(getFirstItemFromList(list), firstItem);
+						assert.equal(getFirstItemFromTable(table), firstItem);
 						done();
 					});
 				});
@@ -277,7 +283,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					list._physicalItems.forEach(function (item) {
 						assert.equal(item.offsetHeight, rowHeight);
 					});
-					var first = getFirstItemFromList(list);
+					var first = getFirstItemFromTable(table);
 					assert.ok(first, 'first visible item');
 					assert.equal(first.textContent, '0', 'first item index');
 					assert.equal(first.offsetTop, container.headerHeight, 'first item position');

@@ -88,9 +88,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				var columns = header.querySelectorAll('.cbn-table-column');
 				assert.equal(columns.length, defaultColumns.length);
 				for (i=0; i<columns.length; i++) {
-					var columnCaption = columns[i].querySelector('div');
+					var columnCaption = columns[i].querySelector('.column-caption');
 					assert.ok(columnCaption);
-					assert.equal(columnCaption.innerHTML, defaultColumns[i].caption);
+					assert.equal(columnCaption.innerText.trim(), defaultColumns[i].caption);
 				}
 				
 				// check physical items
@@ -100,7 +100,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					assert.ok(firstRowCells[i].column);
 					assert.equal(firstRowCells[i].column.name, defaultColumns[i].name);
 					if (i > 0) {
-						assert.equal(firstRowCells[i].innerHTML, data[0][defaultColumns[i].name]);
+						assert.equal(firstRowCells[i].innerText.trim(), data[0][defaultColumns[i].name]);
 					}
 				}
 				
@@ -131,7 +131,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				
 				// check header styles
 				var header = table.$.tableHead;
-				var columns = header.querySelectorAll('.cbn-table-column > div');
+				var columns = header.querySelectorAll('.cbn-table-column .column-caption');
 				assert.equal(columns[0].style.fontWeight, 'bold');
 				assert.match(columns[0].style.color, /^red|#FF0000|rgb\(255,\s*0,\s*0\)$/);
 				assert.match(columns[2].style.backgroundColor, /^red|#FF0000|rgb\(255,\s*0,\s*0\)$/);

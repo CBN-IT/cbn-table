@@ -22,6 +22,9 @@
 				border-top: none;
 				padding: 2px;
 			};
+			--cbn-table-footer: {
+				padding: 2px;
+			};
 		}
 	</style>
 	
@@ -39,11 +42,8 @@
 			</template>
 			<template class="cbn-table-footer">
 				<template is="dom-if" if="[[_enableTableFooter(footerHeight)]]">
-					<div class="cbn-table cbn-table-row">
-						<div style$="[[_computedHeight(footerHeight, 'true')]]" class="cbn-table cbn-table-cell">No.</div>
-						<div style$="[[_computedHeight(footerHeight, 'true')]]" class="cbn-table cbn-table-cell">One</div>
-						<div style$="[[_computedHeight(footerHeight, 'true')]]" class="cbn-table cbn-table-cell">Two</div>
-						<div style$="[[_computedHeight(footerHeight, 'true')]]" class="cbn-table cbn-table-cell">Three</div>
+					<div style$="[[_computedHeight(footerHeight, 'true')]]">
+						Footer
 					</div>
 				</template>
 			</template>
@@ -106,7 +106,7 @@
 		
 		_computedHeight: function (height, item) {
 			if (item) {
-				height = height - 2*2; // subtract cell padding
+				height = height - (2*2); // subtract cell padding
 			}
 			var css = 'height: ' + height + 'px;';
 			if (item) {

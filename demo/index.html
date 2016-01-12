@@ -6,6 +6,8 @@
 	<title>Cbn-Table Demo</title>
 	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 	
+	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+	<link rel="import" href="../../iron-icons/iron-icons.html">
 	<link rel="import" href="../cbn-table.html">
 </head>
 <body>
@@ -13,7 +15,11 @@
 <template id="t" is="dom-bind">
 <div style="margin: 0 auto; width:700px;">
 	
-	<p><b>Demo:</b></p>
+	<p>
+		<b>Demo:</b>
+		<paper-icon-button on-tap="setMoreItems" icon="icons:add-circle">More</paper-icon-button>
+		<paper-icon-button on-tap="setLessItems" icon="icons:remove-circle">Fewer</paper-icon-button>
+	</p>
 	
 	<cbn-table style="height: 500px;" items="[[items]]">
 		<template class="cbn-table-header">
@@ -25,12 +31,7 @@
 			</div>
 		</template>
 		<template class="cbn-table-footer">
-			<div class="cbn-table-row">
-				<div style="width:60px;" class="cbn-table-cell">Index</div>
-				<div style="width:auto;" class="cbn-table-cell">Name</div>
-				<div style="width:auto;" class="cbn-table-cell">Name, again</div>
-				<div style="width:100px;" class="cbn-table-cell">Y/N?</div>
-			</div>
+			Hello, I am a footer ;) 
 		</template>
 		<template>
 			<div class="cbn-table-row">
@@ -48,15 +49,26 @@
 	window.addEventListener('WebComponentsReady', function() {
 		var t = document.getElementById('t');
 		
-		var rows = [];
-		for (var i=0; i<10000; i++) {
-			rows.push(
-				{ one: 'asd' + i, two: 'yes', three: '5' },
-				{ one: 'iop' + i, two: 'no', three: '6' }
-			);
+		function getItems(count) {
+			var rows = [];
+			for (var i=0; i<count / 2; i++) {
+				rows.push(
+					{ one: 'asd' + i, two: 'yes', three: '5' },
+					{ one: 'iop' + i, two: 'no', three: '6' }
+				);
+			}
+			return rows;
 		}
 		
-		t.set('items', rows);
+		t.set('items', getItems(10000));
+		
+		t.setMoreItems = function() {
+			t.set('items', getItems(10000));
+		};
+		t.setLessItems = function() {
+			t.set('items', getItems(10));
+		};
+		
 	});
 	
 </script>

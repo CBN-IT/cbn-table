@@ -67,24 +67,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 		}
 	}
 	
-	function getFirstItemFromList(list, inclHeader) {
-		var listRect = list.getBoundingClientRect();
-		var header = list.querySelector('#tableHead');
+	function getFirstItemFromTable(table, inclHeader) {
+		var listRect = table.$.ironList.getBoundingClientRect();
+		var header = Polymer.dom(table).querySelector('.cbn-table-header-container');
 		var top = listRect.top + 1;
 		if (header && !inclHeader) {
 			top += header.offsetHeight;
 		}
-		return document.elementFromPoint(listRect.left + 1, top);
+		return deepElementFromPoint(listRect.left + 1, top);
 	}
 	
-	function getLastItemFromList(list, inclFooter) {
-		var listRect = list.getBoundingClientRect();
-		var footer = list.querySelector('#tableFoot');
+	function getLastItemFromTable(table, inclFooter) {
+		var listRect = table.$.ironList.getBoundingClientRect();
+		var footer = Polymer.dom(table).querySelector('.cbn-table-footer-container');
 		var top = listRect.top + listRect.height - 1;
 		if (footer && !inclFooter) {
 			top -= footer.offsetHeight;
 		}
-		return document.elementFromPoint(listRect.left + 1, top);
+		return deepElementFromPoint(listRect.left + 1, top);
+	}
+	
+	function deepElementFromPoint(x, y) {
+		var el = document.elementFromPoint(x, y);
+		
+		while (el.root && el.root.elementFromPoint) {
+			el = el.root.elementFromPoint(x, y);
+		}
+		return el;
 	}
 	
 </script>

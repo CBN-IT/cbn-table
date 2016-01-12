@@ -74,28 +74,28 @@ Class name               | Description                   | Default
 	<template>
 		<style include="cbn-table-styles-private"></style>
 		
+		<!-- This template will be stamped inside the light dom of the element and will contain the effective table -->
+		<template id="effectiveTableTemplate">
+			<div class="cbn-table-effective">
+				<!-- Header and footer containers -->
+				<div class="cbn-table-header-container"></div>
+				<div class="cbn-table-footer-container"></div>
+				
+				<!-- An empty row with height: 100% that will take the rest of the unused vertical space inside the table -->
+				<div class="cbn-table-expander"></div>
+			</div>
+		</template>
+		
 		<div id="innerContainer">
-			<!-- the iron-list::shadow > #items element, which hosts the content, has 'display: table' -->
 			<iron-list id="ironList" items="{{_items}}" 
 					   selection-enabled="[[selectionEnabled]]" multi-selection="[[multiSelection]]"
 					   selected-items="{{selectedItems}}">
-				
-				<!-- Header and footer containers -->
-				<div id="tableHead"></div>
-				<div id="tableFoot"></div>
-				
-				<!-- An empty row with height: 100% that will take the rest of the unused vertical space inside the table -->
-				<div id="autoExpander"></div>
-				
-				<!-- The list items will be inserted here -->
+				<!-- The entire table will be built inside the element's light dom -->
+				<content></content>
 			</iron-list>
-			
-			<content></content>
-			
 		</div>
 		
 	</template>
-
 </dom-module>
 
 <script>
@@ -164,7 +164,7 @@ Class name               | Description                   | Default
 				_itemTemplate: {
 					type: Object,
 					observer: '_itemTemplateChanged'
-				},
+				}
 				
 				/**
 				 * Called when the table has finished re-rendering.
@@ -203,9 +203,9 @@ Class name               | Description                   | Default
 			},
 			
 			attached: function () {
-				this.async(function () {
-					this.updateViewport();
-				}, 1);
+				//this.async(function () {
+				//	this.updateViewport();
+				//}, 1);
 			},
 			
 			detached: function () {
@@ -218,7 +218,7 @@ Class name               | Description                   | Default
 			 */
 			updateViewport: function () {
 				this.$.ironList._resizeHandler();
-				this._scrollHandler(this.$.ironList.scrollTop);
+				this._scrollHandler(this.$.ironList.scrollTop, true);
 			},
 			
 			/**
@@ -283,6 +283,21 @@ Class name               | Description                   | Default
 			_initializeTemplates: function () {
 				var template, instance;
 				
+				// create the effective table structure
+				//noinspection JSUnresolvedVariable
+				this.templatize(this.$.effectiveTableTemplate);
+				instance = this.stamp({});
+				this.$.effectiveTable = instance.root.querySelector('*');
+				Polymer.dom(this).appendChild(instance.root);
+				
+				this.$.tableHead = Polymer.dom(this.$.effectiveTable).querySelector('.cbn-table-header-container');
+				this.$.tableFoot = Polymer.dom(this.$.effectiveTable).querySelector('.cbn-table-footer-container');
+				this.$.autoExpander = Polymer.dom(this.$.effectiveTable).querySelector('.cbn-table-expander');
+				
+				// move the footer outside the table
+//				var parentDom = Polymer.dom(Polymer.dom(this.$.tableFoot).parentNode);
+//				parentDom.removeChild(this.$.tableFoot) && Polymer.dom(this).appendChild(this.$.tableFoot);
+				
 				// fetch the header template 
 				template = Polymer.dom(this).querySelector('template.cbn-table-header');
 				if (template) {
@@ -290,7 +305,6 @@ Class name               | Description                   | Default
 					instance = this.stamp({});
 					Polymer.dom(this.$.tableHead).appendChild(instance.root);
 					this._headInstance = this.$.tableHead.querySelector('*');
-					this._shimStyleScope(this._headInstance);
 				} else {
 					this.$.tableHead.style.display = 'none';
 				}
@@ -302,7 +316,6 @@ Class name               | Description                   | Default
 					instance = this.stamp({});
 					Polymer.dom(this.$.tableFoot).appendChild(instance.root);
 					this._footInstance = this.$.tableFoot.querySelector('*');
-					this._shimStyleScope(this._footInstance);
 				} else {
 					this.$.tableFoot.style.display = 'none';
 				}
@@ -357,13 +370,6 @@ Class name               | Description                   | Default
 			_enhanceIronList: function() {
 				var table = this;
 				
-				// modify the `iron-list` internal styles
-				var ironListItems = Polymer.dom(this.$.ironList.root).querySelector('#items');
-				ironListItems.style.display = 'table';
-				ironListItems.style.width = '100%';
-				ironListItems.style.borderSpacing = '0px';
-				ironListItems.style.boxSizing = 'border-box';
-				
 				/**
 				 * Iron-list uses this method to search for the template inside its light dom.
 				 * Override to point to our local template.
@@ -404,8 +410,6 @@ Class name               | Description                   | Default
 					this._physicalSize = 0;
 					this.ctor = null;
 				};
-				
-				
 				
 				/**
 				 * Override iron-list's method because the algorithm for calculating the table rows' positions is a bit 
@@ -470,6 +474,9 @@ Class name               | Description                   | Default
 					args[0] = null;
 					var $super = Object.getPrototypeOf(this);
 					$super._update.apply(this, args); // call the original
+					
+					// update the header and footer's positions
+					table._scrollHandler(this._scroller.scrollTop, true);
 				};
 				
 				/**
@@ -482,13 +489,15 @@ Class name               | Description                   | Default
 							addSize += table.$.tableHead.clientHeight;
 						}
 						if (table.$.tableFoot) {
-							addSize += table.$.tableFoot.clientHeight;
+							// not needed anymore for table-caption
+							// addSize += table.$.tableFoot.clientHeight;
 						}
 						return this._physicalTop + this._physicalSize + addSize;
 					}
 				});
 				
-				this.$.ironList._resetScrollPosition = function () {
+				this.$.ironList._resetScrollPosition = function (pos) {
+					if (pos <= 1.01) pos = 0;
 					var $super = Object.getPrototypeOf(this);
 					$super._resetScrollPosition.apply(this, arguments); // call the original
 				};
@@ -551,40 +560,37 @@ Class name               | Description                   | Default
 				 * @param {Number} size How many elements to add.
 				 */
 				this.$.ironList._createPool = function (size) {
-					var $super = Object.getPrototypeOf(this);
-					var result = $super._createPool.apply(this, arguments);
+					var physicalItems = new Array(size);
 					
-					result.forEach(function(item){
-						// hack to fix Polymer's shadow style shim
-						item.addEventListener('dom-change', function(event) {
-							table._shimStyleScope(event.currentTarget);
-						});
-						
+					this._ensureTemplatized();
+					
+					for (var i = 0; i < size; i++) {
+						var inst = this.stamp(null);
+						physicalItems[i] = inst.root.querySelector('*');
+						Polymer.dom(table.$.effectiveTable).appendChild(inst.root);
+					}
+					
+					physicalItems.forEach(function(item){
 						// hack to fix Templatizer not initializing parent properties
 						table._fixTemplatizerInstance(item._templateInstance);
 					}, this);
-					// also apply the CSS scoping hack after the elements are created
-					this.async(function(){
-						result.forEach(function(item) {
-							table._shimStyleScope(item);
-						}, this);
-					});
 					
 					/**
 					 * Detaches and reattaches an element in order to move it at the end of the DOM parent.
 					 * @param {HTMLElement} element The element to move at the end.
 					 */
 					function moveToEnd(element) {
+						if (!element) return;
 						var parent = Polymer.dom(Polymer.dom(element).parentNode);
 						parent.removeChild(element) && parent.appendChild(element);
 					}
 					
 					// re-attach the other table elements at the end
-					moveToEnd(Polymer.dom(this).querySelector('#autoExpander'));
-					moveToEnd(Polymer.dom(this).querySelector('#tableHead'));
-					moveToEnd(Polymer.dom(this).querySelector('#tableFoot'));
+					moveToEnd(table.$.autoExpander);
+					moveToEnd(table.$.tableHead);
+					moveToEnd(table.$.tableFoot);
 					
-					return result;
+					return physicalItems;
 				};
 				
 				/**
@@ -751,15 +757,18 @@ Class name               | Description                   | Default
 			 * and footer components.
 			 * 
 			 * @param {number} scrollTop The Y scroll amount.
+			 * @param {Boolean} [force] Whether to force the update of the elements.
 			 */
-			_scrollHandler: function(scrollTop) {
-				if (this._scrollTop === scrollTop)
+			_scrollHandler: function(scrollTop, force) {
+				if (this._scrollTop === scrollTop && !force)
 					return;
 				
 				this._scrollTop = scrollTop;
 				
-				var footerPos = -this.$.ironList.$.items.offsetHeight + scrollTop +
+				var footerPos = -this.$.effectiveTable.offsetHeight + scrollTop +
 					this.$.ironList._scroller.offsetHeight;
+				
+				if (!this.$.effectiveTable) return;
 				
 				this.transform('translate3d(0, ' + scrollTop + 'px, 0)', this.$.tableHead);
 				this.transform('translate3d(0, ' + footerPos + 'px, 0)', this.$.tableFoot);
@@ -767,19 +776,25 @@ Class name               | Description                   | Default
 				// update scroll classes
 				/** @namespace this.$.innerContainer */
 				if (this.$.ironList.scrollTop == 0) {
-					if (!this.$.innerContainer.classList.contains('scroll-top'))
-						this.$.innerContainer.classList.add('scroll-top');
+					this.toggleClass('scroll-top', true, this.$.effectiveTable);
 				} else {
-					this.$.innerContainer.classList.remove('scroll-top');
+					this.toggleClass('scroll-top', false, this.$.effectiveTable);
 				}
 				
 				if (this.$.ironList.scrollTop == this.$.ironList._maxScrollTop) {
-					if (!this.$.innerContainer.classList.contains('scroll-bottom'))
-						this.$.innerContainer.classList.add('scroll-bottom');
+					this.toggleClass('scroll-bottom', true, this.$.effectiveTable);
 				} else {
-					this.$.innerContainer.classList.remove('scroll-bottom');
+					this.toggleClass('scroll-bottom', false, this.$.effectiveTable);
 				}
+				
 				this.updateStyles();
+				
+				// hack for forcing the repaint of the header's background
+				this.$.tableHead.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+				this.async(function() {
+					/*this.$.tableHead.style.display = '';*/
+					this.$.tableHead.style.backgroundColor = '';
+				});
 			},
 			
 			/**
@@ -807,29 +822,6 @@ Class name               | Description                   | Default
 				}
 				if (this._footInstance) {
 					this._footInstance._templateInstance.notifyPath(path, value, true);
-				}
-			},
-			
-			/**
-			 * Manually applies the style scoping classes used by Polymer's shadow CSS shim to the table rows and cells.
-			 * 
-			 * @param {Element} element The DOM element with the table rows to fix.
-			 */
-			_shimStyleScope: function(element) {
-				if (Polymer.dom == 'shadow') 
-					return; // fix not needed
-				
-				if (element.classList.contains('cbn-table-row')) {
-					element.classList.add('style-scope', 'cbn-table');
-				} else {
-					var row = element.querySelector('.cbn-table-row');
-					if (row) {
-						row.classList.add('style-scope', 'cbn-table');
-					}
-				}
-				var cells = Polymer.dom(element).querySelectorAll('.cbn-table-cell');
-				for (var i=0; i<cells.length; i++) {
-					cells[i].classList.add('style-scope', 'cbn-table');
 				}
 			},
 			

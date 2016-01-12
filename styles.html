@@ -67,56 +67,62 @@
 		border: none;
 	}
 	
+	:host ::content .cbn-table-effective {
+		display: table;
+		width: 100%;
+		height: 100%;
+	}
+	
 	/* Rows / cells */
 	
-	.cbn-table-row {
+	:host ::content .cbn-table-row {
 		display: table-row;
 		position: static !important;
+		will-change: transform;
 		@apply(--cbn-table-row);
 	}
-	.cbn-table-row * {
+	:host ::content .cbn-table-row * {
 		transform: translate3d(0, 0, 0);
 	}
-	.cbn-table-row:nth-child(odd) {
+	:host ::content .cbn-table-row:nth-child(odd) {
 		@apply(--cbn-table-row-altn);
 	}
-	.cbn-table-row:hover {
+	:host ::content .cbn-table-row:hover {
 		@apply(--cbn-table-row-hover);
 	}
-	.cbn-table-row.selected:hover{
+	:host ::content .cbn-table-row.selected:hover{
 		@apply(--cbn-table-row-selected-hover);
 	}
-	.cbn-table-row.selected {
+	:host ::content .cbn-table-row.selected {
 		@apply(--cbn-table-row-selected);
 	}
 	
-	.cbn-table-cell {
+	:host ::content .cbn-table-cell {
 		display: table-cell;
 		padding: var(--cbn-table-cell-padding);
 		border-top: var(--cbn-table-border);
 		border-right: var(--cbn-table-border);
 		@apply(--cbn-table-cell);
 	}
-	.cbn-table-row:hover .cbn-table-cell {
+	:host ::content .cbn-table-row:hover .cbn-table-cell {
 		@apply(--cbn-table-cell-hover);
 	}
-	.cbn-table-row.first-row .cbn-table-cell {
+	:host ::content .cbn-table-row.first-row .cbn-table-cell {
 		border-top: none;
 	}
-	.cbn-table-row.last-row .cbn-table-cell {
+	:host ::content .cbn-table-row.last-row .cbn-table-cell {
 		border-bottom: none;
 	}
 	
-	
 	/* Headers and footers */
-	
-	#tableHead {
+	:host ::content .cbn-table-header-container {
 		display: table-header-group;
 		position: relative;
+		will-change: transform;
 		background: var(--cbn-table-head-background);
 		@apply(--cbn-table-header);
 	}
-	#tableHead:after {
+	:host ::content .cbn-table-header-container:after {
 		content: "";
 		height: 10px;
 		margin-top: -10px;
@@ -127,50 +133,56 @@
 		z-index: -1;
 		box-shadow: var(--cbn-table-head-shadow);
 	}
-	.scroll-top #tableHead:after {
+	:host ::content .cbn-table-effective.scroll-top .cbn-table-header-container:after {
 		box-shadow: none;
 	}
 	
-	#tableHead .cbn-table-row:hover, 
-	#tableFoot .cbn-table-row:hover {
+	:host ::content .cbn-table-header-container .cbn-table-row:hover, 
+	:host ::content .cbn-table-footer-container .cbn-table-row:hover {
 		background: transparent;
 	}
 	
-	#tableHead .cbn-table-cell {
+	:host ::content .cbn-table-header-container .cbn-table-cell {
 		@apply(--cbn-table-header-cell);
 	}
 	
-	.scroll-top #tableHead .cbn-table-cell {
+	:host ::content .cbn-table-effective.scroll-top .cbn-table-header-container .cbn-table-cell {
 		box-shadow: none;
 		border-bottom: var(--cbn-table-head-border);
 	}
 	
-	#tableFoot {
-		display: table-footer-group;
-		position: relative !important;
+	:host ::content .cbn-table-footer-container {
+		display: table-caption;
+		caption-side: bottom;
+		position: relative;
+		will-change: transform;
+		
 		background: var(--cbn-table-foot-background);
 		border-top: var(--cbn-table-border);
-		border-bottom: var(--cbn-table-border);
+		border-bottom: none;
 		@apply(--cbn-table-footer);
 	}
-	#tableFoot .cbn-table-cell {
+	:host ::content .cbn-table-footer-container .cbn-table-cell {
 		border-top: var(--cbn-table-border);
 		border-bottom: none;
+		@apply(--cbn-table-cell);
 		@apply(--cbn-table-footer-cell);
 	}
 	
 	/* Misc */
-	
-	#autoExpander {
+	:host ::content .cbn-table-expander {
 		display: table-row;
 		height: 100% !important;
 		position: static !important;
 	}
-	#autoExpander .cbn-table-cell {
+	:host ::content .cbn-table-expander .cbn-table-cell {
 		height: 100% !important;
 		border: none !important;
 	}
 	
+</style></template></dom-module>
+
+<dom-module id="cbn-data-table-styles-private"><template><style>
 	/* Data Table Styles */
 	.cbn-table-caption-row .cbn-table-cell,
 	.scroll-top #tableHead .cbn-table-caption-row .cbn-table-cell {
@@ -195,7 +207,7 @@
 		line-height: 1.75em;
 	}
 	.column-hidden {
-		display: none;
+		display: none !important;
 	}
 	
 	.column-index-button {
@@ -220,7 +232,7 @@
 		margin-bottom: 3px;
 	}
 	
-	.cbn-table-column .cell-contents {
+	.cbn-table-column .column-caption {
 		flex: 1;
 		vertical-align: middle;
 		
@@ -235,13 +247,13 @@
 		cursor: pointer;
 		color: rgba(0,0,0, .54);
 	}
-	.cbn-table-column .cell-contents:hover {
+	.cbn-table-column .column-caption:hover {
 		color: #000;
 	}
 	
 	/*noinspection CssNoGenericFontName,CssUnknownProperty*/
-	.cbn-table-column .cell-contents:before, 
-	.cbn-table-column .cell-contents:after {
+	.cbn-table-column .column-caption:before, 
+	.cbn-table-column .column-caption:after {
 		font-family: "cbn-table-icons";
 		
 		position: absolute;
@@ -265,8 +277,8 @@
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
 	}
-	.cbn-table-column .cell-contents:hover:before,
-	.cbn-table-column .cell-contents:hover:after {
+	.cbn-table-column .column-caption:hover:before,
+	.cbn-table-column .column-caption:hover:after {
 		color: #000 !important;
 	}
 	
@@ -297,7 +309,6 @@
 	paper-checkbox {
 		--paper-checkbox-label-spacing: 0px;
 	}
-	
 </style></template></dom-module>
 
 <dom-module id="cbn-table-filter-styles"><template><style>

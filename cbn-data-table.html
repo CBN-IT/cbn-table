@@ -98,6 +98,7 @@ See `cbn-table` for information about styling the element.
 				@apply(--cbn-data-table-default-action-bar);
 			}
 		</style>
+		<style include="cbn-data-table-styles-private"></style>
 
 		<paper-material elevation="1" class="horizontal layout" id="actionBar">
 			<div class="flex horizontal layout center">
@@ -128,9 +129,9 @@ See `cbn-table` for information about styling the element.
 		<cbn-table id="table" items="{{_filteredItems}}"
 				   selection-enabled multi-selection selected-items="{{selectedItems}}" class="flex">
 			<template class="cbn-table-header">
-				<div class="cbn-table-row cbn-table">
+				<div class="cbn-table-row">
 					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
-						<div class="cbn-table-cell cbn-table-column cbn-table"><div class="column-wrapper">
+						<div class="cbn-table-cell cbn-table-column"><div class="column-wrapper">
 							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*, sortable)]]"
 								 on-tap="_columnClicked" style$="[[_computeCellStyles(column.obj.headStyle, column.obj)]]">
 								<span>[[column.obj.caption]]</span>
@@ -142,14 +143,14 @@ See `cbn-table` for information about styling the element.
 								</cbn-data-table-filter>
 							</template>
 							<template is="dom-if" if="[[_computeIsIndex(column.obj.type)]]">
-								<div class="style-scope cbn-table column-index-button" style="text-align: center;">
-									<span class="cbn-table selection-tag">[[selectedItems.length]]</span>
+								<div class="column-index-button" style="text-align: center;">
+									<span class="selection-tag">[[selectedItems.length]]</span>
 									<paper-icon-button icon="[[_computeIndexIcon(selectedItems.length, _filteredItems.length)]]" class="indexButton" id="indexButton" on-tap="selectAllNone"></paper-icon-button>
-									<span class="cbn-table total-tag">[[_filteredItems.length]]</span>
+									<span class="total-tag">[[_filteredItems.length]]</span>
 								</div>
 							</template>
 							<template is="dom-if" if="[[_computeNeedsPlaceholder(column.obj, filterable)]]">
-								<div class="style-scope cbn-table column-placeholder">&nbsp;</div>
+								<div class="column-placeholder">&nbsp;</div>
 							</template>
 						</div></div>
 					</template>
@@ -506,25 +507,7 @@ See `cbn-table` for information about styling the element.
 				var ctrl = event.detail.sourceEvent.ctrlKey;
 				this.toggleOrdering(event.model.column.obj.name, ctrl);
 			},
-
-			/**
-			 * Utility method that can be used to generate a custom event from another event.
-			 *
-			 * @param {Object} event The original Polymer event object.
-			 */
-			_throwEvent: function(event) {
-				event.stopPropagation();
-				var name = event.currentTarget.getAttribute("data-event");
-				if (!name) {
-					console.warn("Please specify a `data-event` attribute!");
-					return;
-				}
-				this.fire(name, {
-					originalEvent: event,
-					item: event.model.item
-				});
-			},
-
+			
 			/**
 			 * Handles the row tap / dblclick events.
 			 */
@@ -573,27 +556,29 @@ See `cbn-table` for information about styling the element.
 			 * @param {Object} column The column object.
 			 */
 			_computeColumnCaptionClasses: function(column) {
-				var addClass = '';
+				var addClass = 'column-caption';
 				if (this._computeIsIndex(column.type)) {
-					return 'column-hidden';
+					return addClass + ' column-hidden';
 				}
+				
+				// check whether sorting is enabled for the current column
 				if (this.sortable && column.sortable) {
-					addClass = 'cbn-table-column-sortable';
+					var sortClass = 'cbn-table-column-sortable';
 					this.sortOrdering.some(function(ordering) {
 						if (ordering.name == column.name) {
 							if (ordering.dir) {
-								addClass = 'cbn-table-column-sort-asc';
+								sortClass = 'cbn-table-column-sort-asc';
 							} else {
-								addClass = 'cbn-table-column-sort-desc';
+								sortClass = 'cbn-table-column-sort-desc';
 							}
 							return true;
 						}
 						return false;
 					});
+					addClass += ' ' + sortClass;
 				}
 				
-				// check whether sorting is enabled for the current column
-				return "cbn-table cell-contents " + addClass;
+				return addClass;
 			},
 			
 			/**

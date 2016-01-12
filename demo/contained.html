@@ -29,9 +29,10 @@
 			<cbn-data-table style="height: 700px;" items="[[items]]" columns="[[columns]]" class="cls">
 				<template id="buttons">
 					<span>
-						<paper-icon-button on-tap="_throwEvent" data-event="page-view" icon="icons:pageview">Y</paper-icon-button>
+						<paper-icon-button on-tap="_doSomething" icon="icons:pageview">Y</paper-icon-button>
 						<paper-tooltip position="left" offset="5">View</paper-tooltip>
 					</span>
+					<span>{{_computeSomething(item)}}</span>
 					
 					<span>
 						<paper-icon-button icon="icons:create">Y</paper-icon-button>
@@ -113,6 +114,15 @@
 						return rows;
 					}
 				}
+			},
+			
+			_computeSomething: function(item) {
+				console.log('compute', item);
+				return item.one;
+			},
+			
+			_doSomething: function(event) {
+				console.log('something', event.model.item);
 			}
 		});
 	</script>
