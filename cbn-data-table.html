@@ -59,7 +59,7 @@ See `cbn-table` for information about styling the element.
 
 				<paper-menu-button id="report" horizontal-align="right" vertical-align="top" vertical-offset="40">
 					<paper-icon-button icon="editor:insert-chart" style="color: #3277ec;" class="dropdown-trigger action"></paper-icon-button>
-					<paper-menu id="menuReports" class="dropdown-content" horizontal-align="right" attr-for-selected="hash" on-iron-select="generateReport">
+					<paper-menu id="menuReports" class="dropdown-content" horizontal-align="right" attr-for-selected="hash" on-iron-activate="generateReport">
 						<template is="dom-repeat" items="{{reports}}" as="report">
 							<paper-item class="item-sablon" hash$="{{report._hash}}"><iron-icon icon$="microsoft-office:{{report.tipGenerare}}" class$="colored {{report.tipGenerare}}"></iron-icon>{{report.numeSablon}}</paper-item>
 						</template>
