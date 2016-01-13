@@ -590,12 +590,14 @@ See `cbn-table` for information about styling the element.
 				return '';
 			},
 			
-			generateReport: function(){
+			generateReport: function(event){
+				event.preventDefault();
+				var hashRaport = event.detail.item.getAttribute("hash");
 				var iframe = document.createElement("iframe");
 				iframe.style.display = "none";
 				document.body.appendChild(iframe);
 				var html = "<!DOCTYPE html><html><head><title></title></head><body><form id='formRaport' action='/do/Raport' target=\"_blank\" method='POST'>";
-				html += "<input type='hidden' name='hashReport' value='" + this.$.menuReports.selected + "'/>";
+				html += "<input type='hidden' name='hashReport' value='" + hashRaport + "'/>";
 				for(var i=0;i<this.selectedItems.length;i++){
 					html += "<input type='hidden' name='keys' value='" + this.selectedItems[i]._hash + "'/>";
 				}
@@ -609,7 +611,7 @@ See `cbn-table` for information about styling the element.
 				html += "document.getElementById('formRaport').submit();";
 				html += "<" + "/script>" + "</html>";
 				iframe.contentDocument.write(html);
-				this.$.menuReports.select("");
+				//this.$.menuReports.select("");
 			},
 			
 			saveExcel: function(){
