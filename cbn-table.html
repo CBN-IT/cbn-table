@@ -294,10 +294,6 @@ Class name               | Description                   | Default
 				this.$.tableFoot = Polymer.dom(this.$.effectiveTable).querySelector('.cbn-table-footer-container');
 				this.$.autoExpander = Polymer.dom(this.$.effectiveTable).querySelector('.cbn-table-expander');
 				
-				// move the footer outside the table
-//				var parentDom = Polymer.dom(Polymer.dom(this.$.tableFoot).parentNode);
-//				parentDom.removeChild(this.$.tableFoot) && Polymer.dom(this).appendChild(this.$.tableFoot);
-				
 				// fetch the header template 
 				template = Polymer.dom(this).querySelector('template.cbn-table-header');
 				if (template) {
@@ -320,10 +316,15 @@ Class name               | Description                   | Default
 					this.$.tableFoot.style.display = 'none';
 				}
 				
-				// fetch the main template to use for rendering the table rows
-				var itemTemplate = Polymer.dom(this).querySelector('template:not(.cbn-table-header):not(.cbn-table-footer)');
-				if (itemTemplate) {
-					this._itemTemplate = itemTemplate;
+				// try to find the main template to use for rendering the table rows
+				var selectElements = Polymer.dom(this).querySelectorAll('template:not(.cbn-table-header):not(.cbn-table-footer)');
+				for (var i=0; i<selectElements.length; i++) {
+					// skip templates that are not immediate children
+					if (Polymer.dom(selectElements[i]).parentNode != this) {
+						continue;
+					}
+					this._itemTemplate = selectElements[i];
+					break;
 				}
 			},
 			

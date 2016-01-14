@@ -116,6 +116,18 @@
 			},
 			
 			/**
+			 * Returns the root data host for the currently templatized element to its shadow root element, if any.
+			 * This is required to make client computed properties / event listeners work.
+			 */
+			_getRootDataHost: function() {
+				var templatizedDom = this._templatized ? Polymer.dom(this._templatized) : null;
+				if (templatizedDom && templatizedDom.getOwnerRoot() && templatizedDom.getOwnerRoot().host) {
+					return templatizedDom.getOwnerRoot().host;
+				}
+				return Polymer.Templatizer._getRootDataHost.apply(this, arguments);
+			},
+			
+			/**
 			 * [Re]Initializes this cell when its column descriptor changes.
 			 */
 			_initContents: function () {
@@ -133,23 +145,11 @@
 						if (!this.template) return;
 						this.templatize(this.template);
 						this._instance = this.stamp({item: this.item});
-						Polymer.dom(this.root).appendChild(this._instance.root);
+						Polymer.dom(this).appendChild(this._instance.root);
 						break;
 				}
 				
 				this._updateContents();
-			},
-			
-			/**
-			 * Returns the root data host for the currently templatized element to its shadow root element, if any.
-			 * This is required to make client computed properties / event listeners work.
-			 */
-			_getRootDataHost: function() {
-				var templatizedDom = this._templatized ? Polymer.dom(this._templatized) : null;
-				if (templatizedDom && templatizedDom.getOwnerRoot() && templatizedDom.getOwnerRoot().host) {
-					return templatizedDom.getOwnerRoot().host;
-				}
-				return Polymer.Templatizer._getRootDataHost.apply(this, arguments);
 			},
 			
 			/**
@@ -168,10 +168,10 @@
 				
 				switch (this.type) {
 					case 'text':
-						Polymer.dom(this.root).textContent = cellContents;
+						Polymer.dom(this).textContent = cellContents;
 						break;
 					case 'html':
-						Polymer.dom(this.root).innerHTML = cellContents;
+						Polymer.dom(this).innerHTML = cellContents;
 						break;
 					case 'template':
 						if (!this.template && !this._instance) return;
