@@ -247,10 +247,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				table.items = [];
 				flush(function () {
 					var hiddenRow = getFirstItemFromTable(table);
-					if (hiddenRow) {
+					if (hiddenRow && !hiddenRow.classList.contains('cbn-table-row')) {
 						hiddenRow = Polymer.dom(hiddenRow).parentNode;
 					}
-					assert.ok(!hiddenRow || hiddenRow.hasAttribute('hidden'), 'table emptied');
+					assert.ok(!hiddenRow || !hiddenRow.classList.contains('cbn-table-row') ||
+						hiddenRow.hasAttribute('hidden'), 'table emptied');
 					
 					table.items = buildDataSet(100);
 					flush(function () {
