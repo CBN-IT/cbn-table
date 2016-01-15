@@ -82,7 +82,9 @@ Class name               | Description                   | Default
 				<div class="cbn-table-footer-container"></div>
 				
 				<!-- An empty row with height: 100% that will take the rest of the unused vertical space inside the table -->
-				<div class="cbn-table-expander"></div>
+				<div class="cbn-table-expander">
+					<div class="cbn-table-cell">&nbsp;</div>
+				</div>
 			</div>
 		</template>
 		
@@ -552,23 +554,8 @@ Class name               | Description                   | Default
 					for (var i = 0; i < size; i++) {
 						var inst = this.stamp(null);
 						physicalItems[i] = inst.root.querySelector('*');
-						Polymer.dom(table.$.effectiveTable).appendChild(inst.root);
+						Polymer.dom(table.$.effectiveTable).insertBefore(inst.root, table.$.autoExpander);
 					}
-					
-					/**
-					 * Detaches and reattaches an element in order to move it at the end of the DOM parent.
-					 * @param {HTMLElement} element The element to move at the end.
-					 */
-					function moveToEnd(element) {
-						if (!element) return;
-						var parent = Polymer.dom(Polymer.dom(element).parentNode);
-						parent.removeChild(element) && parent.appendChild(element);
-					}
-					
-					// re-attach the other table elements at the end
-					moveToEnd(table.$.autoExpander);
-					moveToEnd(table.$.tableHead);
-					moveToEnd(table.$.tableFoot);
 					
 					return physicalItems;
 				};
