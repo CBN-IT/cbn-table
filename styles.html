@@ -391,7 +391,7 @@
 		box-sizing: border-box;
 		margin: 0;
 		
-		padding: 0.3em 1.3em 0.3em 0.3em;
+		padding: 0.3em 1.3em 0.3em 0.9em;
 		outline: 0;
 		
 		background-color: #fff;
@@ -401,7 +401,22 @@
 		-webkit-transition: border-color 0.3s; /* Safari */
 		transition: border-color 0.3s;
 	}
-	
+
+	.delete-icon[hidden] + .search-icon + .filter-input {
+		padding: 0.3em 1.3em 0.3em 0.3em;
+	}
+	.delete-icon{
+		position: absolute;
+		z-index: 2;
+		width: 14px;
+		height: 14px;
+		color: red;
+		top: 6px;
+		left: -2px;
+		background-color: white;
+		transform: rotate(180deg);
+		cursor: pointer;
+	}
 	/*noinspection CssNoGenericFontName,CssUnknownProperty*/
 	.search-icon {
 		z-index: 2;

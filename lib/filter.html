@@ -8,7 +8,7 @@
 		
 		<div id="filterContainer">
 			<template is="dom-if" if="[[!template]]" restamp>
-				<iron-icon hidden$="{{!filterValue}}" icon="icons:backspace"></iron-icon>
+				<iron-icon class="delete-icon" hidden$="{{!filterValue}}" icon="icons:backspace" on-tap="_clearFilterValue"></iron-icon>
 				<span class="search-icon" on-tap="_setSelectionFilter">&#xe802;</span>
 				<input is="iron-input" class="filter-input" title="Filter"
 					   bind-value="{{filterValue}}" on-focus="_inputFocused" on-blur="_inputBlur"  />
@@ -154,7 +154,9 @@
 				}
 				this.filterValue = vals.join("|");
 			},
-			
+			_clearFilterValue: function () {
+				this.filterValue = "";
+			},
 			// event handlers
 			
 			/**
