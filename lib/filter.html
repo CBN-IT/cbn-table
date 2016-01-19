@@ -147,7 +147,11 @@
 					var item = this.selectedItems[i];
 					vals["^" + item[col] + "$"] = "";
 				}
-				this.filterValue = Object.keys(vals).join("|")
+				vals = Object.keys(vals);
+				if (vals.length > 100) {
+					vals = vals.slice(0, 100);
+				}
+				this.filterValue = vals.join("|");
 			},
 			
 			// event handlers
