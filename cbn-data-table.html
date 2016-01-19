@@ -82,7 +82,7 @@ See `cbn-table` for information about styling the element.
 							</div>
 							
 							<template is="dom-if" if="[[_computeIsFilterable(column.obj.filter, filterable)]]">
-								<cbn-data-table-filter column="[[column.obj]]" template="[[column.filterTemplate]]"
+								<cbn-data-table-filter  selected-items="[[selectedItems]]" column="[[column.obj]]" template="[[column.filterTemplate]]"
 													   filter-value="{{column.currentFilter}}">
 								</cbn-data-table-filter>
 							</template>

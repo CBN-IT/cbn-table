@@ -8,7 +8,7 @@
 		
 		<div id="filterContainer">
 			<template is="dom-if" if="[[!template]]" restamp>
-				<span class="search-icon">&#xe802;</span>
+				<span class="search-icon" on-tap="_setSelectionFilter">&#xe802;</span>
 				<input is="iron-input" class="filter-input" title="Filter"
 					   bind-value="{{filterValue}}" on-focus="_inputFocused" on-blur="_inputBlur"  />
 			</template>
@@ -43,6 +43,15 @@
 					type: String,
 					value: '',
 					notify: true
+				},
+				
+				/**
+				 * Stores the currently selected items.
+				 */
+				selectedItems: {
+					type: Array,
+					notify: false,
+					value: function() { return []; }
 				},
 				
 				/**
@@ -130,6 +139,15 @@
 					this.notifyPath('filterValue.' +
 						path.slice('filterValue'.length + 1), value);
 				}
+			},
+			_setSelectionFilter: function(){
+				var col = this.column.name;
+				var vals = {};
+				for (var i = 0; i < this.selectedItems.length; i++) {
+					var item = this.selectedItems[i];
+					vals["^" + item[col] + "$"] = "";
+				}
+				this.filterValue = Object.keys(vals).join("|")
 			},
 			
 			// event handlers
