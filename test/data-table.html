@@ -131,7 +131,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				
 				// check header styles
 				var header = table.$.tableHead;
-				var columns = header.querySelectorAll('.cbn-table-column .column-caption');
+				var columns = header.querySelectorAll('.cbn-table-column');
 				assert.equal(columns[0].style.fontWeight, 'bold');
 				assert.match(columns[0].style.color, /^red|#FF0000|rgb\(255,\s*0,\s*0\)$/);
 				assert.match(columns[2].style.backgroundColor, /^red|#FF0000|rgb\(255,\s*0,\s*0\)$/);

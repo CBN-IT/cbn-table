@@ -10,7 +10,7 @@
 				<!-- Parent props: selected, hovered, index -->
 				<span style$="[[_computeIndexTextStyles(selected, hovered)]]">[[_addOne(index)]]</span>
 				<paper-checkbox style$="[[_computeCheckboxStyles(selected, hovered)]]"
-								class="style-scope cbn-table"
+								class="style-scope cbn-data-table"
 								on-tap="_checkboxTapped"
 								checked$="{{ selected }}">[[ label ]]</paper-checkbox>
 				<!-- Space required for the element to be dimensioned with the line height -->
