@@ -230,6 +230,7 @@ Class name               | Description                   | Default
 			selectItem: function(i) {
 				if (!this.selectionEnabled) return;
 				this.$.ironList.selectItem(i);
+				this._updateLastSelectedItem(i);
 			},
 			
 			/**
@@ -246,6 +247,7 @@ Class name               | Description                   | Default
 				} else {
 					this.$.ironList.deselectItem(i);
 				}
+				this._updateLastSelectedItem(i);
 			},
 			
 			/**
@@ -254,6 +256,7 @@ Class name               | Description                   | Default
 			selectAll: function() {
 				if (!this.selectionEnabled) return;
 				this._selectRange(0);
+				this._updateLastSelectedItem(0);
 			},
 			
 			/**
@@ -262,6 +265,7 @@ Class name               | Description                   | Default
 			clearSelection: function() {
 				if (!this.selectionEnabled) return;
 				this.$.ironList.clearSelection();
+				this._updateLastSelectedItem(0);
 			},
 			
 			/**
@@ -603,30 +607,30 @@ Class name               | Description                   | Default
 							if (this.multiSelection) {
 								if (srce.ctrlKey) {
 									this.toggleSelectionForItem(model[this.as]);
-									this._lastSelectedItemIdx = model[this.indexAs];
-									this._lastSelectedRange = null;
+									table._lastSelectedItemIdx = model[this.indexAs];
+									table._lastSelectedRange = null;
 									
 								} else if (srce.shiftKey) {
 									document.getSelection().removeAllRanges();
-									var starti = this._lastSelectedItemIdx || 0, endi = itemIndex;
-									if (this._lastSelectedRange) {
-										table._selectRange(this._lastSelectedRange[0], this._lastSelectedRange[1],
+									var starti = table._lastSelectedItemIdx || 0, endi = itemIndex;
+									if (table._lastSelectedRange) {
+										table._selectRange(table._lastSelectedRange[0], table._lastSelectedRange[1],
 											true, true);
-										starti = this._lastSelectedRange[0];
+										starti = table._lastSelectedRange[0];
 									}
-									this._lastSelectedRange = [ starti, endi ];
+									table._lastSelectedRange = [ starti, endi ];
 									table._selectRange(starti, endi, model[this.selectedAs], true);
 									
 								} else {
 									this.clearSelection();
 									this.toggleSelectionForItem(model[this.as]);
-									this._lastSelectedItemIdx = itemIndex;
-									this._lastSelectedRange = null;
+									table._lastSelectedItemIdx = itemIndex;
+									table._lastSelectedRange = null;
 								}
 							} else {
 								this.toggleSelectionForItem(model[this.as]);
-								this._lastSelectedItemIdx = itemIndex;
-								this._lastSelectedRange = null;
+								table._lastSelectedItemIdx = itemIndex;
+								table._lastSelectedRange = null;
 							}
 						}
 					}
@@ -718,6 +722,21 @@ Class name               | Description                   | Default
 				}
 				
 				this.$.ironList._update();
+			},
+			
+			/**
+			 * Updates the last selected item and range after an item changed its selection state.
+			 * 
+			 * @param {Number|Object} i The object / index of the item that was selected/deselected.
+			 */
+			_updateLastSelectedItem: function (i) {
+				// get the model object of the item
+				var item = this.$.ironList._getNormalizedItem(i);
+				var model = this.$.ironList._getModelFromItem(item);
+				if (model) {
+					this._lastSelectedItemIdx = model[this.$.ironList.indexAs];
+					this._lastSelectedRange = null;
+				}
 			},
 			
 			/**

@@ -121,6 +121,10 @@
 			// Event handlers
 			
 			_checkboxTapped: function(event) {
+				var sourceEvent = event.detail.sourceEvent;
+				if (sourceEvent.shiftKey || sourceEvent.ctrlKey) 
+					return;
+				
 				event.stopPropagation();
 				this.parentTable.toggleSelection(event.model.index, event.currentTarget.checked);
 			}
