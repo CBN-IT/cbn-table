@@ -598,13 +598,13 @@ See `cbn-table` for information about styling the element.
 				document.body.appendChild(iframe);
 				var html = "<!DOCTYPE html><html><head><title></title></head><body><form id='formRaport' action='/do/Raport' target=\"_blank\" method='POST'>";
 				html += "<input type='hidden' name='hashReport' value='" + hashRaport + "'/>";
-				for(var i=0;i<this.selectedItems.length;i++){
+				for (var i = 0; i < this.selectedItems.length; i++) {
 					html += "<input type='hidden' name='keys' value='" + this.selectedItems[i]._hash + "'/>";
 				}
 				
 				var nameParams = Object.keys(this.params);
-				for(i=0;i<nameParams.length;i++){
-					html += "<input type='hidden' name='"+nameParams[i]+"' value='" + this.params[nameParams[i]] + "'/>";
+				for (i = 0; i < nameParams.length; i++) {
+					html += "<input type='hidden' name='" + nameParams[i] + "' value='" + this.params[nameParams[i]] + "'/>";
 				}
 				html += "<input type='hidden' name='download' value='inline'/>";
 				html += "</form></body><script>";
@@ -621,7 +621,7 @@ See `cbn-table` for information about styling the element.
 				}
 				var header = [];
 				var headerIds = [];
-				for (var i in this._columns) {
+				for (var i=0;i<this._columns.length;i++) {
 					var column = this._columns[i].obj;
 					if (column.xls) {
 						header.push(column.caption);
@@ -634,17 +634,15 @@ See `cbn-table` for information about styling the element.
 				if (!(data instanceof Array)) {
 					data = [data];
 				}
-				for (i in data) {
+				data.forEach(function(d){
 					var row = [];
-					for (var c in headerIds) {
-						var column = headerIds[c];
-						if (data[i] != undefined) {
-							row.push(column._f_xls(data[i], column));
+					headerIds.forEach(function(column){
+						if (d != undefined) {
+							row.push(column._f_xls(d, column));
 						}
-						
-					}
+					});
 					returnData.push(row);
-				}
+				});
 				this.$.saveExcel.data = returnData;
 				this.$.saveExcel.arrayToXLSX();
 			}
