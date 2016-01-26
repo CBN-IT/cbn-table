@@ -613,20 +613,19 @@ See `cbn-table` for information about styling the element.
 				iframe.contentDocument.write(html);
 				//this.$.menuReports.select("");
 			},
-			
-			saveExcel: function(){
+
+			saveExcel: function () {
 				var data = this.selectedItems;
 				if (data == undefined || data.length == 0) {
-					
 					data = this._filteredItems;
 				}
 				var header = [];
 				var headerIds = [];
-				for (var i in this.columns) {
-					var column = this.columns[i];
-					if (!column.hidden && column.type != "index" && column.type != "inert") {
+				for (var i in this._columns) {
+					var column = this._columns[i].obj;
+					if (column.xls) {
 						header.push(column.caption);
-						headerIds.push(column.name);
+						headerIds.push(column);
 					}
 				}
 				
@@ -638,9 +637,9 @@ See `cbn-table` for information about styling the element.
 				for (i in data) {
 					var row = [];
 					for (var c in headerIds) {
+						var column = headerIds[c];
 						if (data[i] != undefined) {
-							
-							row.push(data[i][headerIds[c]]);
+							row.push(column._f_xls(data[i], column));
 						}
 						
 					}
@@ -648,7 +647,7 @@ See `cbn-table` for information about styling the element.
 				}
 				this.$.saveExcel.data = returnData;
 				this.$.saveExcel.arrayToXLSX();
-			},
+			}
 			
 			
 		});

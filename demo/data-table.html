@@ -12,6 +12,7 @@
 	<link rel="import" href="../../cbn-tooltip/cbn-tooltip.html">
 	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 	<link rel="import" href="../cbn-data-table.html">
+	<link rel="import" href="../../cbn-momentjs/cbn-momentjs.html">
 	
 	<style is="custom-style">
 		#appContainer {
@@ -68,6 +69,9 @@
 
 <script>
 	window.addEventListener('WebComponentsReady', function() {
+		function random(min, max){
+			return Math.floor(Math.random()*(max-min+1)+min);
+		}
 		var rows = [];
 		for (var i=0; i<2000; i++) {
 			var longStr = 'dolorem ipsum quia dolor sit amet ' + 
@@ -75,10 +79,10 @@
 			//longStr = longStr.substr(0, Math.floor(i/2000.0 * longStr.length));
 			rows.push(
 				{ one: 'asd' + i, two: 'yes', three: '5', one2: (i && i%40 == 0 ? longStr : 'asdasd'), two2: 'yes', three2: '5',
-					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes asfdas d fas af', three4: '5'
+					one3: 'asd' + i, two3: 'yes', three3: '5', one4: 'asd' + i, two4: 'yes asfdas d fas af', three4: random(1,28)+"."+random(1,12)+"."+random(1990,2020)
 				},
 				{ one: 'iop' + i, two: '', three: '6', one2: (i && i%40 == 0 ? longStr : 'asdasd'), two2: '', three2: '6',
-					one3: 'iop' + i, two3: '', three3: '6', one4: 'iop lalala lalalal' + i, two4: '', three4: '6'}
+					one3: 'iop' + i, two3: '', three3: '6', one4: 'iop lalala lalalal' + i, two4: '', three4: random(1,28)+"."+random(1,12)+"."+random(1990,2020)}
 			);
 		}
 		
@@ -89,70 +93,86 @@
 				caption: 'Nr.',
 				style: {
 					color: 'gray'
-				}
+				},
+				xls:false
 			},
 			{
 				name: 'one',
 				renderAs: 'text',
-				caption: 'One',
+				caption: 'Natural',
 				type: 'natural',
 				filterElement: '#extFilter',
-				style: 'font-weight: bold;'
+				style: 'font-weight: bold;',
+				"xls": "string"
 			},
 			{
 				name: 'two',
 				renderAs: 'text',
-				caption: 'Short column with a very long name'
+				caption: 'Short column with a very long name',
+				"xls": "string"
 			},
 			{
 				name: 'three',
-				renderAs: 'text',
-				caption: 'Three'
+				renderAs: 'String',
+				caption: 'Three',
+				"xls": "string"
 			},
 			{
 				name: 'one2',
 				renderAs: 'text',
-				caption: 'One'
+				caption: 'Asdasd',
+				"xls": "string"
 			},
 			{
 				name: 'two2',
 				renderAs: 'text',
-				caption: 'Three'
+				caption: 'Yes',
+				"xls": "string"
 			},
 			{
 				name: 'three2',
 				renderAs: 'text',
-				caption: 'Three'
+				caption: 'Integer',
+				"xls": "integer"
 			}, 
 			{
 				name: 'one3',
 				renderAs: 'text',
-				caption: 'One'
+				caption: 'Asdiop',
+				"xls": "string"
 			},
 			{
 				name: 'two3',
 				renderAs: 'text',
-				caption: 'Three'
+				caption: 'yes',
+				"xls": "string"
 			},
 			{
 				name: 'three3',
 				renderAs: 'text',
-				caption: 'Three'
+				caption: 'Float',
+				"xls": "float"
 			},
 			{
 				name: 'one4',
 				renderAs: 'text',
-				caption: 'One'
+				caption: 'One',
+				"xls": "string"
 			},
 			{
 				name: 'two4',
 				renderAs: 'text',
-				caption: 'Three'
+				caption: 'Three',
+				"xls": "string"
 			},
 			{
 				name: 'three4',
 				renderAs: 'text',
-				caption: 'Three'
+				caption: 'Date',
+				type: 'date',
+				"xls": "date",
+				dateValueFormat:"DD.MM.YYYY",
+				dateFormat:"DD MMMM YYYY"
 			},
 			{
 				name: 'buttons',
@@ -160,7 +180,8 @@
 				renderAs: 'template',
 				headStyle: "width: 200px",
 				caption: 'Buttons',
-				template: '#buttons'
+				template: '#buttons',
+				"xls": false
 			}
 		]);
 	});
