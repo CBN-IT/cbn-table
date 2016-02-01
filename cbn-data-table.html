@@ -44,7 +44,7 @@ See `cbn-table` for information about styling the element.
 	<template>
 		<style include="cbn-data-table-styles-private"></style>
 		
-		<paper-material elevation="1" class="horizontal layout" id="actionBar">
+		<paper-material elevation="1" class="horizontal layout" id="actionBar" style="flex-shrink: 0;">
 			<div class="flex horizontal layout center">
 				<content select=".before"></content>
 			</div>
@@ -611,6 +611,7 @@ See `cbn-table` for information about styling the element.
 				html += "document.getElementById('formRaport').submit();";
 				html += "<" + "/script>" + "</html>";
 				iframe.contentDocument.write(html);
+				this.$.report.close();
 				//this.$.menuReports.select("");
 			},
 
