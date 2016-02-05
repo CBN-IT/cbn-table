@@ -70,7 +70,7 @@ See `cbn-table` for information about styling the element.
 			</div>
 		</paper-material>
 		
-		<cbn-table id="table" items="{{filteredItems}}"
+		<cbn-table id="table" items="{{_filteredItems}}"
 				   selection-enabled multi-selection selected-items="{{selectedItems}}" class="flex">
 			<template class="cbn-table-header">
 				<div class="cbn-table-row">
@@ -89,8 +89,8 @@ See `cbn-table` for information about styling the element.
 							<template is="dom-if" if="[[_computeIsIndex(column.obj.type)]]">
 								<div class="column-index-button" style="text-align: center;">
 									<span class="selection-tag">[[selectedItems.length]]</span>
-									<paper-icon-button icon="[[_computeIndexIcon(selectedItems.length, filteredItems.length)]]" class="indexButton" id="indexButton" on-tap="selectAllNone"></paper-icon-button>
-									<span class="total-tag">[[filteredItems.length]]</span>
+									<paper-icon-button icon="[[_computeIndexIcon(selectedItems.length, _filteredItems.length)]]" class="indexButton" id="indexButton" on-tap="selectAllNone"></paper-icon-button>
+									<span class="total-tag">[[_filteredItems.length]]</span>
 								</div>
 							</template>
 							<template is="dom-if" if="[[_computeNeedsPlaceholder(column.obj, filterable)]]">
@@ -142,11 +142,6 @@ See `cbn-table` for information about styling the element.
 				 * Stores the currently selected items.
 				 */
 				selectedItems: {
-					type: Array,
-					notify: true,
-					value: function() { return []; }
-				},
-				filteredItems:{
 					type: Array,
 					notify: true,
 					value: function() { return []; }
@@ -622,7 +617,7 @@ See `cbn-table` for information about styling the element.
 			saveExcel: function () {
 				var data = this.selectedItems;
 				if (data == undefined || data.length == 0) {
-					data = this.filteredItems;
+					data = this._filteredItems;
 				}
 				var header = [];
 				var headerIds = [];
