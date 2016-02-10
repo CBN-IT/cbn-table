@@ -75,7 +75,7 @@ See `cbn-table` for information about styling the element.
 			<template class="cbn-table-header">
 				<div class="cbn-table-row">
 					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
-						<div class="cbn-table-cell cbn-table-column" style$="[[_computeCellStyles(column.obj.headStyle, column.obj)]]"><div class="column-wrapper">
+						<div class="cbn-table-cell cbn-table-column" style$="[[_computeCellStyles(column.obj.headStyle,column.obj.hidden , column.obj)]]"><div class="column-wrapper">
 							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*, sortable)]]"
 								 on-tap="_columnClicked">
 								<span>[[column.obj.caption]]</span>
@@ -109,7 +109,7 @@ See `cbn-table` for information about styling the element.
 						  as="column" index-as="column_index">
 					<cbn-data-table-cell parent-table="[[_self]]" item="[[item]]" column="[[column.obj]]"
 										 selected="[[selected]]" index="[[index]]"
-										 style$="[[_computeCellStyles(column.obj.style, item, column.obj)]]"
+										 style$="[[_computeCellStyles(column.obj.style,column.obj.hidden , item, column.obj)]]"
 										 class="cbn-table-cell"
 										 template="[[column.template]]"></cbn-data-table-cell>
 				</template>
@@ -561,15 +561,19 @@ See `cbn-table` for information about styling the element.
 			 * Computes the styles to show for a table cell / header element.
 			 *
 			 * @param {String|Object|Function} styles The style object to compute.
+			 * @param {Boolean} hidden is the column is hidden or not
 			 * @return {String} The computed CSS string.
 			 */
-			_computeCellStyles: function(styles) {
+			_computeCellStyles: function(styles, hidden) {
+				if(hidden){
+					return "display:none !important;"
+				}
 				if (typeof styles === 'string') {
 					return styles;
 					
 				} else if (typeof styles === 'function') {
 					// the user callback function will compute the actual styles
-					var res = styles.apply(this, Array.prototype.slice.call(arguments, 1));
+					var res = styles.apply(this, Array.prototype.slice.call(arguments, 2));
 					return this._computeCellStyles(res);
 					
 				} else if (styles && typeof styles === 'object') {
