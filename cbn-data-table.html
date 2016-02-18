@@ -75,7 +75,7 @@ See `cbn-table` for information about styling the element.
 			<template class="cbn-table-header">
 				<div class="cbn-table-row">
 					<template is="dom-repeat" items="{{_columns}}" as="column" index-as="column_index">
-						<div class="cbn-table-cell cbn-table-column" style$="{{_computeCellStyles(column.obj.headStyle, column.obj.hidden, column.obj)}}"><div class="column-wrapper">
+						<div class="cbn-table-cell cbn-table-column" style$="[[_computeCellStyles(column.obj.headStyle, column.obj.hidden, column.obj)]]"><div class="column-wrapper">
 							<div class$="[[_computeColumnCaptionClasses(column.obj, sortOrdering.*, sortable)]]"
 								 on-tap="_columnClicked">
 								<span>[[column.obj.caption]]</span>
@@ -565,7 +565,6 @@ See `cbn-table` for information about styling the element.
 			 * @return {String} The computed CSS string.
 			 */
 			_computeCellStyles: function(styles, hidden) {
-				console.log('compute styles', styles, hidden);
 				if(hidden){
 					return "display:none !important;"
 				}
