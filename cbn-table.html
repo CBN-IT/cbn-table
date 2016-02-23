@@ -573,17 +573,19 @@ Class name               | Description                   | Default
 				
 				/**
 				 * Override this method too, it creates items outside the table.
+				 * Do nothing, we don't need this feature.
 				 */
 				this.$.ironList._createFocusBackfillItem = function () {
+					/*
 					if (!this._focusBackfillItem) {
 						// create a physical item, so that it backfills the focused item.
 						var stampedTemplate = this.stamp(null);
 						this._focusBackfillItem = stampedTemplate.root.querySelector('*');
-						Polymer.dom(table.$.effectiveTable).insertBefore(stampedTemplate.root, table.$.autoExpander);
-					}
+						// Polymer.dom(table.$.effectiveTable).insertBefore(stampedTemplate.root, table.$.autoExpander);
+					}*/
 					
-					var $super = Object.getPrototypeOf(this);
-					return $super._createFocusBackfillItem.apply(this, arguments);
+					//var $super = Object.getPrototypeOf(this);
+					//return $super._createFocusBackfillItem.apply(this, arguments);
 				};
 				
 				/**
@@ -799,11 +801,11 @@ Class name               | Description                   | Default
 				this.updateStyles();
 				
 				// hack for forcing the repaint of the header's background
-				/*this.$.tableHead.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+				this.$.tableHead.style.backgroundColor = 'rgba(0, 0, 0, 0)';
 				this.async(function() {
-					/*this.$.tableHead.style.display = '';
+					/*this.$.tableHead.style.display = ''; */
 					this.$.tableHead.style.backgroundColor = '';
-				});*/
+				});
 			},
 			
 			/**
