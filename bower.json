@@ -1,38 +1,38 @@
 {
-    "name": "cbn-table",
-    "version": "1.0.0",
-    "description": "An iron-list based element for rendering tabular data.",
-    "main": "cbn-table.html",
-    "ignore": [
-        "**/.*",
-        "resources/*.zip",
-        "test",
-        "demo",
-        "node_modules",
-        "bower_components",
-        "Gruntfile.js",
-        "package.json",
-        "src"
-    ],
-    "dependencies": {
-        "polymer": "Polymer/polymer#~1.2.0",
-        "iron-list": "PolymerElements/iron-list#~1.1.5",
-        "iron-icons": "PolymerElements/iron-icons#^1.0",
-        "paper-input": "PolymerElements/paper-input#^1.0",
-        "paper-checkbox": "PolymerElements/paper-checkbox#^1.0",
-        "paper-icon-button": "PolymerElements/paper-icon-button#^1.0",
-        "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.0",
-        "paper-menu": "PolymerElements/paper-menu#^1.0.0",
-        "paper-menu-button": "PolymerElements/paper-menu-button#^1.0.0",
-        "paper-item": "PolymerElements/paper-item#^1.0.0",
-        "cbn-icons": "git@bitbucket.org:cbn-it/cbn-icons#polymer1.0",
-        "save-excel": "git@bitbucket.org:cbn-it/save-excel#polymer1.0"
-    },
-    "devDependencies": {
-        "iron-component-page": "PolymerElements/iron-component-page#^1.0",
-        "web-component-tester": "*",
-        "test-fixture": "PolymerElements/test-fixture#^1.0",
-        "cbn-tooltip": "git@bitbucket.org:cbn-it/cbn-tooltip#master",
-        "cbn-momentjs": "git@bitbucket.org:cbn-it/cbn-momentjs.git#master"
-    }
+  "name": "cbn-table",
+  "version": "1.0.0",
+  "description": "An iron-list based element for rendering tabular data.",
+  "main": "cbn-table.html",
+  "ignore": [
+    "**/.*",
+    "resources/*.zip",
+    "test",
+    "demo",
+    "node_modules",
+    "bower_components",
+    "Gruntfile.js",
+    "package.json",
+    "src"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#1.3.0",
+    "iron-list": "PolymerElements/iron-list#1.2.6",
+    "iron-icons": "PolymerElements/iron-icons#1.1.3",
+    "paper-input": "PolymerElements/paper-input#1.1.7",
+    "paper-checkbox": "PolymerElements/paper-checkbox#1.1.3",
+    "paper-icon-button": "PolymerElements/paper-icon-button#1.0.6",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#1.1.3",
+    "paper-menu": "PolymerElements/paper-menu#1.2.2",
+    "paper-menu-button": "PolymerElements/paper-menu-button#1.0.4",
+    "paper-item": "PolymerElements/paper-item#1.1.4",
+    "cbn-icons": "git@bitbucket.org:cbn-it/cbn-icons#polymer1.0",
+    "save-excel": "git@bitbucket.org:cbn-it/save-excel#polymer1.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0",
+    "web-component-tester": "*",
+    "test-fixture": "PolymerElements/test-fixture#^1.0",
+    "cbn-tooltip": "git@bitbucket.org:cbn-it/cbn-tooltip#master",
+    "cbn-momentjs": "git@bitbucket.org:cbn-it/cbn-momentjs.git#master"
+  }
 }
