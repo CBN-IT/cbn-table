@@ -342,15 +342,28 @@ See `cbn-table` for information about styling the element.
 			_resolveColumnElements: function(colDesc) {
 				// 1. Column template
 				if (colDesc.obj.renderAs == 'template' && colDesc.obj.template) {
-					this.set('_columns.' + colDesc.obj._index + '.template',
-						this._resolveElementSelector(colDesc.obj.template));
+					var template = this._resolveElementSelector(colDesc.obj.template);
+					if (template) {
+						this.set('_columns.' + colDesc.obj._index + '.template',
+							template);
+					} else {
+						console.error('`cbn-table`: could not find template with selector ',
+							colDesc.obj.template);
+					}
 				}
-
+				
 				// 2. Filter template
 				if (colDesc.obj.filterElement) {
-					if (!this._columns[colDesc.obj._index].filterTemplate)
-						this.set('_columns.' + colDesc.obj._index + '.filterTemplate',
-							this._resolveElementSelector(colDesc.obj.filterElement));
+					if (!this._columns[colDesc.obj._index].filterTemplate) {
+						var filterElement = this._resolveElementSelector(colDesc.obj.filterElement);
+						if (filterElement) {
+							this.set('_columns.' + colDesc.obj._index + '.filterTemplate',
+								filterElement);
+						} else {
+							console.error('`cbn-table`: could not find filter template with selector ',
+								colDesc.obj.filterElement);
+						}
+					}
 				}
 			},
 
