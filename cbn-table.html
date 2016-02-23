@@ -378,6 +378,8 @@ Class name               | Description                   | Default
 						props[this.as] = true;
 						props[this.indexAs] = true;
 						props[this.selectedAs] = true;
+						props.tabIndex = true;
+						
 						this._instanceProps = props;
 						this._userTemplate = table._itemTemplate;
 						if (this._userTemplate) {
@@ -406,6 +408,7 @@ Class name               | Description                   | Default
 					this._physicalEnd = 0;
 					this._physicalSize = 0;
 					this.ctor = null;
+					this._focusBackfillItem = null;
 				};
 				
 				/**
@@ -473,7 +476,7 @@ Class name               | Description                   | Default
 					$super._update.apply(this, args); // call the original
 					
 					// update the header and footer's positions
-					table._scrollHandler(this._scroller.scrollTop, true);
+					table._scrollHandler(this._scrollTop, true);
 				};
 				
 				/**
@@ -498,21 +501,25 @@ Class name               | Description                   | Default
 				 * Used to update the positions of the header and footer (because "position: fixed" is a no-go for HTML 
 				 * table elements).
 				 */
-				this.$.ironList._refresh = function () {
+				this.$.ironList._scrollHandler = function () {
 					/* see http://www.thecssninja.com/javascript/pointer-events-60fps */
 					/*var body = document.querySelector('body');
 					if (!body.classList.contains('disable-hover')) {
 						body.classList.add('disable-hover');
 					}*/
 					
-					table._scrollHandler(this._scroller.scrollTop);
-					
 					/*this.debounce('pointer-events', function() {
 						body.classList.remove('disable-hover');
 					}, 0);*/
 					
 					var $super = Object.getPrototypeOf(this);
-					$super._refresh.apply(this, arguments); // call the original
+					$super._scrollHandler.apply(this, arguments); // call the original
+					
+					table._scrollHandler(this._scrollTop);
+					
+					this.debounce('_updateAfterScroll', function() {
+						this._update();
+					});
 				};
 				
 				/**
@@ -520,7 +527,7 @@ Class name               | Description                   | Default
 				 * header/footer from flickering when scrollling using the mouse (on some browsers, e.g. Google Chrome).
 				 */
 				this.$.ironList.addEventListener('mousewheel', function (e) {
-					table.$.ironList.scrollTop = Math.min(this._scroller.scrollHeight - this._viewportSize, 
+					table.$.ironList._scrollTop = Math.min(this._scrollHeight - this._viewportSize, 
 						Math.max(0, e.deltaY + table._scrollTop));
 					
 					/*var body = document.querySelector('body');
@@ -529,7 +536,7 @@ Class name               | Description                   | Default
 					}*/
 					e.preventDefault();
 					
-					table.$.ironList._refresh();
+					table.$.ironList._scrollHandler();
 				});
 				
 				/**
@@ -562,6 +569,21 @@ Class name               | Description                   | Default
 					}
 					
 					return physicalItems;
+				};
+				
+				/**
+				 * Override this method too, it creates items outside the table.
+				 */
+				this.$.ironList._createFocusBackfillItem = function () {
+					if (!this._focusBackfillItem) {
+						// create a physical item, so that it backfills the focused item.
+						var stampedTemplate = this.stamp(null);
+						this._focusBackfillItem = stampedTemplate.root.querySelector('*');
+						Polymer.dom(table.$.effectiveTable).insertBefore(stampedTemplate.root, table.$.autoExpander);
+					}
+					
+					var $super = Object.getPrototypeOf(this);
+					return $super._createFocusBackfillItem.apply(this, arguments);
 				};
 				
 				/**
@@ -753,7 +775,7 @@ Class name               | Description                   | Default
 				this._scrollTop = scrollTop;
 				
 				var footerPos = -this.$.effectiveTable.offsetHeight + scrollTop +
-					this.$.ironList._scroller.offsetHeight;
+					this.$.ironList._scrollTargetHeight;
 				
 				if (!this.$.effectiveTable) return;
 				
@@ -777,11 +799,11 @@ Class name               | Description                   | Default
 				this.updateStyles();
 				
 				// hack for forcing the repaint of the header's background
-				this.$.tableHead.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+				/*this.$.tableHead.style.backgroundColor = 'rgba(0, 0, 0, 0)';
 				this.async(function() {
-					/*this.$.tableHead.style.display = '';*/
+					/*this.$.tableHead.style.display = '';
 					this.$.tableHead.style.backgroundColor = '';
-				});
+				});*/
 			},
 			
 			/**
