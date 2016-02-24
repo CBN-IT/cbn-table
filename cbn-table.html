@@ -714,10 +714,6 @@ Class name               | Description                   | Default
 					selectedItems.push(keepItems[i]);
 				}
 				
-				// hack for initializing the array-selector collection
-				this.selectItem(start);
-				this.clearSelection();
-				
 				// set the selectedAs property to true to all selected items
 				selectedItems.forEach(function(item) {
 					model = this.$.ironList._getModelFromItem(item);
