@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	<title>Cbn-Data-Table Demo 2</title>
+	<script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+	
+	<link rel="import" href="../../polymer/polymer.html">
+	<link rel="import" href="../../iron-icons/iron-icons.html">
+	<link rel="import" href="../../paper-button/paper-button.html">
+	<link rel="import" href="../../cbn-tooltip/cbn-tooltip.html">
+	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+	<link rel="import" href="../cbn-data-table.html">
+	<link rel="import" href="../../cbn-momentjs/cbn-momentjs.html">
+	
+	<style is="custom-style">
+		#appContainer {
+			@apply(--layout-vertical);
+			@apply(--layout-fit);
+		}
+		
+		#table {
+			@apply(--layout-flex);
+			margin-bottom: 0.8em;
+			/* (Use for debugging positioning issues) 
+			--cbn-table-row: {
+				background: rgba(255, 0, 0, 0.3);
+			}
+			*/
+		}
+		
+	</style>
+	
+</head>
+<body>
+
+<template id="t" is="dom-bind">
+	<div style="margin: 0 auto; width:90%;" id="appContainer">
+		<p><b>Data Table Demo (smaller table):</b></p>
+		
+		<cbn-data-table id="table" items="[[items]]" columns="[[columns]]">
+			<template id="buttons">
+				<span>
+					<paper-icon-button on-tap="_throwEvent" data-event="page-view" icon="icons:pageview">Y</paper-icon-button>
+					<cbn-tooltip for="paper-icon-button" position="bottom">View lalaa</cbn-tooltip>
+				</span>
+				
+				<span>
+					<paper-icon-button icon="icons:create">Y</paper-icon-button>
+					<cbn-tooltip for="paper-icon-button" position="right">Edit test lalala</cbn-tooltip>
+				</span>
+				
+				<span>
+					<paper-icon-button icon="icons:delete">Y</paper-icon-button>
+					<cbn-tooltip for="paper-icon-button" position="left">Delete or do something</cbn-tooltip>
+				</span>
+			</template>
+			
+			<template id="extFilter">
+				<input is="iron-input" class="cbn-data-table-filter filter-input"
+					   placeholder="Filter me" bind-value="{{ filterValue }}" />
+			</template>
+			
+		</cbn-data-table>
+		
+	</div>
+</template>
+
+<script>
+	window.addEventListener('WebComponentsReady', function() {
+		function random(min, max){
+			return Math.floor(Math.random()*(max-min+1)+min);
+		}
+		var rows = [];
+		var date = moment().subtract(1, 'month');
+		for (var i=0; i<5; i++) {
+			var curDate = moment(date);
+			date.add(1, 'day');
+			
+			rows.push(
+				{ name: 'Lorem Ipsum' + i, date: curDate, rand: random(1,28)+random(1,12)+random(1990,2020)
+				},
+				{ name: "Ipsum dolor " + i + " sit amet" + i, date: curDate , rand: random(1,28)+random(1,12)+random(1990,2020)
+				}
+			);
+		}
+		
+		t.set('items', rows);
+		t.set('columns', [
+			{
+				type: 'selection-index',
+				caption: 'Nr.',
+				style: {
+					color: 'gray'
+				},
+				xls:false
+			},
+			{
+				name: 'name',
+				renderAs: 'text',
+				caption: 'Name',
+				style: 'font-weight: bold;',
+				"xls": "string"
+			},
+			{
+				name: 'date',
+				renderAs: 'text',
+				type: 'date',
+				caption: 'Date',
+				"xls": "string"
+			},
+			{
+				name: 'rand',
+				renderAs: 'text',
+				caption: 'Random Guy',
+				"xls": "string"
+			},
+			{
+				name: 'buttons',
+				type: 'inert',
+				renderAs: 'template',
+				style: "width: 10px; white-space: nowrap;",
+				caption: 'Buttons',
+				template: '#buttons',
+				"xls": false
+			}
+		]);
+	});
+	
+</script>
+
+</body>
+</html>
