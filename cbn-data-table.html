@@ -36,6 +36,8 @@ See `cbn-table` for information about styling the element.
 <link rel="import" href="../iron-icons/editor-icons.html">
 <link rel="import" href="../cbn-icons/microsoft-office-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../cbn-tooltip/cbn-tooltip.html">
+
 
 <link rel="import" href="lib/include.html" />
 <link rel="import" href="cbn-table.html" />
@@ -55,7 +57,7 @@ See `cbn-table` for information about styling the element.
 				<save-excel id="saveExcel"></save-excel>
 				<paper-icon-button icon="microsoft-office:excel" class="colored excel action" id="exportExcel" on-tap="saveExcel"></paper-icon-button>
 
-				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="exportExcel">Salvare ca Excel</paper-tooltip>
+				<cbn-tooltip position="bottom" offset="5" animation-delay="0" for="#exportExcel">Salvare ca Excel</cbn-tooltip>
 
 				<paper-menu-button id="report" horizontal-align="right" vertical-align="top" vertical-offset="40">
 					<paper-icon-button icon="editor:insert-chart" style="color: #3277ec;" class="dropdown-trigger action"></paper-icon-button>
@@ -65,7 +67,7 @@ See `cbn-table` for information about styling the element.
 						</template>
 					</paper-menu>
 				</paper-menu-button>
-				<paper-tooltip position="bottom" offset="5" animation-delay="0" for="report">Aplica raport</paper-tooltip>
+				<cbn-tooltip position="bottom" offset="5" animation-delay="0" for="#report">Aplica raport</cbn-tooltip>
 
 			</div>
 		</paper-material>
