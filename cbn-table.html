@@ -484,27 +484,37 @@ Class name               | Description                   | Default
 				 */
 				this.$.ironList.updateViewportBoundaries= function() {
 					var $super = Object.getPrototypeOf(this);
-					var ret = $super.updateViewportBoundaries.apply(this, arguments); // call the original
+					$super.updateViewportBoundaries.apply(this, arguments); // call the original
 					
 					table._repaintHeader();
-					
-					return ret;
 				};
 				
+				function getAdditionalPhysicalHeight() {
+					var addSize = 0;
+					if (table.$.tableHead) {
+						addSize += table.$.tableHead.clientHeight;
+					}
+					if (table.$.tableFoot) {
+						// not needed anymore for table-caption
+						addSize += table.$.tableFoot.clientHeight;
+					}
+					return addSize;
+				}
+				
 				/**
-				 * Override iron-list's physical bottom property to additionally include the footer's height (if used).
+				 * Override iron-list's physical size property to additionally include the footer's height (if used).
 				 */
-				Object.defineProperty(this.$.ironList, '_physicalBottom', {
+				Object.defineProperty(this.$.ironList, '_physicalSize', {
 					get: function() {
-						var addSize = 0;
-						if (table.$.tableHead) {
-							addSize += table.$.tableHead.clientHeight;
-						}
-						if (table.$.tableFoot) {
-							// not needed anymore for table-caption
-							// addSize += table.$.tableFoot.clientHeight;
-						}
-						return this._physicalTop + this._physicalSize + addSize;
+						var addSize = getAdditionalPhysicalHeight();
+						return (this['_physicalSize_value'] ? this['_physicalSize_value'] : 0) + addSize;
+					},
+					set: function(val) {
+						var addSize = getAdditionalPhysicalHeight();
+						// because the physical size is set this way: 
+						// >  this._physicalSize = this._physicalSize + newPhysicalSize - oldPhysicalSize;
+						// but the old physical size doesn't contain the header/footer heights... we subtract it:
+						this['_physicalSize_value'] = Math.max((val?val:0) - addSize, 0);
 					}
 				});
 				
