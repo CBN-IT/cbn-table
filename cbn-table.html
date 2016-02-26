@@ -480,6 +480,18 @@ Class name               | Description                   | Default
 				};
 				
 				/**
+				 * Apply the header repaint hack when the iron-list gets resized.
+				 */
+				this.$.ironList.updateViewportBoundaries= function() {
+					var $super = Object.getPrototypeOf(this);
+					var ret = $super.updateViewportBoundaries.apply(this, arguments); // call the original
+					
+					table._repaintHeader();
+					
+					return ret;
+				};
+				
+				/**
 				 * Override iron-list's physical bottom property to additionally include the footer's height (if used).
 				 */
 				Object.defineProperty(this.$.ironList, '_physicalBottom', {
@@ -795,8 +807,13 @@ Class name               | Description                   | Default
 				}
 				
 				this.updateStyles();
-				
-				// hack for forcing the repaint of the header's background
+				this._repaintHeader();
+			},
+			
+			/**
+			 * Hack to repaint the table header (workaround for Webkit repainting bug).
+			 */
+			_repaintHeader: function() {
 				this.$.tableHead.style.backgroundColor = 'rgba(0, 0, 0, 0)';
 				this.async(function() {
 					/*this.$.tableHead.style.display = ''; */
