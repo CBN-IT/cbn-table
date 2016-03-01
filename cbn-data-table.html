@@ -28,7 +28,7 @@ See `cbn-table` for information about styling the element.
 <link rel="import" href="../paper-menu-button/paper-menu-button.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
@@ -45,6 +45,8 @@ See `cbn-table` for information about styling the element.
 <dom-module id="cbn-data-table">
 	<template>
 		<style include="cbn-data-table-styles-private"></style>
+		<style include="iron-flex"></style>
+		<style include="iron-flex-alignment"></style>
 		
 		<paper-material elevation="1" class="horizontal layout" id="actionBar" style="flex-shrink: 0;">
 			<div class="flex horizontal layout center">
