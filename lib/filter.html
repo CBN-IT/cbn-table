@@ -146,7 +146,8 @@
 				var vals = {};
 				for (var i = 0; i < this.selectedItems.length; i++) {
 					var item = this.selectedItems[i];
-					vals["^" + item[col] + "$"] = "";
+					var meta = this.parentTable.getItemMeta(item).display;
+					vals["^" + meta[col] + "$"] = "";
 				}
 				vals = Object.keys(vals);
 				if (vals.length > 100) {
