@@ -440,7 +440,7 @@
 					
 					for (j = 0; j < this._columns.length; j++) {
 						column = this._columns[j].obj;
-						if (dataFilters.hasOwnProperty(column.name)) {
+					if (dataFilters.hasOwnProperty(column.pname)) {
 							filteredColumns.push(column);
 						}
 					}
@@ -454,7 +454,7 @@
 						for (j = 0; j < m; j++) {
 							column = filteredColumns[j];
 							if (!column._f_filter) continue;
-							if (!column._f_filter(meta.values[column.name], dataFilters[column.name], column)) {
+						if (!column._f_filter(meta.values[column.name], dataFilters[column.pname], column)) {
 								pass = false;
 								break;
 							}
@@ -580,6 +580,7 @@
 				if (!column.name)
 					column.name = '_column_id' + column._index;
 				
+			column.pname = column.name.replace(/\./g,"_dot_");
 				// bind the callback functions
 				var du = scope.DataTypes['_'];
 				var dt = scope.DataTypes[column.type];
@@ -632,7 +633,7 @@
 				this._columnDescInternallyChanged = true;
 				try {
 					this._columns.forEach(function (colDesc, idx) {
-						var n = colDesc.obj.name;
+					var n = colDesc.obj.pname;
 						var currentFilter = '';
 						if (this.dataFilters && this.dataFilters.hasOwnProperty(n)) {
 							currentFilter = this.dataFilters[n];
@@ -664,7 +665,7 @@
 					
 					this._dataFilterInternallyChanged = true;
 					try {
-						this.set('dataFilters.' + colDesc.obj.name, colDesc.currentFilter);
+					this.set('dataFilters.' + colDesc.obj.pname, colDesc.currentFilter);
 					} finally {
 						this._dataFilterInternallyChanged = false;
 					}
