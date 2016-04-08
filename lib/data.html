@@ -1,0 +1,963 @@
+<script>
+	(function (scope) {
+		
+		/**
+		 * Defines the table's built-in data types.
+		 *
+		 * This maps the type to a descriptor object that defines several data processing callbacks:
+		 *
+		 * - `column(column, colDesc)`: you can use this object to pre-process the column object;
+		 * - `value(item, column)`: this callback is used to fetch the cell's value from the row object;
+		 *    by default, the `column.name` property will be read from the `item` object;
+		 *    the value returned here will be used for both filtering and sorting;
+		 * - `display(val, column)`: returns a string representation of the item's value;
+		 * - `filter(val, expression, column)`: returns true if the value matches the specified expression;
+		 * - `compare(val1, val2, column)`: compares two values and returns -1, 0 or 1 if the first is less than / equal /
+		 *    greater than the second; used for sorting;
+		 *
+		 * Each data type can also have a `filters` object which defines named methods to use for filtering its values.
+		 *
+		 * See [docs/data-table.md] for a more detailed documentation of the data processing model.
+		 *
+		 * @type {Object}
+		 */
+		scope.DataTypes = {
+			// defaults:
+			"_": {
+				value: function (item, column) {
+					return item[column.name];
+				},
+				filter: null, /* hardcoded, for performance */
+				compare: function (val1, val2/*, column*/) {
+					return ( val1 < val2 ? -1 : ( val1 > val2 ? 1 : 0 ) );
+				},
+				display: function (val/*, column*/) {
+					return (val || val === 0 ? val + '' : '' );
+				},
+				"xls": function (item, column) {
+					return column._f_value(item, column);
+				},
+				/**
+				 * Built-in filters.
+				 */
+				filters: {
+					"equals": function (val, expr, column) {
+						return val == expr;
+					},
+					"equals-ci": function (val, expr, column) {
+						return (val + '').toLowerCase() == (expr + '').toLowerCase();
+					},
+					
+					"contains": function (val, expr, column) {
+						if (expr === "") {
+							return true;
+						}
+						return (val + '').indexOf(expr) != -1;
+					},
+					"contains-ci": function (val, expr, column) {
+						if (expr === "") {
+							return true;
+						}
+						return (val + '').toLowerCase().indexOf(expr) != -1;
+					},
+					"regexp": function (val, expr, column) {
+						if (expr === "") {
+							return true;
+						}
+						try {
+							if (!column.regexp || column.regexpVal !== expr) {
+								column.regexpVal = expr;
+								column.regexp = new RegExp(stringToRegexp(expr), 'i');
+							}
+							return column.regexp.test(val);
+						} catch (e) {
+							return column._filters["contains-ci"](val, expr, column);
+						}
+					}
+				}
+			},
+			
+			// a special type for printing the column's index
+			"index": {
+				value: function (/*item, column*/) {
+					return null;
+				},
+				filter: false, compare: false // unfilterable / unsortable
+			},
+			
+			// like index above (unfilterable, unsortable, no value), but without the automatic value
+			// can be used with non-data / purely cosmetic columns
+			"inert": {
+				value: function (/*item, column*/) {
+					return null;
+				},
+				filter: false, compare: false // unfilterable / unsortable
+			},
+			
+			"boolean": {
+				value: function (item, column) {
+					return !!item[column.name];
+				}
+			},
+			
+			"string": {
+				value: function (item, column) {
+					var val;
+					if (column.name.indexOf(".") > -1 && item[column.name] == undefined) {
+						var itms = column.name.split(".");
+						val = item;
+						for (var i = 0; i < itms.length; i++) {
+							val = val[itms[i]];
+							if (val == null) {
+								break;
+							}
+						}
+					} else {
+						val = item[column.name];
+					}
+					return (val || val === 0 || val === false ? val + '' : '');
+				},
+				compare: function (val1, val2/*, column*/) {
+					return val1.localeCompare(val2);
+				}
+			},
+			"natural": { // note: case insensitive!
+				value: function (item, column) {
+					var val = item[column.name];
+					val = (val || val === 0 || val === false ? val + '' : '');
+					return {
+						text: val,
+						chunks: scope.utils.naturalChunks(val, true)
+					};
+				},
+				compare: function (val1, val2) {
+					return scope.utils.compareNaturalChunks(val1.chunks, val2.chunks);
+				},
+				filter: function (val, expr, column) {
+					if (!column._f_userFilter) return true;
+					// proxy the original, user filter
+					return column._f_userFilter.call(this, val.text, expr, column);
+				},
+				display: function (val) {
+					return val.text;
+				},
+				"xls": function (item, column) {
+					return column._f_value(item, column).text;
+				}
+			},
+			
+			"integer": {
+				value: function (item, column) {
+					var val = parseInt(item[column.name]);
+					if (isNaN(val)) return null;
+					return val;
+				},
+				"xls": function (item, column) {
+					var val = parseInt(item[column.name]);
+					if (isNaN(val)) return "";
+					return val;
+				}
+			},
+			"float": {
+				value: function (item, column) {
+					var val = parseFloat(item[column.name]);
+					if (isNaN(val)) return null;
+					return val;
+				},
+				"xls": function (item, column) {
+					var val = parseFloat(item[column.name]);
+					if (isNaN(val)) return "";
+					return val;
+				}
+			},
+			
+			"date": { // requires Moment JS for parsing dates
+				column: function (column) {
+					// infer column settings defaults
+					column.dateFormat = column['dateFormat'] || "DD.MM.YYYY";
+					column.dateValueFormat = column['dateValueFormat'] || column.dateFormat;
+				},
+				value: function (item, column) {
+					var val = item[column.name];
+					if (!val) return null;
+					var originalVal = val;
+					//noinspection JSUnresolvedFunction
+					val = moment(val, column.dateValueFormat);
+					return {
+						val: val,
+						ymd: parseInt(val.format("YYYYMMDD")),
+						dateValue: val.format(column.dateFormat),
+						originalVal: originalVal
+					};
+				},
+				display: function (val, column) {
+					if (val == null) {
+						return "";
+					}
+					return val.dateValue
+				},
+				filter: function (val, expr, column) {
+					if (expr === "") {
+						return true;
+					}
+					if (val == null) {
+						return false;
+					}
+					return column._filters["regexp"](val.dateValue, expr, column) /*|| column._filters["regexp"](val.originalVal, expr, column)*/;
+				},
+				compare: function (val1, val2/*, column*/) {
+					return ( val1.ymd < val2.ymd ? -1 : ( val1.ymd > val2.ymd ? 1 : 0 ) );
+				},
+				"xls": function (item, column) {
+					var val = column._f_value(item, column);
+					if (val == null) {
+						return "";
+					}
+					return val.val.toDate();
+				}
+				
+			}
+		};
+		
+		/**
+		 * The default values for the column descriptor object.
+		 * @type {Object}
+		 */
+		scope.ColumnDefaults = {
+			name: '', // will be auto-generated based on its index
+			caption: '',
+			visible: true,
+			headStyle: '',
+			style: '',
+			renderAs: 'text',
+			template: '',
+			type: 'string',
+			filter: 'regexp',
+			filterElement: false,
+			sortable: true,
+			hidden: false
+		};
+		
+		//noinspection JSUnusedGlobalSymbols
+		/**
+		 * A behavior that implements filtering & sorting features for `cbn-data-table`.
+		 *
+		 * @type {Object}
+		 */
+		scope.DataProcessingBehavior = {
+			
+			properties: {
+				
+				/**
+				 * Stores the currently enabled data filters (map with the column's name + filtered value).
+				 * You can also modify this externally to apply custom filtering.
+				 */
+				dataFilters: {
+					type: Object,
+					value: function () {
+						return {};
+					}
+				},
+				
+				/**
+				 * Stores the current column ordering.
+				 *
+				 * The array contains simple objects that define the column's name (using the `name` property) and its sorting
+				 * direction (the `dir` property, which can be true for ascending, false for descending).
+				 */
+				sortOrdering: {
+					type: Array,
+					value: function () {
+						return [];
+					}
+				},
+				
+				/**
+				 * A Weak Map that stores metadata associated with table's items.
+				 */
+				_itemsMeta: {
+					type: Object,
+					readOnly: true,
+					value: function () {
+						return new WeakMap();
+					}
+				},
+				
+				/**
+				 * Caches the sort.
+				 */
+				_sortCache: {
+					type: Object,
+					value: function () {
+						return {};
+					}
+				},
+				
+				/**
+				 * The actual visible items (that resulted from filtering, if enabled).
+				 */
+				_filteredItems: {
+					type: Array,
+					notify: true,
+					value: function () {
+						return [];
+					}
+				},
+				
+				/**
+				 * The internal representation of the columns.
+				 */
+				_columns: {
+					type: Array,
+					value: function () {
+						return [];
+					}
+				}
+				
+			},
+			
+			observers: [
+				"_intColumnPathChanged(_columns.*)",
+				"_dataFiltersChanged(dataFilters.*)",
+				"_itemsArrayChanged(items.splices)",
+				"_applyFilter(items.*, dataFilters.*, sortOrdering.*)"
+			],
+			
+			/**
+			 * Returns an item's metadata. Uses the internal WeakMap for caching.
+			 *
+			 * @param {Object} item The item object.
+			 * @return {Object} The item's computed metadata.
+			 */
+			getItemMeta: function (item) {
+				var meta = this._itemsMeta.get(item);
+				if (meta) return meta;
+				
+				meta = {
+					/** A map of processed values. */
+					values: {},
+					
+					/** The processed display values. */
+					display: {}
+				};
+				
+				this._columns.forEach(function (colDesc) {
+					var column = colDesc.obj;
+					if (!column.name) return;
+					
+					var val = null;
+					if (column._f_value) {
+						val = column._f_value(item, column);
+						meta.values[column.name] = val;
+					}
+					if (column._f_display) {
+						meta.display[column.name] = column._f_display(val, column);
+					}
+				});
+				
+				// cache it inside the weak map
+				this._itemsMeta.set(item, meta);
+				return meta;
+			},
+			
+			/**
+			 * Filters the data using the specified parameters.
+			 *
+			 * If auto-filtering / sorting is enabled, the parameters are automatically populated from the user interface.
+			 *
+			 * Available options:
+			 * - sortCache: whether to use sort caching; defaults to true.
+			 *
+			 * @param {Object} [dataFilters] The data filters to use. Defaults to table UI's active filters.
+			 * @param {Array}  [ordering] The columns to sort by. Defaults to table UI-specified sorting order.
+			 * @param {Object} [options] Optional filtering / sorting options.
+			 */
+			filter: function (dataFilters, ordering, options) {
+				var i, j, n, m, column, item, meta, pass;
+				
+				var defaultOptions = {
+					sortCache: true
+				};
+				if (!options) options = {};
+				Object.getOwnPropertyNames(defaultOptions).forEach(function (n) {
+					if (options[n] === undefined)
+						options[n] = defaultOptions[n];
+				});
+				
+				if (!dataFilters) dataFilters = this.dataFilters;
+				if (!ordering) ordering = /**@type {Array}*/this.sortOrdering;
+				
+				var sortOptions = null;
+				var sortCacheKey = '';
+				var compareFunc = null;
+				if (ordering.length) {
+					sortOptions = [];
+					sortCacheKey = [];
+					for (i = 0; i < ordering.length; i++) {
+						for (j = 0, m = this._columns.length; j < m; j++) {
+							column = this._columns[j].obj;
+							if (column._f_compare && ordering[i].name == column.name) {
+								sortOptions.push({
+									column: column,
+									direction: ordering[i].dir
+								});
+								sortCacheKey.push(column.name + "|" +
+									(ordering[i].dir ? "A" : "D") + "|");
+								break;
+							}
+						}
+					}
+					sortCacheKey = sortCacheKey.join('|');
+					compareFunc = this._generateCompareFunc(sortOptions);
+				}
+				
+				var itemsSource;
+				var filteredItems;
+				var sorted = false; // whether the source list is already sorted
+				if (!this.items) {
+					itemsSource = []; // nothing to do...
+					sorted = true;
+				} else if (this._sortCache[sortCacheKey]) {
+					itemsSource = this._sortCache[sortCacheKey];
+					sorted = true;
+				} else {
+					itemsSource = this.items;
+				}
+				
+				// sort the items (if enabled)
+				if (sortOptions && !sorted) {
+					itemsSource = itemsSource.slice();
+					itemsSource.sort(compareFunc);
+					
+					// cache it
+					this._sortCache[sortCacheKey] = itemsSource;
+				}
+				
+				// filter the items (if enabled)
+				if (!scope.utils._isEmptyObject(dataFilters)) {
+					var filteredColumns = [];
+					filteredItems = [];
+					
+					for (j = 0; j < this._columns.length; j++) {
+						column = this._columns[j].obj;
+						if (dataFilters.hasOwnProperty(column.name)) {
+							filteredColumns.push(column);
+						}
+					}
+					
+					n = itemsSource.length;
+					m = filteredColumns.length;
+					for (i = 0; i < n; i++) {
+						item = itemsSource[i];
+						meta = this.getItemMeta(item);
+						pass = true;
+						for (j = 0; j < m; j++) {
+							column = filteredColumns[j];
+							if (!column._f_filter) continue;
+							if (!column._f_filter(meta.values[column.name], dataFilters[column.name], column)) {
+								pass = false;
+								break;
+							}
+						}
+						if (pass) {
+							filteredItems.push(item);
+						}
+					}
+				} else {
+					// skip filtering
+					filteredItems = itemsSource.slice();
+				}
+				this.set('_filteredItems', filteredItems);
+			},
+			
+			/**
+			 * Toggles the sorting on the specified column.
+			 *
+			 * @param {String} name The name of the column to toggle.
+			 * @param {Boolean} [append=false] Append to the criteria list or simply reset it?
+			 */
+			toggleOrdering: function (name, append) {
+				var exists = -1, direction = true;
+				
+				this.sortOrdering.forEach(function (ordering, idx) {
+					if (ordering.name == name) {
+						exists = idx;
+						direction = ordering.dir;
+						return true;
+					}
+					return false;
+				});
+				
+				if (append) {
+					if (exists > -1) {
+						this.set('sortOrdering.' + exists + '.dir', !direction);
+					} else {
+						this.push('sortOrdering', {name: name, dir: direction});
+					}
+					
+				} else {
+					if (exists > -1) {
+						direction = !direction;
+					}
+					this.sortOrdering = [{name: name, dir: direction}];
+				}
+			},
+			
+			/**
+			 * Generates the comparison function used for sorting.
+			 *
+			 * @param {Array} sortOptions The sorting criteria to use.
+			 * @return {Function} The comparison function to use.
+			 */
+			_generateCompareFunc: function (sortOptions) {
+				var m = sortOptions.length;
+				return function (item1, item2) {
+					var meta1 = this.getItemMeta(item1);
+					var meta2 = this.getItemMeta(item2);
+					var j, res;
+					
+					for (j = 0; j < m; j++) {
+						var column = sortOptions[j].column;
+						var dir = sortOptions[j].direction;
+						res = column._f_compare(meta1.values[column.name], meta2.values[column.name], column);
+						if (!dir) res = -res;
+						if (res != 0) { // strict ordering
+							return res;
+						}
+						// else: try the next ordering criteria
+					}
+					return res;
+					
+				}.bind(this)
+			},
+			
+			/**
+			 * Processes the specified columns, storing them inside the internal `_columns` property.
+			 *
+			 * @see _processColumn
+			 * @param {Array} columns The user-defined columns.
+			 */
+			_processColumns: function (columns) {
+				var columnDescriptors = [];
+				for (var i = 0; i < columns.length; i++) {
+					var colDesc = {
+						// workaround for Polymer not supporting direct array bindings
+						obj: {},
+						
+						/**
+						 * Stores the current filter expression (for use in data bindings).
+						 */
+						currentFilter: ''
+					};
+					// clone the user-defined column properties
+					scope.utils._copyProperties(colDesc.obj, this.columns[i]);
+					
+					// normalize/process it
+					colDesc.obj._index = i;
+					this._processColumn(colDesc.obj, colDesc);
+					
+					columnDescriptors.push(colDesc);
+				}
+				this.set('_columns', columnDescriptors);
+			},
+			
+			/**
+			 * Pre-processes the given column, normalizing its properties and enabling features based on the column's data
+			 * type.
+			 *
+			 * Returns a column descriptor.
+			 *
+			 * @param {Object} column The column object to pre-process.
+			 * @param {Object} colDesc The column descriptor, together with view properties.
+			 * @return {Object} The processed column's descriptor.
+			 */
+			_processColumn: function (column, colDesc) {
+				// infer defaults
+				Object.getOwnPropertyNames(scope.ColumnDefaults).forEach(function (n) {
+					if (column[n] === undefined)
+						column[n] = scope.ColumnDefaults[n];
+				});
+				if (!column.name)
+					column.name = '_column_id' + column._index;
+				
+				// bind the callback functions
+				var du = scope.DataTypes['_'];
+				var dt = scope.DataTypes[column.type];
+				
+				column._filters = {};
+				scope.utils._copyProperties(column._filters, du.filters);
+				if (dt.filters) {
+					scope.utils._copyProperties(column._filters, dt.filters);
+				}
+				
+				column._f_value = scope.utils.defaultVal(dt.value, du.value);
+				column._f_display = scope.utils.defaultVal(dt.display, du.display);
+				if (column.xls) {
+					column._f_xls = scope.utils.defaultVal(scope.utils.defaultVal(scope.DataTypes[column.xls].xls, dt.xls), du.xls);
+				}
+				if (column.filter) {
+					if (dt.filter === false) {
+						column._f_filter = false;
+					} else if (typeof column.filter == 'function') {
+						column._f_filter = column.filter;
+					} else if (typeof column.filter == 'string' && column._filters[column.filter]) {
+						column._f_filter = column._filters[column.filter];
+					}
+					if (dt.filter) {
+						column._f_userFilter = column._f_filter;
+						column._f_filter = dt.filter;
+					}
+					if (!column._f_filter) {
+						column.filter = false;
+					}
+				}
+				
+				column._f_compare = scope.utils.defaultVal(dt.compare, du.compare);
+				if (!column._f_compare)
+					column.sortable = false;
+				
+				// call the `column` processing callback, if available
+				if (dt.column) {
+					dt.column.call(this, column, colDesc);
+				}
+			},
+			
+			/**
+			 * Called when the data filters are changed (externally).
+			 */
+			_dataFiltersChanged: function () {
+				if (!this._columns || !this._columns.length) return;
+				
+				if (this._dataFilterInternallyChanged) return;
+				this._columnDescInternallyChanged = true;
+				try {
+					this._columns.forEach(function (colDesc, idx) {
+						var n = colDesc.obj.name;
+						var currentFilter = '';
+						if (this.dataFilters && this.dataFilters.hasOwnProperty(n)) {
+							currentFilter = this.dataFilters[n];
+						}
+						this.set('_columns.' + idx + '.currentFilter', currentFilter);
+					}, this);
+					
+				} finally {
+					this._columnDescInternallyChanged = false;
+				}
+			},
+			
+			/**
+			 * Called when a path inside `_columns` is changed (e.g. the filter value).
+			 *
+			 * @param {Object} changes The Polymer changes structure.
+			 */
+			_intColumnPathChanged: function (changes) {
+				if (this._columnDescInternallyChanged) return;
+				
+				var filterPath = /^_columns\.#([0-9]+)\.currentFilter$/;
+				var res = filterPath.exec(changes.path);
+				
+				if (res) {
+					var idx = res[1] * 1;
+					if (idx >= this._columns.length) return;
+					
+					var colDesc = this._columns[idx];
+					
+					this._dataFilterInternallyChanged = true;
+					try {
+						this.set('dataFilters.' + colDesc.obj.name, colDesc.currentFilter);
+					} finally {
+						this._dataFilterInternallyChanged = false;
+					}
+				}
+			},
+			
+			/**
+			 * Called when the `items` array is changed.
+			 * Used to clean up cache structures.
+			 */
+			_itemsArrayChanged: function () {
+				this._sortCache = {};
+			},
+			
+			/**
+			 * Used to re-filter / sort the table after any of those parameters changes.
+			 */
+			_applyFilter: function () {
+				this.filter();
+			}
+			
+		};
+		
+		/**
+		 * Utility functions.
+		 *
+		 * @type {Object}
+		 */
+		scope.utils = {
+			
+			/**
+			 * Copies the properties of an object into another.
+			 *
+			 * @param obj The destination object.
+			 * @param source The source object.
+			 */
+			_copyProperties: function (obj, source) {
+				Object.getOwnPropertyNames(source).forEach(function (n) {
+					obj[n] = source[n];
+				});
+			},
+			
+			/**
+			 * Returns whether the specified plain JavaScript object is empty (has no own keys).
+			 *
+			 * @param {Object} obj The object to test.
+			 * @return {Boolean} True if empty.
+			 */
+			_isEmptyObject: function (obj) {
+				return Object.getOwnPropertyNames(obj).length == 0;
+			},
+			
+			/**
+			 * Infers a default value if the given value is undefined.
+			 *
+			 * @param {*} value The source value.
+			 * @param {*} defValue The default value if value is undefined.
+			 * @return {*} The resulting value.
+			 */
+			defaultVal: function (value, defValue) {
+				return ((value === undefined) ? defValue : value);
+			},
+			
+			/**
+			 * Splits a string into separate chunks of text and/or numbers.
+			 * Used to implement natural comparison / sorting.
+			 *
+			 * @param {String} value The value to tokenize.
+			 * @param {Boolean} [caseInsensitive] Set to true to convert all chunks to lowercase.
+			 * @return {Array} The separate string/number tokens.
+			 */
+			naturalChunks: function (value, caseInsensitive) {
+				var chunks = [];
+				if (!value) return chunks;
+				if (caseInsensitive)
+					value = (value + '').toLowerCase();
+				else value = value + '';
+				
+				var lastChunkNumber = false;
+				
+				function appendTextChunk(text) {
+					if (lastChunkNumber || chunks.length == 0) {
+						chunks.push(text);
+						lastChunkNumber = false;
+					} else {
+						chunks[chunks.length - 1] += text;
+					}
+				}
+				
+				var numberRe = /^(\d+(?:\.\d*)?)/, othersRe = /^([^\d.]+)/;
+				var rest = value, res;
+				while (rest) {
+					if ((res = numberRe.exec(rest))) {
+						chunks.push(res[1] * 1);
+						lastChunkNumber = true;
+						rest = rest.substring(res[0].length);
+					} else if ((res = othersRe.exec(rest))) {
+						appendTextChunk(res[1]);
+						rest = rest.substring(res[0].length);
+					} else {
+						appendTextChunk(rest[0]);
+						rest = rest.substring(1);
+					}
+				}
+				
+				return chunks;
+			},
+			
+			/**
+			 * Compares two natural chunks of text/numbers, returning -1 if the first is greater (alphanumerically) than
+			 * the other, 0 if they're equal and 1 if greater.
+			 *
+			 * @param {Array} chunks1 The first chunks array.
+			 * @param {Array} chunks2 The second chunks array.
+			 * @return {Integer} -1 if chunks1 less than chunks2, 0 if equal or 1 if greater.
+			 */
+			compareNaturalChunks: function (chunks1, chunks2) {
+				var i = 0, minLen = Math.min(chunks1.length, chunks2.length);
+				while (i < minLen) {
+					if (chunks1[i] < chunks2[i]) {
+						return -1;
+					} else if (chunks1[i] > chunks2[i]) {
+						return 1;
+					}
+					i++;
+				}
+				if (chunks1.length == chunks2.length)
+					return 0;
+				return (chunks1.length < chunks2.length ? -1 : 1);
+			}
+			
+		};
+		function isNoU(obj) {
+			return obj === null || obj === undefined;
+		}
+		
+		var stringToRegexp = (function () {
+			var defaultDiacriticsRemovalMap = [
+				{
+					'base': /a/gi,
+					'letters': "[\uA73D\uA739\uA73B\uA737\uA735\u00E6\u01FD\u01E3\uA733\u0061\u24D0\uFF41\u1E9A\u00E0\u00E1\u00E2\u1EA7\u1EA5\u1EAB\u1EA9\u00E3\u0101\u0103\u1EB1\u1EAF\u1EB5\u1EB3\u0227\u01E1\u00E4\u01DF\u1EA3\u00E5\u01FB\u01CE\u0201\u0203\u1EA1\u1EAD\u1EB7\u1E01\u0105\u2C65\u0250]"
+				},
+				{
+					'base': /b/gi,
+					'letters': "[\u0062\u24D1\uFF42\u1E03\u1E05\u1E07\u0180\u0183\u0253]"
+				},
+				{
+					'base': /c/gi,
+					'letters': "[\u0063\u24D2\uFF43\u0107\u0109\u010B\u010D\u00E7\u1E09\u0188\u023C\uA73F\u2184]"
+				},
+				{
+					'base': /d/gi,
+					'letters': "[\u01F3\u01C6\u0064\u24D3\uFF44\u1E0B\u010F\u1E0D\u1E11\u1E13\u1E0F\u0111\u018C\u0256\u0257\uA77A]"
+				},
+				{
+					'base': /e/gi,
+					'letters': "[\u0065\u24D4\uFF45\u00E8\u00E9\u00EA\u1EC1\u1EBF\u1EC5\u1EC3\u1EBD\u0113\u1E15\u1E17\u0115\u0117\u00EB\u1EBB\u011B\u0205\u0207\u1EB9\u1EC7\u0229\u1E1D\u0119\u1E19\u1E1B\u0247\u025B\u01DD]"
+				},
+				{
+					'base': /f/gi,
+					'letters': "[\u0066\u24D5\uFF46\u1E1F\u0192\uA77C]"
+				},
+				{
+					'base': /g/gi,
+					'letters': "[\u0067\u24D6\uFF47\u01F5\u011D\u1E21\u011F\u0121\u01E7\u0123\u01E5\u0260\uA7A1\u1D79\uA77F]"
+				},
+				{
+					'base': /h/gi,
+					'letters': "[\u0195\u0068\u24D7\uFF48\u0125\u1E23\u1E27\u021F\u1E25\u1E29\u1E2B\u1E96\u0127\u2C68\u2C76\u0265]"
+				},
+				{
+					'base': /i/gi,
+					'letters': "[\u0069\u24D8\uFF49\u00EC\u00ED\u00EE\u0129\u012B\u012D\u00EF\u1E2F\u1EC9\u01D0\u0209\u020B\u1ECB\u012F\u1E2D\u0268\u0131]"
+				},
+				{
+					'base': /j/gi,
+					'letters': "[\u006A\u24D9\uFF4A\u0135\u01F0\u0249]"
+				},
+				{
+					'base': /k/gi,
+					'letters': "[\u006B\u24DA\uFF4B\u1E31\u01E9\u1E33\u0137\u1E35\u0199\u2C6A\uA741\uA743\uA745\uA7A3]"
+				},
+				{
+					'base': /l/gi,
+					'letters': "[\u01C9\u006C\u24DB\uFF4C\u0140\u013A\u013E\u1E37\u1E39\u013C\u1E3D\u1E3B\u017F\u0142\u019A\u026B\u2C61\uA749\uA781\uA747]"
+				},
+				{
+					'base': /m/gi,
+					'letters': "[\u006D\u24DC\uFF4D\u1E3F\u1E41\u1E43\u0271\u026F]"
+				},
+				{
+					'base': /n/gi,
+					'letters': "[\u01CC\u006E\u24DD\uFF4E\u01F9\u0144\u00F1\u1E45\u0148\u1E47\u0146\u1E4B\u1E49\u019E\u0272\u0149\uA791\uA7A5]"
+				},
+				{
+					'base': /o/gi,
+					'letters': "[\uA74F\u0223\u01A3\u006F\u24DE\uFF4F\u00F2\u00F3\u00F4\u1ED3\u1ED1\u1ED7\u1ED5\u00F5\u1E4D\u022D\u1E4F\u014D\u1E51\u1E53\u014F\u022F\u0231\u00F6\u022B\u1ECF\u0151\u01D2\u020D\u020F\u01A1\u1EDD\u1EDB\u1EE1\u1EDF\u1EE3\u1ECD\u1ED9\u01EB\u01ED\u00F8\u01FF\u0254\uA74B\uA74D\u0275]"
+				},
+				{
+					'base': /p/gi,
+					'letters': "[\u0070\u24DF\uFF50\u1E55\u1E57\u01A5\u1D7D\uA751\uA753\uA755]"
+				},
+				{
+					'base': /q/gi,
+					'letters': "[\u0071\u24E0\uFF51\u024B\uA757\uA759]"
+				},
+				{
+					'base': /r/gi,
+					'letters': "[\u0072\u24E1\uFF52\u0155\u1E59\u0159\u0211\u0213\u1E5B\u1E5D\u0157\u1E5F\u024D\u027D\uA75B\uA7A7\uA783]"
+				},
+				{
+					'base': /s/gi,
+					'letters': "[\u0073\u24E2\uFF53\u00DF\u015B\u1E65\u015D\u1E61\u0161\u1E67\u1E63\u1E69\u0219\u015F\u023F\uA7A9\uA785\u1E9B]"
+				},
+				{
+					'base': /t/gi,
+					'letters': "[\uA729\u0074\u24E3\uFF54\u1E6B\u1E97\u0165\u1E6D\u021B\u0163\u1E71\u1E6F\u0167\u01AD\u0288\u2C66\uA787]"
+				},
+				{
+					'base': /u/gi,
+					'letters': "[\u0075\u24E4\uFF55\u00F9\u00FA\u00FB\u0169\u1E79\u016B\u1E7B\u016D\u00FC\u01DC\u01D8\u01D6\u01DA\u1EE7\u016F\u0171\u01D4\u0215\u0217\u01B0\u1EEB\u1EE9\u1EEF\u1EED\u1EF1\u1EE5\u1E73\u0173\u1E77\u1E75\u0289]"
+				},
+				{
+					'base': /v/gi,
+					'letters': "[\uA761\u0076\u24E5\uFF56\u1E7D\u1E7F\u028B\uA75F\u028C]"
+				},
+				{
+					'base': /w/gi,
+					'letters': "[\u0077\u24E6\uFF57\u1E81\u1E83\u0175\u1E87\u1E85\u1E98\u1E89\u2C73]"
+				},
+				{
+					'base': /x/gi,
+					'letters': "[\u0078\u24E7\uFF58\u1E8B\u1E8D]"
+				},
+				{
+					'base': /y/gi,
+					'letters': "[\u0079\u24E8\uFF59\u1EF3\u00FD\u0177\u1EF9\u0233\u1E8F\u00FF\u1EF7\u1E99\u1EF5\u01B4\u024F\u1EFF]"
+				},
+				{
+					'base': /z/gi,
+					'letters': "[\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763]"
+				},
+				{
+					'base': /\s/gi,
+					'letters': "[ ]+"
+				},
+				{
+					'base': /\./gi,
+					'letters': "\\."
+				},
+				{
+					'base': /\+/gi,
+					'letters': "\\+"
+				},
+				{
+					'base': /\*/gi,
+					'letters': "\\*"
+				},
+				{
+					'base': /\(/gi,
+					'letters': "\\("
+				},
+				{
+					'base': /\)/gi,
+					'letters': "\\)"
+				},
+				{
+					'base': /\[/gi,
+					'letters': "\\["
+				},
+				{
+					'base': /]/gi,
+					'letters': "\\]"
+				},
+				{
+					'base': /\?/gi,
+					'letters': "\\?"
+				},
+				{
+					'base': /\\/gi,
+					'letters': ""
+				}
+			];
+			return function (str) {
+				if (isNoU(str)) {
+					return str;
+				}
+				str = str.toLowerCase();
+				for (var i = defaultDiacriticsRemovalMap.length - 1; i >= 0; i--) {
+					str = str.replace(defaultDiacriticsRemovalMap[i].base, defaultDiacriticsRemovalMap[i].letters);
+				}
+				return str;
+			};
+		}());
+	})(window.CbnTable);
+</script>
