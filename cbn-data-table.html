@@ -38,7 +38,6 @@ See `cbn-table` for information about styling the element.
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../cbn-tooltip/cbn-tooltip.html">
 
-
 <link rel="import" href="lib/include.html" />
 <link rel="import" href="cbn-table.html" />
 
@@ -154,7 +153,6 @@ See `cbn-table` for information about styling the element.
 				 */
 				columns: {
 					type: Array,
-					value: function() { return []; },
 					observer: '_columnsChanged'
 				},
 
@@ -565,7 +563,7 @@ See `cbn-table` for information about styling the element.
 			 * Computes the icon of the Select All/None button.
 			 */
 			_computeIndexIcon: function() {
-				if (this.selectedItems.length === this.items.length)
+				if (this.selectedItems.length === this._filteredItems.length)
 					return "icons:check-box";
 				if (this.selectedItems.length > 0)
 					return "icons:indeterminate-check-box";

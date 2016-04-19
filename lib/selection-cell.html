@@ -79,7 +79,7 @@
 				/** @namespace this.$.cellTemplate */
 				//noinspection JSUnresolvedVariable
 				if (this.$ && this.$.cellTemplate && this.column && this.colDesc && this.parentTable) {
-					if (!this.parentTable._columns[this.column._index]) {
+					if (!this.parentTable._columns || !this.parentTable._columns[this.column._index]) {
 						// the element is ready sooner than expected; no problem:
 						this.colDesc.template = this.$.cellTemplate;
 					} else {
