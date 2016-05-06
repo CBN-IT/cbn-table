@@ -78,7 +78,7 @@ Class name               | Description                   | Default
 		<template id="effectiveTableTemplate">
 			<div class="cbn-table-effective">
 				<!-- An empty row with height: 100% that will take the rest of the unused vertical space inside the table -->
-				<div class="cbn-table-expander">
+				<div class="cbn-table-expander" style="transform: translate3d(-9000px, 0px, 0px)">
 					<div class="cbn-table-cell">&nbsp;</div>
 				</div>
 				
@@ -549,7 +549,7 @@ Class name               | Description                   | Default
 				 * header/footer from flickering when scrollling using the mouse (on some browsers, e.g. Google Chrome).
 				 */
 				this.$.ironList.addEventListener('mousewheel', function (e) {
-					table.$.ironList._scrollTop = Math.min(this._scrollHeight - this._viewportSize, 
+					table.$.ironList._scrollTop = Math.min(this._scrollHeight - this._viewportHeight, 
 						Math.max(0, e.deltaY + table._scrollTop));
 					
 					/*var body = document.querySelector('body');
