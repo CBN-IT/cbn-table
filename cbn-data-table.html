@@ -60,15 +60,16 @@ See `cbn-table` for information about styling the element.
 
 				<cbn-tooltip position="bottom" offset="5" animation-delay="0" for="#exportExcel">Salvare ca Excel</cbn-tooltip>
 
-				<paper-menu-button id="report" horizontal-align="right" vertical-align="top" vertical-offset="40">
-					<paper-icon-button icon="editor:insert-chart" style="color: #3277ec;" class="dropdown-trigger action"></paper-icon-button>
-					<paper-menu id="menuReports" class="dropdown-content" horizontal-align="right" attr-for-selected="hash" on-iron-activate="generateReport">
+				<paper-icon-button id="report" icon="editor:insert-chart" style="color: #3277ec;" class="action" on-tap="openMenuReports"></paper-icon-button>
+				<iron-dropdown id="menuReports" class="dropdown-content" horizontal-align="right" attr-for-selected="hash" style="width:200px;margin-top:40px;background-color:white;">
+					<paper-material class="dropdown-content layout vertical" style="color:black;">
 						<template is="dom-repeat" items="{{reports}}" as="report">
-							<paper-item class="item-sablon" hash$="{{report._hash}}"><iron-icon icon$="microsoft-office:{{report.tipGenerare}}" class$="colored {{report.tipGenerare}}"></iron-icon>{{report.numeSablon}}</paper-item>
+							<div class="item-sablon" on-tap="generateReport" hash$="{{report._hash}}"><iron-icon icon$="microsoft-office:{{report.tipGenerare}}" class$="colored {{report.tipGenerare}}"></iron-icon>{{report.numeSablon}}</div>
 						</template>
-					</paper-menu>
-				</paper-menu-button>
-				<cbn-tooltip position="bottom" offset="5" animation-delay="0" for="#report">Aplica raport</cbn-tooltip>
+					</paper-material>
+				</iron-dropdown>
+				
+				<cbn-tooltip position="top right,bottom right" offset="5" animation-delay="0" for="#report">Aplica raport</cbn-tooltip>
 
 			</div>
 		</paper-material>
@@ -608,8 +609,7 @@ See `cbn-table` for information about styling the element.
 			},
 			
 			generateReport: function(event){
-				event.preventDefault();
-				var hashRaport = event.detail.item.getAttribute("hash");
+				var hashRaport = event.model.report._hash;
 				var iframe = document.createElement("iframe");
 				iframe.style.display = "none";
 				document.body.appendChild(iframe);
@@ -628,7 +628,7 @@ See `cbn-table` for information about styling the element.
 				html += "document.getElementById('formRaport').submit();";
 				html += "<" + "/script>" + "</html>";
 				iframe.contentDocument.write(html);
-				this.$.report.close();
+				this.$.menuReports.close();
 				//this.$.menuReports.select("");
 			},
 
@@ -663,6 +663,9 @@ See `cbn-table` for information about styling the element.
 				});
 				this.$.saveExcel.data = returnData;
 				this.$.saveExcel.arrayToXLSX();
+			},
+			openMenuReports:function(){
+				this.$.menuReports.open();
 			}
 			
 			
