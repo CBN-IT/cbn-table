@@ -127,11 +127,11 @@
 					val = (val || val === 0 || val === false ? val + '' : '');
 					return {
 						text: val,
-						chunks: scope.utils.naturalChunks(val, true)
+						chunks: scope.utils.padNumbers(val)
 					};
 				},
-				compare: function (val1, val2) {
-					return scope.utils.compareNaturalChunks(val1.chunks, val2.chunks);
+				compare: function (val1, val2, column) {
+					return scope.DataTypes.string.compare(val1.chunks, val2.chunks, column);
 				},
 				filter: function (val, expr, column) {
 					if (!column._f_userFilter) return true;
@@ -767,7 +767,24 @@
 				
 				return chunks;
 			},
-			
+			padNumbers: function(a){
+				var paddingValue = "00000000000000000000";
+				if (typeof a === "number") {
+					return (paddingValue+a).slice(-paddingValue.length);
+				} else if(a === undefined || a === null || a === ""){
+					return "";
+				} else if (typeof a === "string") {
+					a = a.replace(/(\d+)(?:\.(\d+))?/g, function(match,beforeDot,afterDot){
+						if(afterDot==undefined){
+							return (paddingValue+beforeDot*1).slice(-paddingValue.length)
+						}else{
+							return (paddingValue+beforeDot*1).slice(-paddingValue.length)+"."+(afterDot*1+paddingValue).substr(0,paddingValue.length)
+						}
+						
+					});
+				}
+				return a;
+			},
 			/**
 			 * Compares two natural chunks of text/numbers, returning -1 if the first is greater (alphanumerically) than
 			 * the other, 0 if they're equal and 1 if greater.
