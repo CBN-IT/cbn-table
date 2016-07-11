@@ -666,7 +666,7 @@ Class name               | Description                   | Default
 									}
 									table._lastSelectedRange = [ starti, endi ];
 									table._selectRange(starti, endi, model[this.selectedAs], true);
-									
+									table._lastSelectedItemIdx = model[this.indexAs];
 								} else {
 									this.clearSelection();
 									this.toggleSelectionForItem(model[this.as]);
@@ -735,7 +735,7 @@ Class name               | Description                   | Default
 					i = keepItemKeys[key];
 					selectedItems.push(keepItems[i]);
 				}
-				
+				this.clearSelection();
 				// set the selectedAs property to true to all selected items
 				selectedItems.forEach(function(item) {
 					model = this.$.ironList._getModelFromItem(item);
