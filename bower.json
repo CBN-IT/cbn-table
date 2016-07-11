@@ -36,7 +36,7 @@
     "iron-component-page": "PolymerElements/iron-component-page#^1.0",
     "web-component-tester": "*",
     "test-fixture": "PolymerElements/test-fixture#^1.0",
-    "cbn-tooltip": "git@bitbucket.org:cbn-it/cbn-tooltip#master",
-    "cbn-momentjs": "git@bitbucket.org:cbn-it/cbn-momentjs.git#master"
+    "cbn-tooltip": "CBN-IT/cbn-tooltip#master",
+    "cbn-momentjs": "CBN-IT/cbn-momentjs.git#master"
   }
 }
