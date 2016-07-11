@@ -7,7 +7,6 @@
     "**/.*",
     "resources/*.zip",
     "test",
-    "demo",
     "node_modules",
     "bower_components",
     "Gruntfile.js",
