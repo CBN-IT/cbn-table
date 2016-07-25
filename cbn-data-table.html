@@ -612,25 +612,7 @@ See `cbn-table` for information about styling the element.
 			},
 			
 			generateReport: function(event){
-				var hashRaport = event.model.report._hash;
-				var iframe = document.createElement("iframe");
-				iframe.style.display = "none";
-				document.body.appendChild(iframe);
-				var html = "<!DOCTYPE html><html><head><title></title></head><body><form id='formRaport' action='/do/Raport' target=\"_blank\" method='POST'>";
-				html += "<input type='hidden' name='hashReport' value='" + hashRaport + "'/>";
-				for (var i = 0; i < this.selectedItems.length; i++) {
-					html += "<input type='hidden' name='keys' value='" + this.selectedItems[i]._hash + "'/>";
-				}
-				
-				var nameParams = Object.keys(this.params);
-				for (i = 0; i < nameParams.length; i++) {
-					html += "<input type='hidden' name='" + nameParams[i] + "' value='" + this.params[nameParams[i]] + "'/>";
-				}
-				html += "<input type='hidden' name='download' value='inline'/>";
-				html += "</form></body><script>";
-				html += "document.getElementById('formRaport').submit();";
-				html += "<" + "/script>" + "</html>";
-				iframe.contentDocument.write(html);
+				this.fire("cbn-aplica-sablon", event.model.report);
 				this.$.menuReports.close();
 				//this.$.menuReports.select("");
 			},
