@@ -612,7 +612,11 @@ See `cbn-table` for information about styling the element.
 			},
 			
 			generateReport: function(event){
-				this.fire("cbn-aplica-sablon", event.model.report);
+				var keys = [];
+				for (var i = 0; i < this.selectedItems.length; i++) {
+					keys.push(this.selectedItems[i]["_hash"]);
+				}
+				this.fire("cbn-aplica-sablon", {"sablon":event.model.report,"keys":keys});
 				this.$.menuReports.close();
 				//this.$.menuReports.select("");
 			},
