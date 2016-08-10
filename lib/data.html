@@ -574,7 +574,7 @@
 				if (!column.name)
 					column.name = '_column_id' + column._index;
 				
-			column.pname = column.name.replace(/\./g,"_dot_");
+				column.pname = column.name.replace(/\./g,"_dot_");
 				// bind the callback functions
 				var du = scope.DataTypes['_'];
 				var dt = scope.DataTypes[column.type];

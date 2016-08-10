@@ -83,6 +83,7 @@
 						// the element is ready sooner than expected; no problem:
 						this.colDesc.template = this.$.cellTemplate;
 					} else {
+						this.colDesc.template = this.$.cellTemplate;
 						this.parentTable.set('_columns.' + this.column._index + '.template',
 							this.$.cellTemplate);
 					}
