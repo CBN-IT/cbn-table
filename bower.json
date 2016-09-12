@@ -36,6 +36,7 @@
     "web-component-tester": "*",
     "test-fixture": "PolymerElements/test-fixture#^1.0",
     "cbn-tooltip": "CBN-IT/cbn-tooltip#master",
-    "cbn-momentjs": "CBN-IT/cbn-momentjs#master"
+    "cbn-momentjs": "CBN-IT/cbn-momentjs#master",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.2.5"
   }
 }
