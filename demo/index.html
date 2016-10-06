@@ -9,41 +9,50 @@
 	<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
 	<link rel="import" href="../../iron-icons/iron-icons.html">
 	<link rel="import" href="../cbn-table.html">
+
+	<link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+	<link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
 </head>
 <body>
 
-<template id="t" is="dom-bind">
-<div style="margin: 0 auto; width:700px;">
-	
-	<p>
-		<b>Demo:</b>
-		<paper-icon-button on-tap="setMoreItems" icon="icons:add-circle">More</paper-icon-button>
-		<paper-icon-button on-tap="setLessItems" icon="icons:remove-circle">Fewer</paper-icon-button>
-	</p>
-	
-	<cbn-table style="height: 500px;" items="[[items]]">
-		<template class="cbn-table-header">
-			<div class="cbn-table-row">
-				<div style="width:60px;" class="cbn-table-cell">Index</div>
-				<div style="width:auto;" class="cbn-table-cell">Name</div>
-				<div style="width:auto;" class="cbn-table-cell">Name, again</div>
-				<div style="width:100px;" class="cbn-table-cell">Y/N?</div>
-			</div>
-		</template>
-		<template class="cbn-table-footer">
-			Hello, I am a footer ;) 
-		</template>
-		<template>
-			<div class="cbn-table-row">
-				<div class="cbn-table-cell">{{ index }}</div>
-				<div class="cbn-table-cell">{{ item.one }}</div>
-				<div class="cbn-table-cell">{{ item.two }}</div>
-				<div class="cbn-table-cell">{{ item.three }}</div>
-			</div>
-		</template>
-	</cbn-table>
+<div style="margin: 20px auto; width: 800px;">
+	<h1>Cbn-Table Demo</h1>
+
+	<form id="demoForm" is="cbn-form" model>
+		<demo-snippet class="centered-demo" style="position:relative">
+			<template id="t" is="dom-bind">
+				<p>
+					<b>Demo:</b>
+					<paper-icon-button on-tap="setMoreItems" icon="icons:add-circle">More</paper-icon-button>
+					<paper-icon-button on-tap="setLessItems" icon="icons:remove-circle">Fewer</paper-icon-button>
+				</p>
+				<cbn-table style="height: 300px;" items="[[items]]">
+					<template class="cbn-table-header">
+						<div class="cbn-table-row">
+							<div style="width:60px;" class="cbn-table-cell">Index</div>
+							<div style="width:auto;" class="cbn-table-cell">Name</div>
+							<div style="width:auto;" class="cbn-table-cell">Name, again</div>
+							<div style="width:100px;" class="cbn-table-cell">Y/N?</div>
+						</div>
+					</template>
+					<template class="cbn-table-footer">
+						Hello, I am a footer ;)
+					</template>
+					<template>
+						<div class="cbn-table-row">
+							<div class="cbn-table-cell">{{ index }}</div>
+							<div class="cbn-table-cell">{{ item.one }}</div>
+							<div class="cbn-table-cell">{{ item.two }}</div>
+							<div class="cbn-table-cell">{{ item.three }}</div>
+						</div>
+					</template>
+				</cbn-table>
+			</template>
+		</demo-snippet>
+	</form>
 </div>
-</template>
+<br/>
+
 
 <script>
 	window.addEventListener('WebComponentsReady', function() {
