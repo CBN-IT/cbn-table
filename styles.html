@@ -84,16 +84,20 @@
 	:host ::content .cbn-table-cell {
 		transform: translate3d(0, 0, 0);
 	}
-	:host ::content .cbn-table-row:nth-child(odd) {
+	:host ::content .cbn-table-row:nth-child(odd), 
+	:host ::content .cbn-table-row:nth-child(odd) .cbn-table-cell {
 		@apply(--cbn-table-row-altn);
 	}
-	:host ::content .cbn-table-row:hover {
+	:host ::content .cbn-table-row:hover,
+	:host ::content .cbn-table-row:hover .cbn-table-cell {
 		@apply(--cbn-table-row-hover);
 	}
-	:host ::content .cbn-table-row.selected:hover{
+	:host ::content .cbn-table-row.selected:hover,
+	:host ::content .cbn-table-row.selected:hover .cbn-table-cell{
 		@apply(--cbn-table-row-selected-hover);
 	}
-	:host ::content .cbn-table-row.selected {
+	:host ::content .cbn-table-row.selected,
+	:host ::content .cbn-table-row.selected .cbn-table-cell {
 		@apply(--cbn-table-row-selected);
 	}
 	
@@ -139,12 +143,15 @@
 	}
 	
 	:host ::content .cbn-table-header-container .cbn-table-row:hover, 
-	:host ::content .cbn-table-footer-container .cbn-table-row:hover {
+	:host ::content .cbn-table-footer-container .cbn-table-row:hover,
+	:host ::content .cbn-table-header-container .cbn-table-row:hover .cbn-table-cell, 
+	:host ::content .cbn-table-footer-container .cbn-table-row:hover .cbn-table-cell {
 		/*TODO: why is important needed. It gets replaced by cbn-table.cbn-table-0 .cbn-table-row:hover*/
-		background-color: transparent !important;
+		background: var(--cbn-table-head-background) !important;
 	}
 	
 	:host ::content .cbn-table-header-container .cbn-table-cell {
+		background: var(--cbn-table-head-background);
 		@apply(--cbn-table-header-cell);
 	}
 	
