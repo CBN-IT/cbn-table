@@ -170,6 +170,11 @@
 		/*TODO: why is important needed. It gets replaced by cbn-table.cbn-table-0 .cbn-table-row:hover*/
 		background: var(--cbn-table-head-background) !important;
 	}
+
+	:host ::content .cbn-table-header-container .cbn-table-row:hover .cbn-table-cell:before,
+	:host ::content .cbn-table-footer-container .cbn-table-row:hover .cbn-table-cell:before{
+		display: none;
+	}
 	
 	:host ::content .cbn-table-header-container .cbn-table-cell {
 		background: var(--cbn-table-head-background);
