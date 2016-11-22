@@ -29,7 +29,50 @@
 			}
 			*/
 		}
-		
+		#table {
+			--default-primary-color: #3277EC;
+			--cbn-table-row-selected: {
+				background-color: rgba(50, 119, 236, 0.3);
+			};
+			--cbn-table-row-hover: {
+				background-color: rgba(50, 119, 236, 0.2);
+			};
+			--cbn-table-row-selected-hover: {
+				background-color: rgba(50, 119, 236, 0.3)
+			};
+			--cbn-table-cell-padding: 0px 3px;
+			--cbn-table-header-cell: {
+				padding: 2px 3px;
+			};
+		}
+
+		#table paper-icon-button {
+			padding: 1px;
+			width: 26px;
+			height: 26px;
+		}
+
+		.fontello, #table paper-button:not(.before){
+			font-family: cbn-table-icons;
+			min-width: 0;
+			font-size: 20px;
+			vertical-align: middle;
+			margin: 0;
+			width: 26px;
+			height: 26px;
+			padding: 2px 1px 0 1px;
+		}
+
+
+		#table span {
+			display: inline-block;
+		}
+
+
+
+		#table {
+			background: white
+		}
 	</style>
 	
 </head>
