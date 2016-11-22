@@ -84,20 +84,41 @@
 	:host ::content .cbn-table-cell {
 		transform: translate3d(0, 0, 0);
 	}
-	:host ::content .cbn-table-row:nth-child(odd), 
-	:host ::content .cbn-table-row:nth-child(odd) .cbn-table-cell {
+	:host ::content .cbn-table-row:nth-child(odd) .cbn-table-cell:before {
+		content:"";
+		position:absolute;
+		top:0;
+		left:0;
+		bottom:0;
+		right:0;
 		@apply(--cbn-table-row-altn);
 	}
-	:host ::content .cbn-table-row:hover,
-	:host ::content .cbn-table-row:hover .cbn-table-cell {
+	:host ::content .cbn-table-row:hover .cbn-table-cell:before {
+		content:"";
+		position:absolute;
+		top:0;
+		left:0;
+		bottom:0;
+		right:0;
 		@apply(--cbn-table-row-hover);
 	}
-	:host ::content .cbn-table-row.selected:hover,
-	:host ::content .cbn-table-row.selected:hover .cbn-table-cell{
+	
+	:host ::content .cbn-table-row.selected:hover .cbn-table-cell:before{
+		content:"";
+		position:absolute;
+		top:0;
+		left:0;
+		bottom:0;
+		right:0;
 		@apply(--cbn-table-row-selected-hover);
 	}
-	:host ::content .cbn-table-row.selected,
-	:host ::content .cbn-table-row.selected .cbn-table-cell {
+	:host ::content .cbn-table-row.selected .cbn-table-cell:before {
+		content:"";
+		position:absolute;
+		top:0;
+		left:0;
+		bottom:0;
+		right:0;
 		@apply(--cbn-table-row-selected);
 	}
 	
