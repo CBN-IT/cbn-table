@@ -59,7 +59,7 @@ See `cbn-table` for information about styling the element.
 			</div>
 			<div style="padding-right:5px" id="defaultActionBar">
 				<cbn-save-excel id="saveExcel"></cbn-save-excel>
-				<paper-icon-button icon="microsoft-office:excel" class="colored excel action" id="exportExcel" on-tap="saveExcel"></paper-icon-button>
+				<paper-icon-button hidden="{{hideExcel}}" icon="microsoft-office:excel" class="colored excel action" id="exportExcel" on-tap="saveExcel"></paper-icon-button>
 
 				<cbn-tooltip position="bottom" offset="5" animation-delay="0" for="#exportExcel">Salvare ca Excel</cbn-tooltip>
 
@@ -166,6 +166,13 @@ See `cbn-table` for information about styling the element.
 				reports: {
 					type: Array,
 					value: function() { return []; }
+				},
+				/**
+				 * hide excel button.
+				 */
+				hideExcel: {
+					type: Boolean,
+					value: false
 				},
 
 				/**
