@@ -240,7 +240,10 @@
             }
 
             onResize(){
+                let viewHeight = this.$.table.getBoundingClientRect()["height"];
+                if (this.viewHieght !== viewHeight && viewHeight > 0) {
                 this.itemsChanged();
+            }
             }
 
           columnsChanged(columns) {
@@ -291,7 +294,7 @@
 
           itemsChanged() {
                 let viewHeight = this.$.table.getBoundingClientRect()["height"];
-                if (this.viewHieght !== viewHeight && viewHeight > 0 && this.columns !== undefined && this.items !== undefined) {
+                if (viewHeight > 0 && this.columns !== undefined && this.items !== undefined) {
                     this.viewHieght = viewHeight;
                   setTimeout(function () {
                         this.firstRender(viewHeight);
