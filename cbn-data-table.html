@@ -333,6 +333,7 @@
           createRow(currentHeight, endIndex) {
               let row = document.createElement("div");
               row.addEventListener("click", this.handleClick.bind(this));
+                row.addEventListener("dblclick", this.handleDblClick.bind(this));
               this.$.container.insertBefore(row, this.$.bottom);
               row.classList.add("row");
               row.setAttribute("translateX", currentHeight);
@@ -540,6 +541,18 @@
                   this.selectedItemsNumber++;
               }
           }
+
+            handleDblClick(event){
+                let row = event.currentTarget;
+                this.dispatchEvent(new CustomEvent('dbl-click', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        "item": this._filteredItems[row.lastIndex]
+                    }
+                }));
+                // console.log(row);
+            }
 
           setSort(event) {
               if (this.columns[event.model.index]["sortable"]) {
