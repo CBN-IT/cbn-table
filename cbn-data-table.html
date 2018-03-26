@@ -658,7 +658,7 @@
                           this._filteredItems[i]["isSelected"] = this.allSelected;
                       }
                   }
-                  this.selectedItemsNumber = this._filteredItems.length;
+                    this.selectedItemsNumber = this.allSelected ? this._filteredItems.length : 0;
                   let rows = this.$.container.querySelectorAll(".row");
                   for (let i = 0; i < rows.length; i++) {
                       rows[i].checkbox.checked = this.allSelected;
