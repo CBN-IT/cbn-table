@@ -382,6 +382,9 @@
               } else {
                   container.textContent = this.formatValue(column, model);
               }
+              if(column["style"] !== undefined){
+                  container.style = column["style"];
+              }
               cell.appendChild(container);
               row.appendChild(cell);
           }
