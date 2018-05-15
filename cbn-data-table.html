@@ -334,7 +334,7 @@
           createRow(currentHeight, endIndex) {
               let row = document.createElement("div");
               row.addEventListener("click", this.handleClick.bind(this));
-                row.addEventListener("dblclick", this.handleDblClick.bind(this));
+              row.addEventListener("dblclick", this.handleDblClick.bind(this));
               this.$.container.insertBefore(row, this.$.bottom);
               row.classList.add("row");
               row.setAttribute("translateX", currentHeight);
@@ -600,7 +600,7 @@
                       for (let j = 0; j < this.columns.length; j++) {
                           if (this.columns[j]["filterable"]) {
                               if (this.columns[j]["filterValue"] !== undefined && this.columns[j]["filterValue"] !== "") {
-                                  if (this.items[i][this.columns[j]["name"]].toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
+                                  if (this.items[i][this.columns[j]["name"]] === undefined || this.items[i][this.columns[j]["name"]].toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
                                       displayRow = false;
                                       break;
                                   }
