@@ -239,7 +239,7 @@
             onResize(){
                 let viewHeight = this.$.table.getBoundingClientRect()["height"];
                 if (this.viewHieght !== viewHeight && viewHeight > 0) {
-                this.itemsChanged();
+                    this.filterAll();
             }
             }
 
@@ -592,17 +592,43 @@
               this.filterAll();
           }
 
+            isFilterSet() {
+                for (let i = 0; i < this.columns.length; i++) {
+                    if (this.columns[i]["filterValue"] !== undefined && this.columns[i]["filterValue"] !== "") {
+                        return true;
+                    }
+                }
+            }
+
           filterAll() {
-              if (this.columns !== undefined) {
+                if (this.columns !== undefined && this.items !== undefined) {
                   let _filteredItems = [];
                   for (let i = 0; i < this.items.length; i++) {
                       let displayRow = true;
                       for (let j = 0; j < this.columns.length; j++) {
                           if (this.columns[j]["filterable"]) {
                               if (this.columns[j]["filterValue"] !== undefined && this.columns[j]["filterValue"] !== "") {
-                                  if (this.items[i][this.columns[j]["name"]] === undefined || this.items[i][this.columns[j]["name"]].toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
+                                    if (this.items[i][this.columns[j]["name"]] === undefined || this.items[i][this.columns[j]["name"]] === null) {
                                       displayRow = false;
                                       break;
+                                    } else {
+                                        if (this.items[i][this.columns[j]["name"]] instanceof String || typeof this.items[i][this.columns[j]["name"]] === "string") {
+                                            if (this.items[i][this.columns[j]["name"]].toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
+                                                displayRow = false;
+                                                break;
+                                            }
+                                        } else if (this.items[i][this.columns[j]["name"]] instanceof Array) {
+                                            let list = this.items[i][this.columns[j]["name"]];
+                                            displayRow = false;
+                                            for(let k=0; k< list.length; k++){
+                                                if(list[k].toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) > -1){
+                                                    displayRow = true;
+                                                }
+                                            }
+                                            if(!displayRow){
+                                                break;
+                                            }
+                                        }
                                   }
                               }
                           }
@@ -687,6 +713,25 @@
               }
               return selectedItems;
           }
+
+            aplicaRaport(hash){
+                let keys = [];
+                for (let i = 0; i < this._filteredItems.length; i++) {
+                    if (this._filteredItems[i]["isSelected"]) {
+                        keys.push(this._filteredItems[i]["_hash"]);
+                    }
+                }
+
+                this.dispatchEvent(new CustomEvent('cbn-aplica-sablon', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {"sablon": {
+                            "_hash": hash
+                        }, "keys": keys}
+                }));
+            }
+
+
       }
 
       window.customElements.define(CbnDataTable.is, CbnDataTable);
