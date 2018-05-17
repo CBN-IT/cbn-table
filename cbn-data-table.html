@@ -239,7 +239,7 @@
             onResize(){
                 let viewHeight = this.$.table.getBoundingClientRect()["height"];
                 if (this.viewHieght !== viewHeight && viewHeight > 0) {
-                    this.filterAll();
+                    this.updateFilteredItems();
             }
             }
 
@@ -313,6 +313,16 @@
               this.endIndex = endIndex - 1;
               this.rowsNr = endIndex;
               this.scrollToTop();
+
+                if(this.isFilterSet()){
+                    this.filterAll(false);
+                }
+                let sortColumn = this.isSortSet();
+                if(sortColumn !== undefined){
+                    this.sortAll(sortColumn["name"], sortColumn["sortType"])
+                } else {
+                    this.updateFilteredItems();
+                }
           }
 
           clean() {
@@ -579,8 +589,20 @@
               }
           }
 
+            isSortSet(){
+                for (let i = 0; i < this.columns.length; i++) {
+                    if (this.columns[i]["sortType"] !== 0) {
+                        return this.columns[i];
+                    }
+                }
+            }
+
           sortAll(property, sortType) {
               this._filteredItems.sort(function (a, b) {
+                    a[property] = (a[property] === undefined || a[property] === null) ? "" : a[property];
+                    b[property] = (b[property] === undefined || b[property] === null) ? "" : b[property];
+                    a[property] = a[property] instanceof Array ? a[property].length + "" : a[property];
+                    b[property] = b[property] instanceof Array ? b[property].length + "" : b[property];
                   return a[property].localeCompare(b[property]) * sortType
               });
               this.updateFilteredItems();
@@ -600,7 +622,7 @@
                 }
             }
 
-          filterAll() {
+            filterAll(noUpdate) {
                 if (this.columns !== undefined && this.items !== undefined) {
                   let _filteredItems = [];
                   for (let i = 0; i < this.items.length; i++) {
@@ -612,7 +634,7 @@
                                       displayRow = false;
                                       break;
                                     } else {
-                                        if (this.items[i][this.columns[j]["name"]] instanceof String || typeof this.items[i][this.columns[j]["name"]] === "string") {
+                                        if (typeof this.items[i][this.columns[j]["name"]] === "string") {
                                             if (this.items[i][this.columns[j]["name"]].toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
                                                 displayRow = false;
                                                 break;
@@ -628,6 +650,11 @@
                                             if(!displayRow){
                                                 break;
                                             }
+                                        } else if(typeof this.items[i][this.columns[j]["name"]] === "boolean"){
+                                            if (this.items[i][this.columns[j]["name"]].toString().toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
+                                                displayRow = false;
+                                                break;
+                                            }
                                         }
                                   }
                               }
@@ -638,13 +665,15 @@
                       }
                   }
                   this._filteredItems = _filteredItems;
+                    if(!(noUpdate === false)){
                   this.updateFilteredItems();
 
               }
-
+                }
           }
 
           updateFilteredItems() {
+                if(this._filteredItems !== undefined){
               this.filteredItemsNumber = this._filteredItems.length;
               let rowHeight = this.rowHeight;
               let rows = this.$.container.querySelectorAll(".row");
@@ -667,7 +696,7 @@
                       this.repositionRows();
                   }
               }.bind(this), 1);
-
+                }
           }
 
           selectedRow(event) {
