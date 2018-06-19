@@ -267,7 +267,12 @@
           }
 
           formatValue(column, item) {
-              return item[column.name];
+                let splits = column.name.split(".");
+                let toReturn = item;
+                for(let i=0; i < splits.length; i++){
+                    toReturn = toReturn[splits[i]] !== undefined ? toReturn[splits[i]] : "";
+                }
+                return toReturn;
           }
 
           setIcon(column, columnIndex) {
@@ -634,16 +639,17 @@
                       for (let j = 0; j < this.columns.length; j++) {
                           if (this.columns[j]["filterable"]) {
                               if (this.columns[j]["filterValue"] !== undefined && this.columns[j]["filterValue"] !== "") {
-                                    if (this.items[i][this.columns[j]["name"]] === undefined || this.items[i][this.columns[j]["name"]] === null) {
+                                    let value = this.formatValue(this.columns[j], this.items[i]);
+                                    if (value === undefined || value === null) {
                                       displayRow = false;
                                       break;
                                     } else {
-                                        if (typeof this.items[i][this.columns[j]["name"]] === "string") {
-                                            if (this.items[i][this.columns[j]["name"]].toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
+                                        if (typeof value === "string") {
+                                            if (value.toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
                                                 displayRow = false;
                                                 break;
                                             }
-                                        } else if (this.items[i][this.columns[j]["name"]] instanceof Array) {
+                                        } else if (value instanceof Array) {
                                             let list = this.items[i][this.columns[j]["name"]];
                                             displayRow = false;
                                             for(let k=0; k< list.length; k++){
@@ -654,7 +660,7 @@
                                             if(!displayRow){
                                                 break;
                                             }
-                                        } else if(typeof this.items[i][this.columns[j]["name"]] === "boolean"){
+                                        } else if(typeof value === "boolean"){
                                             if (this.items[i][this.columns[j]["name"]].toString().toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
                                                 displayRow = false;
                                                 break;
