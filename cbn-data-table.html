@@ -207,6 +207,9 @@
                   rowsNr: {
                       type: Number
                   },
+                    rowStyle: {
+                        type: Function
+                    },
                   rowHeight: {
                       type: Number,
                       value: 40
@@ -467,6 +470,9 @@
           }
 
           updateRow(row, model, index) {
+                if(this.rowStyle !== undefined){
+                    this.rowStyle(model, row);
+                }
               if (model["isSelected"]) {
                   row.classList.add("iron-selected");
                   row.checkbox.checked = true;
