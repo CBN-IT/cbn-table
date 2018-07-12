@@ -334,7 +334,7 @@
           }
 
           clean() {
-              this.itemsNumber = this.items.length;
+              this.itemsNumber = (this.items !== undefined && this.items !== null) ? this.items.length: 0;
               for(let i=0; i< this.items.length; i++){
                   this.items[i]["initialIndex"] = i;
               }
@@ -646,8 +646,8 @@
                           if (this.columns[j]["filterable"]) {
                               if (this.columns[j]["filterValue"] !== undefined && this.columns[j]["filterValue"] !== "") {
                                     let value = this.formatValue(this.columns[j], this.items[i]);
-                                    if (value === undefined || value === null || value === "") {
-                                        displayRow = this.columns[j]["filterValue"].toLowerCase() === "-";
+                                    if (value === undefined || value === null) {
+                                      displayRow = false;
                                       break;
                                     } else {
                                         if (typeof value === "string") {
