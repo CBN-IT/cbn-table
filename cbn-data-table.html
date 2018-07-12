@@ -646,8 +646,8 @@
                           if (this.columns[j]["filterable"]) {
                               if (this.columns[j]["filterValue"] !== undefined && this.columns[j]["filterValue"] !== "") {
                                     let value = this.formatValue(this.columns[j], this.items[i]);
-                                    if (value === undefined || value === null) {
-                                      displayRow = false;
+                                    if (value === undefined || value === null || value === "") {
+                                        displayRow = this.columns[j]["filterValue"].toLowerCase() === "-";
                                       break;
                                     } else {
                                         if (typeof value === "string") {
