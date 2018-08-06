@@ -613,12 +613,17 @@
 
           sortAll(property, sortType) {
               this._filteredItems.sort(function (a, b) {
-                    let prop1, prop2;
+                    let prop1, prop2, toReturn;
                     prop1 = (a[property] === undefined || a[property] === null) ? "" : a[property];
                     prop2 = (b[property] === undefined || b[property] === null) ? "" : b[property];
                     prop1 = a[property] instanceof Array ? a[property].length + "" : prop1;
                     prop2 = b[property] instanceof Array ? b[property].length + "" : prop2;
-                    return prop1.localeCompare(prop2) * sortType
+                    try{
+                        toReturn = prop1.localeCompare(prop2) * sortType;
+                    } catch(err){
+                        toReturn = (prop1+"").localeCompare(prop2) * sortType;
+                    }
+                    return toReturn;
               });
               this.updateFilteredItems();
           }
@@ -646,7 +651,12 @@
                           if (this.columns[j]["filterable"]) {
                               if (this.columns[j]["filterValue"] !== undefined && this.columns[j]["filterValue"] !== "") {
                                     let value = this.formatValue(this.columns[j], this.items[i]);
-                                    if (value === undefined || value === null) {
+                                    if(this.columns[j]["filterValue"] === "-"){
+                                        if(!(value === undefined || value === null || value === "")){
+                                            displayRow = false;
+                                            break;
+                                        }
+                                    } else if (value === undefined || value === null || value === "") {
                                       displayRow = false;
                                       break;
                                     } else {
