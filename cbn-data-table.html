@@ -618,9 +618,9 @@
                     prop2 = (b[property] === undefined || b[property] === null) ? "" : b[property];
                     prop1 = a[property] instanceof Array ? a[property].length + "" : prop1;
                     prop2 = b[property] instanceof Array ? b[property].length + "" : prop2;
-                    try{
-                        toReturn = prop1.localeCompare(prop2) * sortType;
-                    } catch(err){
+                    if(typeof prop1 === "number" && typeof prop1 === "number"){
+                        toReturn = ((prop1 >= prop2) ? (prop1 > prop2 ? 1 : 0) : -1) * sortType;
+                    } else {
                         toReturn = (prop1+"").localeCompare(prop2) * sortType;
                     }
                     return toReturn;
@@ -676,7 +676,7 @@
                                             if(!displayRow){
                                                 break;
                                             }
-                                        } else if(typeof value === "boolean"){
+                                        } else if(typeof value === "boolean" || typeof value === "number"){
                                             if (this.items[i][this.columns[j]["name"]].toString().toLowerCase().indexOf(this.columns[j]["filterValue"].toLowerCase()) === -1) {
                                                 displayRow = false;
                                                 break;
